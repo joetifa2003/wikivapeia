@@ -4,10 +4,13 @@
     fluid
     class="align-start pa-0 justify-center pt-5 full"
   >
-    <vue-headful title="THIS IS TEST" />
     <v-row class="justify-center" style="width: 100%;">
       <v-col cols="12" lg="8">
         <v-card v-if="product" width="100%" elevation="0">
+          <vue-headful
+            :title="`Wikivapeia - ${product.company} ${product.model} | Score: ${product.lastScore}/10`"
+            :image="product.images[0].image"
+          />
           <SignUp :show="signUp" @closing="signUpDialog()" />
           <v-col>
             <v-row>
