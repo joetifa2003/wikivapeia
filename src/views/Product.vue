@@ -42,7 +42,6 @@
                   <v-divider />
                 </v-col>
                 <social-sharing
-                  v-if="!mobileShare"
                   :url="'wikivapeia.com' + $route.path"
                   hashtags="Wikivapeia"
                   network-tag="span"
@@ -302,7 +301,6 @@ export default {
       overall: 0,
       voteSum: null,
       voteIsclicked: false,
-      mobileShare: true,
     }
   },
   created() {
