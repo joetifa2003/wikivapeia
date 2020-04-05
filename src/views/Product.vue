@@ -37,13 +37,6 @@
                   class="font-weight-bold pa-0"
                   style="font-size: 18px;"
                   >Share
-                  <font-awesome-icon
-                    v-if="mobileShare"
-                    @click="mobileShareDialog"
-                    class="primary--text darken-4 ml-5"
-                    icon="share-alt-square"
-                    size="2x"
-                  />
                 </v-subheader>
                 <v-col class="pa-0 mb-5">
                   <v-divider />
@@ -324,8 +317,6 @@ export default {
     } else {
       this.voted = false
     }
-
-    navigator.share ? (this.mobileShare = true) : (this.mobileShare = false)
   },
   computed: {
     ...mapState(['user']),
@@ -374,13 +365,6 @@ export default {
     },
   },
   methods: {
-    mobileShareDialog() {
-      if (navigator.share) {
-        navigator.share({
-          url: 'wikivapeia.com' + this.$route.path,
-        })
-      }
-    },
     signUpDialog() {
       this.signUp = !this.signUp
     },
