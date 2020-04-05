@@ -377,7 +377,7 @@ export default {
     mobileShareDialog() {
       if (navigator.share) {
         navigator.share({
-          url: 'wikivapeia.com' + this.$route.path(),
+          url: 'wikivapeia.com' + this.$route.path,
         })
       }
     },
