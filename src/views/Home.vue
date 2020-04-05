@@ -1,7 +1,7 @@
 <template>
   <v-container fill-height fluid class="pa-0">
     <vue-headful
-      title="`Wikivapeia - Wikivapeia - Worldwide vape ranking service`"
+      :title="`Wikivapeia - Worldwide vape ranking service`"
       description="Wikivapeia offers ranking for vape components like Atomizers, Mods and E-liquid by voting from users around the world to guide them to their needs."
     />
     <Landing
@@ -20,7 +20,6 @@
 <script>
 import Landing from '../components/Landing.vue'
 import store from '../store/index.js'
-import headful from 'headful'
 
 export default {
   name: 'Home',
@@ -32,11 +31,6 @@ export default {
   },
   created() {
     store.commit('activePage', 'Home')
-    headful({
-      title: 'Wikivapeia - Worldwide vape ranking',
-      description:
-        'Wikivapeia offers ranking for vape components like Atomizers, Mods and E-liquid by voting from users around the world to guide them to their needs.',
-    })
   },
 }
 </script>

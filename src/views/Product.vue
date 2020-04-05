@@ -4,6 +4,7 @@
     fluid
     class="align-start pa-0 justify-center pt-5 full"
   >
+    <vue-headful title="THIS IS TEST" />
     <v-row class="justify-center" style="width: 100%;">
       <v-col cols="12" lg="8">
         <v-card v-if="product" width="100%" elevation="0">
@@ -61,8 +62,7 @@
                     v-for="(feature, i) in product.features"
                     :key="i"
                     class="mr-2 mt-2 font-weight-bold"
-                  >
-                    {{ feature }}</v-chip
+                    >{{ feature }}</v-chip
                   >
                 </div>
                 <v-col cols="12" class="pa-0">
@@ -143,9 +143,9 @@
       :width="$vuetify.breakpoint.smAndDown ? '100%' : '30%'"
     >
       <v-card width="100%" class="pa-5">
-        <v-card-title class="justify-center">
-          Vote for {{ product.model }}
-        </v-card-title>
+        <v-card-title class="justify-center"
+          >Vote for {{ product.model }}</v-card-title
+        >
         <v-col>
           <div v-if="product.type === 'Atomizer'">
             <v-row v-for="(rank, i) in ranks.atomizers" :key="i">
@@ -207,15 +207,6 @@ export default {
   name: 'Product',
   components: {
     SignUp: () => import('../components/SignUp'),
-  },
-  metaInfo: {
-    meta: [
-      {
-        name: 'description',
-        content: 'my standard description',
-        vmid: 'description',
-      },
-    ],
   },
   data() {
     return {
