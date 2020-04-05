@@ -8,7 +8,9 @@
       <v-col cols="12" lg="8">
         <v-card v-if="product" width="100%" elevation="0">
           <vue-headful
-            :title="`Wikivapeia - ${product.company} ${product.model} | Score: ${product.lastScore}/10`"
+            :title="`Wikivapeia - ${product.company} ${
+              product.model
+            } | Score: ${product.lastScore.toFixed(1)}/10`"
             :image="product.images[0].image"
           />
           <SignUp :show="signUp" @closing="signUpDialog()" />
