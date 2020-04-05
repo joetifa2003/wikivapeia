@@ -27,7 +27,12 @@
                     v-for="(image, i) in product.images"
                     :key="i"
                   >
-                    <v-img contain width="100%" :src="image.image" />
+                    <v-img
+                      contain
+                      width="100%"
+                      height="100%"
+                      :src="image.image"
+                    />
                   </v-carousel-item>
                 </v-carousel>
                 <div
