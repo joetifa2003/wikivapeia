@@ -3,11 +3,14 @@ import Vuetify from 'vuetify/lib'
 import { colors } from 'vuetify/lib'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faFacebookF } from '@fortawesome/free-brands-svg-icons'
+import {
+  faFacebookSquare,
+  faTelegram,
+} from '@fortawesome/free-brands-svg-icons'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 Vue.use(Vuetify)
-library.add(faFacebookF)
+library.add(faFacebookSquare, faTelegram)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 export default new Vuetify({

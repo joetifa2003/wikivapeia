@@ -6,10 +6,14 @@ import vuetify from './plugins/vuetify'
 import { firestorePlugin } from 'vuefire'
 const fb = require('./firebaseConfig')
 import vueHeadful from 'vue-headful'
+var SocialSharing = require('vue-social-sharing')
+import shareIt from 'vue-share-it'
 
 Vue.config.productionTip = false
 
 Vue.use(firestorePlugin)
+Vue.use(SocialSharing)
+Vue.use(shareIt)
 Vue.component('vue-headful', vueHeadful)
 
 let app

@@ -16,7 +16,7 @@
           <SignUp :show="signUp" @closing="signUpDialog()" />
           <v-col>
             <v-row>
-              <v-col cols="12" md="6" class="d-flex align-start">
+              <v-col cols="12" md="6" class="d-flex align-start flex-column">
                 <v-carousel
                   height="540"
                   cycle
@@ -27,14 +27,18 @@
                     v-for="(image, i) in product.images"
                     :key="i"
                   >
-                    <v-img
-                      contain
-                      height="100%"
-                      width="100%"
-                      :src="image.image"
-                    />
+                    <v-img contain width="100%" :src="image.image" />
                   </v-carousel-item>
                 </v-carousel>
+                <div
+                  class="d-flex full-width justify-center align-center"
+                  style="width: 100%;"
+                >
+                  <share-it
+                    :url="'wikivapeia.com' + $route.path"
+                    :targets="['facebook', 'twitter', 'whatsapp']"
+                  />
+                </div>
               </v-col>
               <v-col cols="12" md="6">
                 <v-row>
