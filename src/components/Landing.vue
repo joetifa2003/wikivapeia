@@ -3,7 +3,7 @@
     <v-row justify="center" align="center" class="flex-grow-1">
       <v-col cols="12" lg="8" class="pa-0">
         <v-responsive aspect-ratio="21/9">
-          <v-carousel cycle hide-delimiters>
+          <v-carousel cycle hide-delimiters height="500px">
             <v-carousel-item v-for="(image, i) in imagesMain" :key="i">
               <BannerItem :image="image" />
             </v-carousel-item>

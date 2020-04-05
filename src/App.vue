@@ -33,6 +33,7 @@ export default {
 <style lang="scss">
 #app {
   color: #000000;
+  overflow-x: hidden;
 }
 .warn {
   height: 50px;

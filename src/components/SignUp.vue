@@ -57,7 +57,6 @@
 </template>
 
 <script>
-var crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const fb = require('../firebaseConfig')
 import Swal from 'sweetalert2'
 
@@ -71,15 +70,10 @@ export default {
       txtPassword: '',
     }
   },
-  created() {
+  async created() {
     this.l_show = this.show
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        console.log(
-          crg.get_country(pos.coords.latitude, pos.coords.longitude).name,
-        )
-      })
-    }
+    let data = await fetch('https://geolocation-db.com/json/')
+    console.log(await data.json())
   },
   methods: {
     async signUp() {

@@ -8,9 +8,7 @@
       <v-col cols="12" lg="8">
         <v-card v-if="product" width="100%" elevation="0">
           <vue-headful
-            :title="`Wikivapeia - ${product.company} ${
-              product.model
-            } | Score: ${product.lastScore.toFixed(1)}/10`"
+            :title="`Wikivapeia - ${product.company} ${product.model}`"
             :image="product.images[0].image"
           />
           <SignUp :show="signUp" @closing="signUpDialog()" />
@@ -35,23 +33,83 @@
                     />
                   </v-carousel-item>
                 </v-carousel>
-                <div
-                  class="d-flex full-width justify-center align-center"
-                  style="width: 100%;"
-                >
-                  <share-it
-                    :url="'wikivapeia.com' + $route.path"
-                    :targets="['facebook', 'twitter', 'whatsapp']"
+                <v-subheader
+                  class="font-weight-bold pa-0"
+                  style="font-size: 18px;"
+                  >Share
+                  <font-awesome-icon
+                    v-if="mobileShare"
+                    @click="mobileShareDialog"
+                    class="primary--text darken-4 ml-5"
+                    icon="share-alt-square"
+                    size="2x"
                   />
-                </div>
+                </v-subheader>
+                <v-col class="pa-0 mb-5">
+                  <v-divider />
+                </v-col>
+                <social-sharing
+                  v-if="!mobileShare"
+                  :url="'wikivapeia.com' + $route.path"
+                  hashtags="Wikivapeia"
+                  network-tag="span"
+                  inline-template
+                >
+                  <div
+                    class="d-flex justify-space-around"
+                    style="width: 150px;"
+                  >
+                    <network network="facebook">
+                      <font-awesome-icon
+                        class="indigo--text darken-4"
+                        :icon="['fab', 'facebook-square']"
+                        size="2x"
+                      />
+                    </network>
+                    <network network="twitter">
+                      <font-awesome-icon
+                        class="blue--text darken-2"
+                        :icon="['fab', 'twitter-square']"
+                        size="2x"
+                      />
+                    </network>
+                    <network network="whatsapp">
+                      <font-awesome-icon
+                        class="green--text darken-3"
+                        :icon="['fab', 'whatsapp-square']"
+                        size="2x"
+                      />
+                    </network>
+                    <network network="telegram">
+                      <font-awesome-icon
+                        class="blue--text darken-3"
+                        :icon="['fab', 'telegram']"
+                        size="2x"
+                      />
+                    </network>
+
+                    <network network="instagram">
+                      <font-awesome-icon
+                        class="blue--text darken-3"
+                        :icon="['fab', 'telegram']"
+                        size="2x"
+                      />
+                    </network>
+                  </div>
+                </social-sharing>
               </v-col>
               <v-col cols="12" md="6">
                 <v-row>
                   <v-col>
-                    <h1 class="display-1 font-weight-medium">
+                    <h1 class="font-weight-medium" style="font-size: 30px;">
                       {{ product.model }}
                     </h1>
-                    <h6 class="title">{{ product.company.toUpperCase() }}</h6>
+                    <div
+                      class="pa-0 font-weight-medium grey--text lighten-2"
+                      style="font-size: 18px;"
+                    >
+                      {{ product.company.toUpperCase() }}
+                    </div>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-end align-end">
                     <div
@@ -112,7 +170,7 @@
               </v-col>
             </v-row>
             <v-row>
-              <v-col cols="12" md="7" class="pr-10">
+              <v-col cols="12" md="7" class="">
                 <v-subheader
                   class="font-weight-bold pa-0"
                   style="font-size: 18px;"
@@ -251,6 +309,7 @@ export default {
       overall: 0,
       voteSum: null,
       voteIsclicked: false,
+      mobileShare: true,
     }
   },
   created() {
@@ -265,6 +324,8 @@ export default {
     } else {
       this.voted = false
     }
+
+    navigator.share ? (this.mobileShare = true) : (this.mobileShare = false)
   },
   computed: {
     ...mapState(['user']),
@@ -313,6 +374,13 @@ export default {
     },
   },
   methods: {
+    mobileShareDialog() {
+      if (navigator.share) {
+        navigator.share({
+          url: 'wikivapeia.com' + this.$route.path(),
+        })
+      }
+    },
     signUpDialog() {
       this.signUp = !this.signUp
     },

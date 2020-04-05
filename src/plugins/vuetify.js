@@ -5,12 +5,23 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {
   faFacebookSquare,
+  faFacebookF,
   faTelegram,
+  faTwitterSquare,
+  faWhatsappSquare,
 } from '@fortawesome/free-brands-svg-icons'
+import { faShareAltSquare } from '@fortawesome/free-solid-svg-icons'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 Vue.use(Vuetify)
-library.add(faFacebookSquare, faTelegram)
+library.add(
+  faFacebookSquare,
+  faFacebookF,
+  faTelegram,
+  faTwitterSquare,
+  faWhatsappSquare,
+  faShareAltSquare,
+)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 export default new Vuetify({
