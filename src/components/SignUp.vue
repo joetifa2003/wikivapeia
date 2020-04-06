@@ -43,7 +43,11 @@
         <v-btn @click.stop="signUp" class="primary white--text" width="100%"
           >Sign Up</v-btn
         >
-        <v-btn class="blue darken-4 white--text mt-5" width="100%">
+        <v-btn
+          class="blue darken-4 white--text mt-5"
+          width="100%"
+          @click="facebookSignUp"
+        >
           <font-awesome-icon
             :icon="['fab', 'facebook-f']"
             size="2x"
@@ -57,6 +61,7 @@
 </template>
 
 <script>
+import firebase from 'firebase'
 const fb = require('../firebaseConfig')
 import Swal from 'sweetalert2'
 
@@ -86,6 +91,17 @@ export default {
       } catch (error) {
         Swal.fire('Error', error.message, 'error')
       }
+    },
+    async facebookSignUp() {
+      var facebook = new firebase.auth.FacebookAuthProvider()
+      facebook.addScope('user_birthday')
+      facebook.addScope('user_gender')
+      facebook.setCustomParameters({
+        display: 'popup',
+      })
+      var resualt = fb.auth.signInWithPopup(facebook)
+      console.log(resualt.user)
+      console.log(resualt.credential)
     },
   },
   watch: {
