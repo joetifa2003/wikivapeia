@@ -269,12 +269,13 @@ const fb = require('../firebaseConfig')
 
 export default {
   name: 'Product',
+  props: ['id'],
   components: {
     SignUp: () => import('../components/SignUp'),
   },
   data() {
     return {
-      productID: this.$route.params.id,
+      productID: this.id,
       product: null,
       voteDialog: false,
       signUp: false,

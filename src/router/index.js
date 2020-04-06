@@ -82,9 +82,16 @@ const routes = [
   },
   {
     path: '/product/:id',
+    props: true,
     name: 'Product',
     component: () =>
       import(/* webpackChunkName: "Product" */ '../views/Product.vue'),
+  },
+  {
+    path: '/privacy',
+    name: 'Privacy',
+    component: () =>
+      import(/* webpackChunkName: "Product" */ '../views/Privacy.vue'),
   },
 ]
 
