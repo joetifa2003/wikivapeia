@@ -5,11 +5,12 @@
       v-model="l_show"
       width="460px"
       indeterminate
+      persistent
     >
       <v-card width="100%">
         <v-col>
           <div class="d-flex justify-center align-center">
-            <div style="width: 100px; height: 100px;">
+            <div style="width: 80px; height: 80px;">
               <v-img
                 src="~@/assets/WikivapeiaLogoBlackNoBg.svg"
                 aspect-ratio="1"
@@ -18,17 +19,27 @@
           </div>
           <div
             class="text-center font-weight-bold mb-5"
-            style="font-size: 25px;"
+            style="font-size: 20px;"
           >
             Sign up for full features
           </div>
           <v-form>
             <v-row>
               <v-col>
-                <v-text-field outlined label="First name" type="text" />
+                <v-text-field
+                  v-model="txtFname"
+                  outlined
+                  label="First name"
+                  type="text"
+                />
               </v-col>
               <v-col>
-                <v-text-field outlined label="Last name" type="text" />
+                <v-text-field
+                  v-model="txtLname"
+                  outlined
+                  label="Last name"
+                  type="text"
+                />
               </v-col>
             </v-row>
             <v-text-field
@@ -59,6 +70,14 @@
             />
             Sign Up with facebook
           </v-btn>
+          <v-btn
+            text
+            class="grey--text text--darken-2 mt-5"
+            width="100%"
+            @click="later"
+          >
+            Skip for now
+          </v-btn>
         </v-col>
       </v-card>
     </v-dialog>
@@ -72,23 +91,25 @@
             >Birthday</v-subheader
           >
           <v-divider class="mb-5" />
-          <v-date-picker
-            full-width
-            class="mb-5"
-            type="month"
-            v-model="picker"
-          />
+          <v-date-picker full-width class="mb-5" v-model="picker" />
           <v-combobox
             v-model="gender"
             :rules="[(v) => !!v || 'Gender is requierd']"
             label="Gender"
             :items="['Male', 'Female']"
           />
-          <v-text-field
-            class="mb-5"
-            label="Phone number (optional)"
-            v-model="number"
-          ></v-text-field>
+          <v-row>
+            <v-col>
+              <v-combobox :items="codes" v-model="selectedCode" />
+            </v-col>
+            <v-col>
+              <v-text-field
+                class="mb-5"
+                label="Phone number (optional)"
+                v-model.number="number"
+              ></v-text-field>
+            </v-col>
+          </v-row>
           <v-row class="justify-space-around">
             <v-btn class="primary white--text" @click.stop="cancle"
               >Cancle</v-btn
@@ -104,6 +125,8 @@
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
+import { codesFull, codes } from '../utils/codes'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 const fb = require('../firebaseConfig')
@@ -115,6 +138,8 @@ export default {
   data() {
     return {
       l_show: false,
+      txtFname: '',
+      txtLname: '',
       txtEmail: '',
       txtPassword: '',
       completeInfo: false,
@@ -124,6 +149,9 @@ export default {
       gender: '',
       location: {},
       newUser: false,
+      facebook: false,
+      codes: codes,
+      selectedCode: '',
     }
   },
   async created() {
@@ -132,15 +160,21 @@ export default {
     this.location = await data.json()
   },
   methods: {
+    later() {
+      this.l_show = false
+    },
     async signUp() {
       try {
-        await fb.auth.createUserWithEmailAndPassword(
+        let result = await fb.auth.createUserWithEmailAndPassword(
           this.txtEmail,
           this.txtPassword,
         )
-        Swal.fire('Signed Up !', '', 'success')
+        this.user = result.user
+        this.l_show = false
+        this.facebook = false
+        this.completeInfo = true
       } catch (error) {
-        Swal.fire('Error', error.message, 'error')
+        await Swal.fire('Error', error.message, 'error')
       }
     },
     async facebookSignUp() {
@@ -151,11 +185,12 @@ export default {
 
         if (this.newUser) {
           this.user = result.user
-          this.show = false
+          this.l_show = false
+          this.facebook = true
           this.completeInfo = true
         } else {
-          this.show = false
-          Swal.fire('Logged in !', '', 'success')
+          await Swal.fire('Logged in !', '', 'success')
+          this.l_show = false
         }
       } catch (error) {
         Swal.fire('Error', error.message, 'error')
@@ -163,32 +198,46 @@ export default {
     },
     async uploadUserData() {
       try {
-        await fb.db.collection('Users').doc(this.user.uid).set({
-          name: this.user.displayName,
-          email: this.user.email,
-          country: this.location.country_name,
-          city: this.location.city,
-          number: this.number,
-          gender: this.gender,
-        })
-        this.completeInfo = false
-        Swal.fire(
+        await fb.db
+          .collection('Users')
+          .doc(this.user.uid)
+          .set({
+            name: this.facebook
+              ? this.user.displayName
+              : `${this.txtFname} ${this.txtLname}`,
+            email: this.user.email,
+            country: this.location.country_name,
+            city: this.location.city,
+            number: `${this.selectedCode}${this.number}`,
+            gender: this.gender,
+            birthday: this.picker,
+          })
+        await Swal.fire(
           'Signed Up !',
           `Welcome ${this.gender ? 'Mr.' : 'Mrs.'} ${this.user.displayName}`,
           'success',
         )
+        this.completeInfo = false
       } catch (error) {
         Swal.fire('Error', error.message, 'error')
       }
     },
     async cancle() {
       await this.user.delete()
+      this.completeInfo = false
     },
   },
   watch: {
     show: {
       handler(show) {
         this.l_show = show
+      },
+    },
+    location: {
+      handler(location) {
+        this.selectedCode = codesFull.filter(
+          (v) => v.name === location.country_name,
+        )[0].code
       },
     },
   },
