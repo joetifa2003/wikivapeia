@@ -35,7 +35,11 @@
         <v-btn @click.stop="login" class="primary white--text" width="100%"
           >Login</v-btn
         >
-        <v-btn class="blue darken-4 white--text mt-5" width="100%">
+        <v-btn
+          @click.stop="facebook"
+          class="blue darken-4 white--text mt-5"
+          width="100%"
+        >
           <font-awesome-icon
             :icon="['fab', 'facebook-f']"
             size="2x"
@@ -49,6 +53,7 @@
 </template>
 
 <script>
+import firebase from 'firebase/app'
 const fb = require('../firebaseConfig')
 import SecureLS from 'secure-ls'
 var ls = new SecureLS({ encodingType: 'aes' })
@@ -82,6 +87,21 @@ export default {
         Swal.fire('Logged in !', '', 'success')
       } catch (error) {
         Swal.fire('Error', error.message, 'error')
+      }
+    },
+
+    async facebook() {
+      var facebook = new firebase.auth.FacebookAuthProvider()
+      let result = await firebase.auth().signInWithPopup(facebook)
+      this.newUser = result.additionalUserInfo.isNewUser
+
+      if (this.newUser) {
+        await Swal.fire("You don't have an account", '', 'error')
+        result.user.delete()
+        this.l_show = false
+      } else {
+        await Swal.fire('Logged in !', '', 'success')
+        this.l_show = false
       }
     },
   },

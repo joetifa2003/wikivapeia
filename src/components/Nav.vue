@@ -74,7 +74,7 @@
             >Ranks</v-btn
           >
         </v-list-item>
-        <v-list-item>
+        <v-list-item v-if="!user">
           <v-btn
             @click.stop="loginDialog()"
             :class="[
@@ -84,7 +84,7 @@
             >Login</v-btn
           >
         </v-list-item>
-        <v-list-item>
+        <v-list-item v-if="!user">
           <v-btn
             @click.stop="signUpDialog()"
             :class="activePage === 'SignUp' ? 'accent--text' : ''"
