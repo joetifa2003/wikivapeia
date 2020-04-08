@@ -1,6 +1,11 @@
 <template>
   <v-hover v-slot:default="{ hover }">
-    <v-card height="100%" width="100%" :elevation="hover ? 12 : ''">
+    <v-card
+      class="pa-3"
+      height="100%"
+      width="100%"
+      :elevation="hover ? 12 : ''"
+    >
       <v-overlay v-if="page === 'Ranks'" :absolute="true" :value="hover">
         <v-btn
           @click.stop="$router.push('/product/' + product.id)"
@@ -8,10 +13,15 @@
           >Details</v-btn
         >
       </v-overlay>
-      <v-overlay v-if="page === 'Admin'" :absolute="true" :value="hover">
+      <v-overlay
+        class="d-flex pa-0"
+        v-if="page === 'Admin'"
+        :absolute="true"
+        :value="hover"
+      >
         <div
           style="width: 100%; height: 100%;"
-          class="d-flex justify-center align-center flex-column"
+          class="d-flex justify-center flex-column"
         >
           <v-btn
             min-width="200"
@@ -41,15 +51,22 @@
             class="primary secondary--text"
             >Delete product</v-btn
           >
+          <v-checkbox
+            color="white"
+            background-color="primary"
+            class="white--text"
+            label="Select"
+            v-model="product.checked"
+          />
         </div>
       </v-overlay>
-      <v-img :src="product.images[0].image" height="200px" contain />
+      <v-img :src="product.images[0].image" height="250px" contain />
       <v-row>
         <v-col class="pa-0">
           <v-card-title>{{ product.model }}</v-card-title>
           <v-card-subtitle>{{ product.company.toUpperCase() }}</v-card-subtitle>
         </v-col>
-        <v-col cols="3" class="mr-3 pl-0">
+        <v-col cols="3" class="pl-0">
           <div class="-width d-flex align-end justify-end">
             <div class="grey darken-1" style="width: 60px;">
               <div

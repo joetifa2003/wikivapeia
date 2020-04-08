@@ -2,7 +2,7 @@
   <v-dialog
     @input="$emit('closing', 'yes')"
     v-model="l_show"
-    width="460px"
+    width="400px"
     indeterminate
   >
     <v-card width="100%">
@@ -84,9 +84,11 @@ export default {
           this.txtEmail,
           this.txtPassword,
         )
-        Swal.fire('Logged in !', '', 'success')
+        await Swal.fire('Logged in !', '', 'success')
+        this.l_show = false
       } catch (error) {
-        Swal.fire('Error', error.message, 'error')
+        await Swal.fire('Error', error.message, 'error')
+        this.l_show = false
       }
     },
 

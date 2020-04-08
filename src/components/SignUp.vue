@@ -11,13 +11,18 @@
         <v-col>
           <div class="d-flex justify-center align-center">
             <div style="width: 80px; height: 80px;">
-              <v-img src="~@/assets/WikivapeiaLogoBlackNoBg.svg" aspect-ratio="1"></v-img>
+              <v-img
+                src="~@/assets/WikivapeiaLogoBlackNoBg.svg"
+                aspect-ratio="1"
+              ></v-img>
             </div>
           </div>
           <div
             class="text-center font-weight-bold mb-5"
             style="font-size: 20px;"
-          >Sign up for full features</div>
+          >
+            Sign up for full features
+          </div>
           <v-form v-model="validSignUp">
             <v-row>
               <v-col>
@@ -62,24 +67,39 @@
               type="password"
             />
           </v-form>
-          <v-btn @click.stop="signUp" class="primary white--text" width="100%">Sign Up</v-btn>
-          <v-btn class="blue darken-4 white--text mt-5" width="100%" @click="facebookSignUp">
-            <font-awesome-icon :icon="['fab', 'facebook-f']" size="2x" class="mr-3" />Sign Up with facebook
+          <v-btn @click.stop="signUp" class="primary white--text" width="100%"
+            >Sign Up</v-btn
+          >
+          <v-btn
+            class="blue darken-4 white--text mt-5"
+            width="100%"
+            @click="facebookSignUp"
+          >
+            <font-awesome-icon
+              :icon="['fab', 'facebook-f']"
+              size="2x"
+              class="mr-3"
+            />Sign Up with facebook
           </v-btn>
           <v-btn
             text
             class="grey--text text--darken-2 mt-5"
             width="100%"
             @click="later"
-          >Skip for now</v-btn>
+            >Skip for now</v-btn
+          >
         </v-col>
       </v-card>
     </v-dialog>
     <v-dialog width="500px" v-model="completeInfo" persistent>
       <v-card class="pa-5 d-flex justify-center flex-column">
-        <v-form v-model="valid">
-          <v-card-title class="text-center justify-center mb-4">Complete your registeration</v-card-title>
-          <v-subheader class="font-weight-medium" style="font-size: 18px;">Birthday</v-subheader>
+        <v-form>
+          <v-card-title class="text-center justify-center mb-4"
+            >Complete your registeration</v-card-title
+          >
+          <v-subheader class="font-weight-medium" style="font-size: 18px;"
+            >Birthday</v-subheader
+          >
           <v-divider class="mb-5" />
           <v-date-picker full-width class="mb-5" v-model="picker" />
           <v-combobox
@@ -93,12 +113,20 @@
               <v-combobox :items="codes" v-model="selectedCode" />
             </v-col>
             <v-col>
-              <v-text-field class="mb-5" label="Phone number (optional)" v-model.number="number"></v-text-field>
+              <v-text-field
+                class="mb-5"
+                label="Phone number (optional)"
+                v-model.number="number"
+              ></v-text-field>
             </v-col>
           </v-row>
           <v-row class="justify-space-around">
-            <v-btn class="primary white--text" @click.stop="cancle">Cancle</v-btn>
-            <v-btn class="primary white--text" @click.stop="uploadUserData">Confirm</v-btn>
+            <v-btn class="primary white--text" @click.stop="cancle"
+              >Cancle</v-btn
+            >
+            <v-btn class="primary white--text" @click.stop="uploadUserData"
+              >Confirm</v-btn
+            >
           </v-row>
         </v-form>
       </v-card>

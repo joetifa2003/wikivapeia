@@ -46,7 +46,6 @@
                 <v-col
                   cols="12"
                   sm="6"
-                  xl="4"
                   v-for="product in productList"
                   :key="product.id"
                 >

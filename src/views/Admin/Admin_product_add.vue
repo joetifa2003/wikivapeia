@@ -4,7 +4,7 @@
     <v-row class="justify-center">
       <v-col cols="12" md="10" lg="8">
         <v-card width="100%" elevation="20" class="pa-12">
-          <v-col v-model="valid" ref="formRef">
+          <v-form v-model="valid" ref="formRef">
             <v-col>
               <v-row>
                 <v-col cols="12" md="6">
@@ -81,58 +81,60 @@
                       <v-col cols="6">
                         <v-text-field
                           v-model="specs.Mod[0].value"
-                          label="Power output"
+                          :label="specs.Mod[0].name"
                           :rules="[
                             (v) =>
                               !!v || v === 'N/A' || 'Please enter value or N/A',
                           ]"
                         />
-                        <v-text-field
+                        <v-combobox
                           v-model="specs.Mod[1].value"
-                          label="Max tank diameter"
+                          :label="specs.Mod[1].name"
+                          clearable
+                          :items="['Builtin', 'External']"
                           :rules="[
-                            (v) =>
-                              !!v || v === 'N/A' || 'Please enter value or N/A',
+                            (v) => !!v || `${specs.Mod[3].name} is required`,
                           ]"
                         />
                         <v-text-field
                           v-model="specs.Mod[2].value"
-                          label="Dimentions"
+                          :label="specs.Mod[2].name"
                           :rules="[
                             (v) =>
                               !!v || v === 'N/A' || 'Please enter value or N/A',
                           ]"
-                        />
-                        <v-combobox
-                          v-model="specs.Mod[3].value"
-                          label="Power supply"
-                          clearable
-                          :items="['Builtin', 'External']"
-                          :rules="[(v) => !!v || 'Power supply is required']"
                         />
                       </v-col>
                       <v-col cols="6">
-                        <v-text-field
-                          v-model="specs.Mod[4].value"
-                          label="Power capacity"
-                          :rules="[
-                            (v) =>
-                              !!v || v === 'N/A' || 'Please enter value or N/A',
-                          ]"
-                        />
                         <v-combobox
-                          v-model="specs.Mod[5].value"
-                          label="Fast charge"
+                          v-model="specs.Mod[3].value"
+                          :label="specs.Mod[3].name"
                           clearable
                           :items="['Yes', 'No']"
                           :rules="[(v) => !!v || 'Fast charge is required']"
                         />
                         <v-combobox
-                          v-model="specs.Mod[6].value"
-                          label="Touch screen"
+                          v-model="specs.Mod[4].value"
+                          :label="specs.Mod[4].name"
                           clearable
                           :items="['Yes', 'No']"
                           :rules="[(v) => !!v || 'Touch screen is required']"
+                        />
+                        <v-text-field
+                          v-model="specs.Mod[5].value"
+                          :label="specs.Mod[5].name"
+                          :rules="[
+                            (v) =>
+                              !!v || v === 'N/A' || 'Please enter value or N/A',
+                          ]"
+                        />
+                        <v-text-field
+                          v-model="specs.Mod[6].value"
+                          :label="specs.Mod[6].name"
+                          :rules="[
+                            (v) =>
+                              !!v || v === 'N/A' || 'Please enter value or N/A',
+                          ]"
                         />
                       </v-col>
                     </v-row>
@@ -156,7 +158,7 @@
                 >Add product</v-btn
               >
             </v-col>
-          </v-col>
+          </v-form>
         </v-card>
       </v-col>
     </v-row>
@@ -234,12 +236,10 @@ export default {
         Mod: [
           {
             name: 'Power output',
-            icon: 'offline_bolt',
+            icon: 'speed',
             value: 'N/A',
             unit: 'mah',
           },
-          { name: 'Max Tank diameter', icon: '360', value: 'N/A', unit: 'mm' },
-          { name: 'Dimention', icon: 'zoom_out_map', value: 'N/A', unit: 'mm' },
           {
             name: 'Power supply',
             icon: 'battery_unknown',
@@ -248,17 +248,24 @@ export default {
           },
           {
             name: 'Power capacity',
-            icon: 'memory',
+            icon: 'battery_charging_full',
             value: 'N/A',
             unit: 'mah',
           },
           {
             name: 'Fast charge',
-            icon: 'battery_charging_full',
+            icon: 'offline_bolt',
             value: 'N/A',
             unit: '',
           },
           { name: 'Touch screen', icon: 'touch_app', value: 'N/A', unit: '' },
+          {
+            name: 'Weight (without battery)',
+            icon: 'fitness_center',
+            value: 'N/A',
+            unit: 'g',
+          },
+          { name: 'Dimention', icon: 'zoom_out_map', value: 'N/A', unit: 'mm' },
         ],
       },
       valid: false,

@@ -48,6 +48,20 @@
             >Sign up</v-btn
           >
         </div>
+        <v-menu v-if="userInfo" open-on-hover bottom offset-y>
+          <template v-slot:activator="{ on }">
+            <v-btn color="primary" v-on="on"> Hi, {{ userInfo.name }} </v-btn>
+          </template>
+
+          <v-list color="primary">
+            <v-list-item>
+              <v-btn text class="white--text">Account settings</v-btn>
+            </v-list-item>
+            <v-list-item>
+              <v-btn @click="logout" text class="white--text">Logout</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
     </v-app-bar>
     <v-navigation-drawer
@@ -97,6 +111,8 @@
 </template>
 
 <script>
+import Swal from 'sweetalert2'
+const fb = require('../firebaseConfig')
 import SecureLS from 'secure-ls'
 var ls = new SecureLS({ encodingType: 'aes' })
 import { mapState } from 'vuex'
@@ -112,7 +128,20 @@ export default {
       sideBar: false,
       signUp: ls.get('first'),
       login: false,
+      userInfo: null,
     }
+  },
+  watch: {
+    user: {
+      immediate: true,
+      handler(user) {
+        if (user) {
+          this.$bind('userInfo', fb.db.collection('Users').doc(user.uid))
+        } else {
+          this.userInfo = null
+        }
+      },
+    },
   },
   computed: {
     ...mapState(['activePage', 'user']),
@@ -129,6 +158,20 @@ export default {
     },
     loginDialog() {
       this.login = !this.login
+    },
+    async logout() {
+      const res = await Swal.fire({
+        title: 'Are you sure?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, logout !',
+      })
+      if (res.value) {
+        await fb.auth.signOut()
+        this.$store.commit('user', null)
+      }
     },
   },
 }

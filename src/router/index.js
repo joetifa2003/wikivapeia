@@ -104,7 +104,7 @@ const router = new VueRouter({
 function checkAdmin(next) {
   if (
     store.state.user !== null &&
-    store.state.user.uid === 'eJYiEcdTjzeCN3vH4bLzQY3g28k1'
+    store.state.user.uid === '07XroEldEudD3dQM0efDi0n2MEn1'
   ) {
     next()
   } else {

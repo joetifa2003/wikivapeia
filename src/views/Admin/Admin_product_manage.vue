@@ -28,6 +28,9 @@
                 />
               </v-col>
             </v-row>
+            <v-btn @click.stop="deletedSelected" class="red white--text mt-5"
+              >Delete selected</v-btn
+            >
           </v-col>
         </v-card>
       </v-col>
@@ -317,6 +320,7 @@ export default {
       ],
       cbProductList: ['Mod', 'Atomizer', 'Pod'],
       featureList: [],
+      deleteList: [],
     }
   },
   created() {
@@ -329,6 +333,7 @@ export default {
     productListQ: {
       handler(productListQ) {
         this.productList = productListQ
+        this.productList.map((v) => Object.assign(v, { checked: false }))
       },
     },
   },
@@ -361,6 +366,18 @@ export default {
       this.updateImageDialog = !this.updateImageDialog
       this.featureListFill()
     },
+    async deleteProduct(product) {
+      for (const image of product.images) {
+        await fb.st
+          .ref()
+          .child('Products')
+          .child(product.type + 's')
+          .child('images')
+          .child(image.imageName)
+          .delete()
+      }
+      await fb.db.collection('Products').doc(product.id).delete()
+    },
     async deleteProductClick(product) {
       const res = await Swal.fire({
         title: 'Are you sure?',
@@ -372,17 +389,25 @@ export default {
         confirmButtonText: 'Yes, delete it!',
       })
       if (res.value) {
-        for (const image of product.images) {
-          await fb.st
-            .ref()
-            .child('Products')
-            .child(product.type + 's')
-            .child('images')
-            .child(image.imageName)
-            .delete()
-        }
-        await fb.db.collection('Products').doc(product.id).delete()
+        await this.deleteProduct(product)
         Swal.fire('Deleted!', 'Your file has been deleted.', 'success')
+      }
+    },
+    async deletedSelected() {
+      const res = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      })
+      if (res.value) {
+        this.productList.forEach((product) => {
+          this.deleteProduct(product)
+        })
+        Swal.fire('Deleted!', 'Your files has been deleted.', 'success')
       }
     },
     async addImages() {

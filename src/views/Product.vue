@@ -8,7 +8,7 @@
       <v-col cols="12" lg="8">
         <v-card v-if="product" width="100%" elevation="0">
           <vue-headful
-            :title="`Wikivapeia - ${product.company} ${product.model}`"
+            :title="`Wikivapeia - ${product.company} ${product.model} Ranking score`"
             :image="product.images[0].image"
           />
           <SignUp :show="signUp" @closing="signUpDialog()" />
@@ -410,7 +410,7 @@ export default {
         lastScore: this.overall,
       })
       this.voteDialog = false
-      Swal.fire('Voted!', 'Voted successy!', 'success')
+      Swal.fire('Voted!', 'Voted successfully!!', 'success')
     },
     voteClick() {
       if (this.user) {
