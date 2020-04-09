@@ -124,13 +124,13 @@ export default {
     async signUp() {
       if (this.validSignUp) {
         try {
-          await fb.auth.createUserWithEmailAndPassword(
+          let user = await fb.auth.createUserWithEmailAndPassword(
             this.txtEmail,
             this.txtPassword,
           )
           ls.set('f', this.txtFname)
           ls.set('l', this.txtLname)
-          fb.auth.currentUser
+          user.user
             .sendEmailVerification({
               url: process.env.VUE_APP_SIGNUP_REDIRECT,
             })
