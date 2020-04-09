@@ -175,6 +175,8 @@ export default {
           } else {
             this.vertifyEmailDialog = false
           }
+        } else {
+          this.userInfo = false
         }
       },
     },
