@@ -34,6 +34,7 @@ export default {
 #app {
   color: #000000;
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 .warn {
   height: 50px;

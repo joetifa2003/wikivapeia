@@ -66,7 +66,7 @@
                       label="Coil type"
                       :rules="[(v) => !!v || 'Coil type is required']"
                       clearable
-                      :items="['Mesh', 'Wire']"
+                      :items="['Mesh', 'Wire', 'Sub ohm']"
                     />
                     <v-combobox
                       v-model="specs.Atomizer[3].value"
@@ -286,7 +286,6 @@ export default {
           'RTA',
           'RDA',
           'RDTA',
-          'Sub ohm',
           'Top airflow',
           'Bottom airflow',
           'Single',

@@ -73,6 +73,22 @@
     >
       <v-list dense nav>
         <v-list-item>
+          <v-menu v-if="userInfo" open-on-hover bottom offset-y>
+            <template v-slot:activator="{ on }">
+              <v-btn color="primary" v-on="on"> Hi, {{ userInfo.name }} </v-btn>
+            </template>
+
+            <v-list color="primary">
+              <v-list-item>
+                <v-btn text class="white--text">Account settings</v-btn>
+              </v-list-item>
+              <v-list-item>
+                <v-btn @click="logout" text class="white--text">Logout</v-btn>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-list-item>
+        <v-list-item>
           <v-btn
             text
             @click.stop="homeClick"
@@ -107,6 +123,22 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+    <v-dialog width="700px" v-model="vertifyEmailDialog" persistent>
+      <v-card width="100%" height="100%">
+        <div class="d-flex justify-center align-center">
+          <div style="width: 80px; height: 80px;">
+            <v-img
+              src="~@/assets/WikivapeiaLogoBlackNoBg.svg"
+              aspect-ratio="1"
+            ></v-img>
+          </div>
+        </div>
+        <h2 class="text-center">Please vertify your email to continue</h2>
+        <p class="text-center ma-0 mt-5">
+          We have sent an email to example@email.com, Please check your mail !
+        </p>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -129,6 +161,7 @@ export default {
       signUp: ls.get('first'),
       login: false,
       userInfo: null,
+      vertifyEmailDialog: false,
     }
   },
   watch: {
@@ -137,8 +170,7 @@ export default {
       handler(user) {
         if (user) {
           this.$bind('userInfo', fb.db.collection('Users').doc(user.uid))
-        } else {
-          this.userInfo = null
+          this.vertifyEmailDialog = !user.emailVerified
         }
       },
     },

@@ -91,57 +91,17 @@
         </v-col>
       </v-card>
     </v-dialog>
-    <v-dialog width="500px" v-model="completeInfo" persistent>
-      <v-card class="pa-5 d-flex justify-center flex-column">
-        <v-form>
-          <v-card-title class="text-center justify-center mb-4"
-            >Complete your registeration</v-card-title
-          >
-          <v-subheader class="font-weight-medium" style="font-size: 18px;"
-            >Birthday</v-subheader
-          >
-          <v-divider class="mb-5" />
-          <v-date-picker full-width class="mb-5" v-model="picker" />
-          <v-combobox
-            v-model="gender"
-            :rules="[(v) => !!v || 'Gender is requierd']"
-            label="Gender"
-            :items="['Male', 'Female']"
-          />
-          <v-row>
-            <v-col>
-              <v-combobox :items="codes" v-model="selectedCode" />
-            </v-col>
-            <v-col>
-              <v-text-field
-                class="mb-5"
-                label="Phone number (optional)"
-                v-model.number="number"
-              ></v-text-field>
-            </v-col>
-          </v-row>
-          <v-row class="justify-space-around">
-            <v-btn class="primary white--text" @click.stop="cancle"
-              >Cancle</v-btn
-            >
-            <v-btn class="primary white--text" @click.stop="uploadUserData"
-              >Confirm</v-btn
-            >
-          </v-row>
-        </v-form>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
 <script>
 // eslint-disable-next-line no-unused-vars
-import { codesFull, codes } from '../utils/codes'
-import moment from 'moment'
 import firebase from 'firebase/app'
 import 'firebase/auth'
-const fb = require('../firebaseConfig')
 import Swal from 'sweetalert2'
+const fb = require('../firebaseConfig')
+import SecureLS from 'secure-ls'
+var ls = new SecureLS({ encodingType: 'aes' })
 
 export default {
   name: 'Sign_Up',
@@ -154,22 +114,12 @@ export default {
       txtEmail: '',
       txtPassword: '',
       completeInfo: false,
-      picker: '',
-      number: '',
-      user: null,
-      gender: '',
-      location: {},
       newUser: false,
-      facebook: false,
-      codes: codes,
-      selectedCode: '',
       validSignUp: true,
     }
   },
   async created() {
     this.l_show = this.show
-    let data = await fetch('https://geolocation-db.com/json/')
-    this.location = await data.json()
   },
   methods: {
     later() {
@@ -178,14 +128,24 @@ export default {
     async signUp() {
       if (this.validSignUp) {
         try {
-          let result = await fb.auth.createUserWithEmailAndPassword(
+          await fb.auth.createUserWithEmailAndPassword(
             this.txtEmail,
             this.txtPassword,
           )
-          this.user = result.user
-          this.l_show = false
-          this.facebook = false
-          this.completeInfo = true
+          ls.set('f', this.txtFname)
+          ls.set('l', this.txtLname)
+          fb.auth.currentUser
+            .sendEmailVerification({
+              url: process.env.VUE_APP_SIGNUP_REDIRECT,
+            })
+            .then(
+              () => {
+                this.l_show = false
+              },
+              async (err) => {
+                console.log(err)
+              },
+            )
         } catch (error) {
           await Swal.fire('Error', error.message, 'error')
         }
@@ -200,10 +160,8 @@ export default {
         this.newUser = result.additionalUserInfo.isNewUser
 
         if (this.newUser) {
-          this.user = result.user
           this.l_show = false
-          this.facebook = true
-          this.completeInfo = true
+          this.$router.push('/completeInfo')
         } else {
           await Swal.fire('Logged in !', '', 'success')
           this.l_show = false
@@ -212,64 +170,11 @@ export default {
         Swal.fire('Error', error.message, 'error')
       }
     },
-    async uploadUserData() {
-      try {
-        if (this.gender === '') {
-          await Swal.fire('Gender is required', '', 'error')
-          return
-        }
-        if (this.picker === '') {
-          await Swal.fire('Birthday is required', '', 'error')
-          return
-        }
-        if (moment().diff(moment(this.picker), 'years') < 18) {
-          await Swal.fire(
-            'You are under 18 !',
-            'Users under 18 are not allowed',
-            'error',
-          )
-          return
-        }
-        await fb.db
-          .collection('Users')
-          .doc(this.user.uid)
-          .set({
-            name: this.facebook
-              ? this.user.displayName
-              : `${this.txtFname} ${this.txtLname}`,
-            email: this.user.email,
-            country: this.location.country_name,
-            city: this.location.city,
-            number: `${this.selectedCode}${this.number}`,
-            gender: this.gender,
-            birthday: this.picker,
-          })
-        await Swal.fire(
-          'Signed Up !',
-          `Welcome ${this.gender ? 'Mr.' : 'Mrs.'} ${this.user.displayName}`,
-          'success',
-        )
-        this.completeInfo = false
-      } catch (error) {
-        Swal.fire('Error', error.message, 'error')
-      }
-    },
-    async cancle() {
-      await this.user.delete()
-      this.completeInfo = false
-    },
   },
   watch: {
     show: {
       handler(show) {
         this.l_show = show
-      },
-    },
-    location: {
-      handler(location) {
-        this.selectedCode = codesFull.filter(
-          (v) => v.name === location.country_name,
-        )[0].code
       },
     },
   },

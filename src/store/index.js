@@ -8,6 +8,9 @@ export default new Vuex.Store({
     return {
       user: null,
       activePage: '',
+      facebookUser: false,
+      fName: '',
+      lName: '',
     }
   },
   mutations: {
@@ -16,6 +19,15 @@ export default new Vuex.Store({
     },
     activePage: (state, p) => {
       state.activePage = p
+    },
+    facebookUser: (state, p) => {
+      state.facebookUser = p
+    },
+    lName: (state, p) => {
+      state.fName = p
+    },
+    fName: (state, p) => {
+      state.fName = p
     },
   },
 })

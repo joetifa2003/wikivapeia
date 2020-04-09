@@ -22,6 +22,13 @@ const routes = [
     meta: {},
   },
   {
+    path: '/completeInfo',
+    name: 'Complete Info',
+    component: () =>
+      import(/* webpackChunkName: "Home" */ '../views/CompleteInfo.vue'),
+    meta: {},
+  },
+  {
     path: '/admin',
     name: 'Admin',
     component: () =>

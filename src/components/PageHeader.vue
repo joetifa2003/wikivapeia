@@ -27,7 +27,7 @@
 
 <script>
 export default {
-  name: 'Page Header',
+  name: 'PageHeader',
   props: ['title', 'subtitle', 'height'],
   mounted() {},
 }

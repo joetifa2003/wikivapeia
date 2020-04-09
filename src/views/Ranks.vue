@@ -5,7 +5,7 @@
       subtitle="Ranking for mods and automizers, From people for people"
       height="70vh"
     />
-    <v-container fill-height fluid class="d-flex align-start justify-center">
+    <div class="page d-flex align-start justify-center">
       <v-row class="justify-center">
         <v-col cols="12" lg="8">
           <v-row>
@@ -40,13 +40,19 @@
                   <v-icon>arrow_upward</v-icon>
                 </v-btn>
               </v-btn-toggle>
+              <v-combobox
+                class="mt-5"
+                v-model.number="perPage"
+                label="Product per page"
+                :items="[6, 10, 20, 40, 80, 100]"
+              />
             </v-col>
             <v-col cols="12" md="8" class="pt-0">
               <v-row>
                 <v-col
                   cols="12"
                   sm="6"
-                  v-for="product in productList"
+                  v-for="product in visiblePages"
                   :key="product.id"
                 >
                   <ProductItem :product="product" page="Ranks" />
@@ -54,9 +60,14 @@
               </v-row>
             </v-col>
           </v-row>
+          <v-pagination
+            v-model="page"
+            total-visible="10"
+            :length="totalPages"
+          ></v-pagination>
         </v-col>
       </v-row>
-    </v-container>
+    </div>
   </v-container>
 </template>
 
@@ -75,12 +86,14 @@ export default {
   },
   data() {
     return {
-      productList: [],
       productListQ: [],
+      productList: [],
       txtSearch: '',
       sortBy: undefined,
       direction: undefined,
       filterProduct: undefined,
+      page: 1,
+      perPage: 6,
     }
   },
   created() {
@@ -119,9 +132,6 @@ export default {
       var q1 = this.productListQ.filter((v) =>
         v.model.match(new RegExp('.*' + e.target.value + '.*', 'i')),
       )
-      // var q2 = this.productListQ.filter((v) =>
-      //   v.model.match(new RegExp('^' + e.target.value + '.*$', 'i')),
-      // )
       this.productList = sortBy(uniqBy([...q1], 'id'), 'model').reverse()
     },
     async searchSort(sortByy) {
@@ -161,6 +171,17 @@ export default {
         case undefined:
           this.productList = this.productListQ
       }
+    },
+  },
+  computed: {
+    visiblePages() {
+      return this.productList.slice(
+        (this.page - 1) * this.perPage,
+        this.page * this.perPage,
+      )
+    },
+    totalPages() {
+      return Math.ceil(this.productList.length / this.perPage)
     },
   },
 }
