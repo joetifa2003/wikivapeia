@@ -1,12 +1,6 @@
 <template>
   <v-container fluid>
-    <v-dialog
-      @input="$emit('closing', 'yes')"
-      v-model="l_show"
-      width="460px"
-      indeterminate
-      persistent
-    >
+    <v-dialog v-model="l_show" width="460px" indeterminate persistent>
       <v-card width="100%">
         <v-col>
           <div class="d-flex justify-center align-center">
@@ -120,10 +114,12 @@ export default {
   },
   async created() {
     this.l_show = this.show
+    console.log(process.env.VUE_APP_SIGNUP_REDIRECT)
   },
   methods: {
     later() {
       this.l_show = false
+      this.$emit('closing', 'yes')
     },
     async signUp() {
       if (this.validSignUp) {

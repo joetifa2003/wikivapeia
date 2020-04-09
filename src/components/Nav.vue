@@ -123,7 +123,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-dialog width="700px" v-model="vertifyEmailDialog" persistent>
+    <v-dialog v-if="user" width="700px" v-model="vertifyEmailDialog" persistent>
       <v-card width="100%" height="100%">
         <div class="d-flex justify-center align-center">
           <div style="width: 80px; height: 80px;">
@@ -135,7 +135,7 @@
         </div>
         <h2 class="text-center">Please vertify your email to continue</h2>
         <p class="text-center ma-0 mt-5">
-          We have sent an email to example@email.com, Please check your mail !
+          We have sent an email to {{ user.email }}, Please check your mail !
         </p>
       </v-card>
     </v-dialog>
@@ -170,7 +170,11 @@ export default {
       handler(user) {
         if (user) {
           this.$bind('userInfo', fb.db.collection('Users').doc(user.uid))
-          this.vertifyEmailDialog = !user.emailVerified
+          if (user.providerId !== 'facebook.com') {
+            this.vertifyEmailDialog = !user.emailVerified
+          } else {
+            this.vertifyEmailDialog = false
+          }
         }
       },
     },
