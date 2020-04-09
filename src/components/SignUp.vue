@@ -114,7 +114,6 @@ export default {
   },
   async created() {
     this.l_show = this.show
-    console.log(process.env.VUE_APP_SIGNUP_REDIRECT)
   },
   methods: {
     later() {
