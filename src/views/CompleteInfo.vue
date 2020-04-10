@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import moment from 'moment/src/moment'
 import Swal from 'sweetalert2'
 const fb = require('../firebaseConfig')
 import { codesFull, codes } from '../utils/codes'
