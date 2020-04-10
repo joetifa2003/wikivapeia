@@ -1,12 +1,40 @@
 <template>
   <v-container fluid>
     <v-row justify="center">
-      <v-col cols="6" md="8" lg="6">
+      <v-col cols="12" md="6" lg="4">
         <v-card class="pa-5 d-flex justify-center flex-column">
-          <v-form>
+          <v-form v-model="valid">
             <v-card-title class="text-center justify-center mb-4"
               >Complete your registeration</v-card-title
             >
+            <v-row v-if="user.providerId !== 'facebook.com'">
+              <v-col>
+                <v-text-field
+                  :rules="[
+                    (v) => !!v || 'Frist name is required',
+                    (v) =>
+                      v.length >= 3 || 'Name cannot be lese than 3 characters',
+                  ]"
+                  v-model="txtFname"
+                  outlined
+                  label="First name"
+                  type="text"
+                />
+              </v-col>
+              <v-col>
+                <v-text-field
+                  :rules="[
+                    (v) => !!v || 'Last name is required',
+                    (v) =>
+                      v.length >= 3 || 'Name cannot be lese than 3 characters',
+                  ]"
+                  v-model="txtLname"
+                  outlined
+                  label="Last name"
+                  type="text"
+                />
+              </v-col>
+            </v-row>
             <v-subheader class="font-weight-medium" style="font-size: 18px;"
               >Birthday</v-subheader
             >
@@ -51,8 +79,6 @@ import Swal from 'sweetalert2'
 const fb = require('../firebaseConfig')
 import { codesFull, codes } from '../utils/codes'
 import { mapState } from 'vuex'
-import SecureLS from 'secure-ls'
-var ls = new SecureLS({ encodingType: 'aes' })
 
 export default {
   name: 'CompleteInfo',
@@ -64,8 +90,9 @@ export default {
       location: {},
       selectedCode: '',
       codes: codes,
-      fName: ls.get('f'),
-      lName: ls.get('l'),
+      txtFname: '',
+      txtLname: '',
+      valid: false,
     }
   },
   async created() {
@@ -74,52 +101,52 @@ export default {
   },
   methods: {
     async uploadUserData() {
-      try {
-        if (this.gender === '') {
-          await Swal.fire('Gender is required', '', 'error')
-          return
-        }
-        if (this.picker === '') {
-          await Swal.fire('Birthday is required', '', 'error')
-          return
-        }
-        if (moment().diff(moment(this.picker), 'years') < 18) {
+      if (this.valid) {
+        try {
+          if (this.picker === '') {
+            await Swal.fire('Birthday is required', '', 'error')
+            return
+          }
+          if (moment().diff(moment(this.picker), 'years') < 18) {
+            await Swal.fire(
+              'You are under 18 !',
+              'Users under 18 are not allowed',
+              'error',
+            )
+            return
+          }
+          await fb.db
+            .collection('Users')
+            .doc(this.user.uid)
+            .set({
+              name:
+                this.user.providerId === 'facebook.com'
+                  ? this.user.displayName
+                  : `${this.txtFname} ${this.txtLname}`,
+              email: this.user.email,
+              country: this.location.country_name,
+              city: this.location.city,
+              number: `${this.selectedCode}${this.number}`,
+              gender: this.gender,
+              birthday: this.picker,
+            })
           await Swal.fire(
-            'You are under 18 !',
-            'Users under 18 are not allowed',
-            'error',
+            'Signed Up !',
+            `Welcome ${this.gender ? 'Mr.' : 'Mrs.'} ${this.txtFname} ${
+              this.txtLname
+            }`,
+            'success',
           )
-          return
+          this.$router.push('/')
+        } catch (error) {
+          Swal.fire('Error', error.message, 'error')
         }
-        await fb.db
-          .collection('Users')
-          .doc(this.user.uid)
-          .set({
-            name:
-              this.user.providerId === 'facebook.com'
-                ? this.user.displayName
-                : `${this.fName} ${this.lName}`,
-            email: this.user.email,
-            country: this.location.country_name,
-            city: this.location.city,
-            number: `${this.selectedCode}${this.number}`,
-            gender: this.gender,
-            birthday: this.picker,
-          })
-        await Swal.fire(
-          'Signed Up !',
-          `Welcome ${this.gender ? 'Mr.' : 'Mrs.'} ${this.fName} ${this.lName}`,
-          'success',
-        )
-        this.$router.push('/')
-        this.completeInfo = false
-      } catch (error) {
-        Swal.fire('Error', error.message, 'error')
+      } else {
+        await Swal.fire('Complete your form !', '', 'error')
       }
     },
     async cancle() {
       await this.user.delete()
-      this.completeInfo = false
     },
   },
   watch: {

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import SecureLS from 'secure-ls'
 import store from '../store'
+const fb = require('../firebaseConfig')
 
 Vue.use(VueRouter)
 
@@ -100,18 +101,33 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "Product" */ '../views/Privacy.vue'),
   },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () =>
+      import(/* webpackChunkName: "Product" */ '../views/auth/Login.vue'),
+  },
+  {
+    path: '/signUp',
+    name: 'SignUp',
+    component: () =>
+      import(/* webpackChunkName: "Product" */ '../views/auth/SignUp.vue'),
+  },
 ]
 
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes,
+  scrollBehavior() {
+    return { x: 0, y: 0 }
+  },
 })
 
 function checkAdmin(next) {
   if (
     store.state.user !== null &&
-    store.state.user.uid === '07XroEldEudD3dQM0efDi0n2MEn1'
+    store.state.user.uid === process.env.VUE_APP_ADMIN
   ) {
     next()
   } else {
@@ -126,12 +142,31 @@ router.beforeEach((to, from, next) => {
     ls.set('times', 0)
   }
   ls.set('times', ls.get('times') + 1)
-  ls.set('first', ls.get('times') === 1)
-
-  console.log(ls.get('times'))
 
   if (requireAdmin) {
     checkAdmin(next)
+  } else if (to.path === '/completeInfo') {
+    if (store.state.user) {
+      fb.db
+        .collection('Users')
+        .doc(store.state.user.uid)
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            next(from.path)
+          } else {
+            next()
+          }
+        })
+    } else {
+      next(from.path)
+    }
+  } else if (to.path === '/login' || to.path === '/signUp') {
+    if (store.state.user) {
+      next(from.path)
+    } else {
+      next()
+    }
   } else {
     next()
   }

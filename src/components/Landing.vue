@@ -96,13 +96,22 @@ export default {
 
 <style scoped lang="scss">
 .hero-container {
-  background: url('~@/assets/hero.jpg') no-repeat center center fixed;
-  background-size: cover;
-  // background: rgb(131, 131, 131);
-  // background: radial-gradient(
-  //   circle,
-  //   rgba(131, 131, 131, 1) 0%,
-  //   rgba(0, 0, 0, 1) 100%
-  // );
+  background: rgb(47, 47, 47);
+  background: -moz-radial-gradient(
+    circle,
+    rgba(47, 47, 47, 1) 0%,
+    rgba(0, 0, 0, 1) 90%
+  );
+  background: -webkit-radial-gradient(
+    circle,
+    rgba(47, 47, 47, 1) 0%,
+    rgba(0, 0, 0, 1) 90%
+  );
+  background: radial-gradient(
+    circle,
+    rgba(47, 47, 47, 1) 0%,
+    rgba(0, 0, 0, 1) 90%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#2f2f2f",endColorstr="#000000",GradientType=1);
 }
 </style>

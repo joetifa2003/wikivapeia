@@ -1,12 +1,12 @@
 <template>
-  <v-container fill-height fluid class="pa-0 full">
+  <v-container fill-height fluid class="pa-0">
     <PageHeader
       title="Ranks"
       subtitle="Ranking for mods and automizers, From people for people"
       height="70vh"
     />
     <div class="page d-flex align-start justify-center">
-      <v-row class="justify-center">
+      <v-row justify="center" style="width: 100%;">
         <v-col cols="12" lg="8">
           <v-row>
             <v-col>
@@ -44,7 +44,7 @@
                 class="mt-5"
                 v-model.number="perPage"
                 label="Product per page"
-                :items="[6, 10, 20, 40, 80, 100]"
+                :items="[10, 20, 50, 100]"
               />
             </v-col>
             <v-col cols="12" md="8" class="pt-0">
@@ -93,7 +93,7 @@ export default {
       direction: undefined,
       filterProduct: undefined,
       page: 1,
-      perPage: 6,
+      perPage: 10,
     }
   },
   created() {

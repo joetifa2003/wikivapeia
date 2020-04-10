@@ -1,7 +1,5 @@
 <template>
   <div>
-    <SignUp :show="signUp" @closing="signUpDialog()" />
-    <Login :show="login" @closing="loginDialog()" />
     <v-app-bar app dark dense flat color="primary">
       <v-app-bar-nav-icon
         @click.stop="sideBar = !sideBar"
@@ -35,7 +33,7 @@
         >
         <div v-if="!user">
           <v-btn
-            @click.stop="loginDialog()"
+            @click.stop="$router.push('/login')"
             :class="[
               activePage === 'Login' ? 'accent--text' : '',
               'white black--text',
@@ -43,7 +41,7 @@
             >Login</v-btn
           >
           <v-btn
-            @click.stop="signUpDialog()"
+            @click.stop="$router.push('/signUp')"
             :class="activePage === 'SignUp' ? 'accent--text' : ''"
             >Sign up</v-btn
           >
@@ -106,7 +104,7 @@
         </v-list-item>
         <v-list-item v-if="!user">
           <v-btn
-            @click.stop="loginDialog()"
+            @click.stop="$router.push('/login')"
             :class="[
               activePage === 'Login' ? 'accent--text' : '',
               'white black--text',
@@ -116,49 +114,26 @@
         </v-list-item>
         <v-list-item v-if="!user">
           <v-btn
-            @click.stop="signUpDialog()"
+            @click.stop="$router.push('/signUp')"
             :class="activePage === 'SignUp' ? 'accent--text' : ''"
             >Sign up</v-btn
           >
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-dialog v-if="user" width="700px" v-model="vertifyEmailDialog" persistent>
-      <v-card width="100%" height="100%">
-        <div class="d-flex justify-center align-center">
-          <div style="width: 80px; height: 80px;">
-            <v-img
-              src="~@/assets/WikivapeiaLogoBlackNoBg.svg"
-              aspect-ratio="1"
-            ></v-img>
-          </div>
-        </div>
-        <h2 class="text-center">Please vertify your email to continue</h2>
-        <p class="text-center ma-0 mt-5">
-          We have sent an email to {{ user.email }}, Please check your mail !
-        </p>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
 <script>
 import Swal from 'sweetalert2'
 const fb = require('../firebaseConfig')
-import SecureLS from 'secure-ls'
-var ls = new SecureLS({ encodingType: 'aes' })
 import { mapState } from 'vuex'
 
 export default {
   name: 'Nav',
-  components: {
-    SignUp: () => import('../components/SignUp'),
-    Login: () => import('../components/Login'),
-  },
   data() {
     return {
       sideBar: false,
-      signUp: ls.get('first'),
       login: false,
       userInfo: null,
       vertifyEmailDialog: false,
@@ -170,11 +145,6 @@ export default {
       handler(user) {
         if (user) {
           this.$bind('userInfo', fb.db.collection('Users').doc(user.uid))
-          if (user.providerId !== 'facebook.com') {
-            this.vertifyEmailDialog = !user.emailVerified
-          } else {
-            this.vertifyEmailDialog = false
-          }
         } else {
           this.userInfo = false
         }
@@ -190,12 +160,6 @@ export default {
     },
     ranksClick() {
       this.$router.push('/ranks')
-    },
-    signUpDialog() {
-      this.signUp = !this.signUp
-    },
-    loginDialog() {
-      this.login = !this.login
     },
     async logout() {
       const res = await Swal.fire({

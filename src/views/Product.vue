@@ -11,7 +11,6 @@
             :title="`Wikivapeia - ${product.company} ${product.model} Ranking score`"
             :image="product.images[0].image"
           />
-          <SignUp :show="signUp" @closing="signUpDialog()" />
           <v-col>
             <v-row>
               <v-col cols="12" md="6" class="d-flex align-start flex-column">
@@ -270,9 +269,6 @@ const fb = require('../firebaseConfig')
 export default {
   name: 'Product',
   props: ['id'],
-  components: {
-    SignUp: () => import('../components/SignUp'),
-  },
   data() {
     return {
       productID: this.id,
@@ -416,8 +412,7 @@ export default {
       if (this.user) {
         this.voteDialog = true
       } else {
-        console.log(this.user)
-        this.signUp = true
+        this.$router.push('/signUp')
       }
     },
   },
