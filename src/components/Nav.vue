@@ -46,9 +46,12 @@
             >Sign up</v-btn
           >
         </div>
-        <v-menu v-if="userInfo" open-on-hover bottom offset-y>
+        <v-menu v-if="user" open-on-hover bottom offset-y>
           <template v-slot:activator="{ on }">
-            <v-btn color="primary" v-on="on"> Hi, {{ userInfo.name }} </v-btn>
+            <v-btn v-if="userInfo" color="primary" v-on="on">
+              Hi, {{ userInfo.name }}
+            </v-btn>
+            <v-btn v-else color="primary" v-on="on"> Hi, {{ 'Guest' }} </v-btn>
           </template>
 
           <v-list color="primary">

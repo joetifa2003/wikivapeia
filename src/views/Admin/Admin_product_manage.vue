@@ -404,9 +404,11 @@ export default {
         confirmButtonText: 'Yes, delete it!',
       })
       if (res.value) {
-        this.productList.forEach((product) => {
-          this.deleteProduct(product)
-        })
+        this.productList
+          .filter((v) => v.checked === true)
+          .forEach((product) => {
+            this.deleteProduct(product)
+          })
         Swal.fire('Deleted!', 'Your files has been deleted.', 'success')
       }
     },

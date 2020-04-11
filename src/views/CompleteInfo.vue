@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import moment from 'moment/src/moment'
+import differenceInYears from 'date-fns/differenceInYears'
 import Swal from 'sweetalert2'
 const fb = require('../firebaseConfig')
 import { codesFull, codes } from '../utils/codes'
@@ -107,7 +107,7 @@ export default {
             await Swal.fire('Birthday is required', '', 'error')
             return
           }
-          if (moment().diff(moment(this.picker), 'years') < 18) {
+          if (differenceInYears(new Date(), new Date(this.picker)) < 18) {
             await Swal.fire(
               'You are under 18 !',
               'Users under 18 are not allowed',

@@ -116,7 +116,7 @@ export default {
               async () => {},
               async (err) => {
                 console.log(err)
-                await fb.auth.signOut()
+                await user.user.delete()
               },
             )
           this.email = user.user.email

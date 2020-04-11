@@ -347,6 +347,8 @@ export default {
           })
         }
         this.$refs.formRef.reset()
+        this.specs.Atomizer.map((v) => (v.value = 'N/A'))
+        this.specs.Mod.map((v) => (v.value = 'N/A'))
       } catch (error) {
         console.log(error)
         this.progressDialog = false
