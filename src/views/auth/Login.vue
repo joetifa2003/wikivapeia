@@ -62,8 +62,6 @@
 <script>
 import firebase from 'firebase/app'
 const fb = require('../../firebaseConfig')
-import SecureLS from 'secure-ls'
-var ls = new SecureLS({ encodingType: 'aes' })
 import Swal from 'sweetalert2'
 
 export default {
@@ -76,7 +74,6 @@ export default {
   },
   methods: {
     async login() {
-      ls.set('first', false)
       try {
         await fb.auth.signInWithEmailAndPassword(
           this.txtEmail,

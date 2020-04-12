@@ -70,14 +70,30 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-dialog width="700px" v-model="vertifyEmailDialog" persistent>
+      <v-card width="100%" height="100%">
+        <div class="d-flex justify-center align-center">
+          <div style="width: 80px; height: 80px;">
+            <v-img
+              src="~@/assets/WikivapeiaLogoBlackNoBg.svg"
+              aspect-ratio="1"
+            ></v-img>
+          </div>
+        </div>
+        <h2 class="text-center">Please vertify your email to continue</h2>
+        <p class="text-center ma-0 mt-5">
+          We have sent an email to {{ email }}, Please check your mail !
+        </p>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
 import differenceInYears from 'date-fns/differenceInYears'
 import Swal from 'sweetalert2'
-const fb = require('../firebaseConfig')
-import { codesFull, codes } from '../utils/codes'
+const fb = require('../../firebaseConfig')
+import { codesFull, codes } from '../../utils/codes'
 import { mapState } from 'vuex'
 
 export default {
@@ -93,6 +109,8 @@ export default {
       txtFname: '',
       txtLname: '',
       valid: false,
+      email: '',
+      vertifyEmailDialog: false,
     }
   },
   async created() {
@@ -137,7 +155,19 @@ export default {
             }`,
             'success',
           )
-          this.$router.push('/')
+          this.user
+            .sendEmailVerification({
+              url: process.env.VUE_APP_SIGNUP_REDIRECT,
+            })
+            .then(
+              async () => {},
+              async (err) => {
+                console.log(err)
+                await this.user.delete()
+              },
+            )
+          this.email = this.user.email
+          this.vertifyEmailDialog = true
         } catch (error) {
           Swal.fire('Error', error.message, 'error')
         }

@@ -20,6 +20,7 @@ module.exports = {
     'vue-social-sharing',
     'vuefire',
   ],
+  productionSourceMap: false,
   configureWebpack: {
     optimization: {
       runtimeChunk: 'single',

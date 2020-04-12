@@ -9,6 +9,8 @@ import vueHeadful from 'vue-headful'
 var SocialSharing = require('vue-social-sharing')
 
 Vue.config.productionTip = false
+Vue.config.devtools = true
+Vue.config.performance = true
 
 Vue.use(firestorePlugin)
 Vue.use(SocialSharing)

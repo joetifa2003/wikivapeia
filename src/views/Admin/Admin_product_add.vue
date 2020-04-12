@@ -8,12 +8,24 @@
             <v-col>
               <v-row>
                 <v-col cols="12" md="6">
-                  <input
-                    :rules="[(v) => !!v || 'Image is required']"
-                    type="file"
-                    multiple
-                    @change="fileChange"
-                  />
+                  <v-row>
+                    <v-col cols="6">
+                      <div>Product photos</div>
+                      <input
+                        type="file"
+                        multiple
+                        @change="productPhotoChange"
+                      />
+                    </v-col>
+                    <v-col cols="6">
+                      <div>Facebook banner</div>
+                      <input
+                        type="file"
+                        multiple
+                        @change="facebookBannerChange"
+                      />
+                    </v-col>
+                  </v-row>
                   <v-combobox
                     @input="productChange"
                     :items="productList"
@@ -216,7 +228,6 @@ export default {
       featureList: [],
       selectedProduct: '',
       selectedFeatures: [],
-      files: [],
       progressDialog: false,
       txtCompany: '',
       txtModel: '',
@@ -269,6 +280,8 @@ export default {
         ],
       },
       valid: false,
+      productPhotos: [],
+      facebookBanner: [],
     }
   },
   async created() {
@@ -294,21 +307,35 @@ export default {
         ]
       }
     },
-    fileChange(event) {
-      this.files = event.target.files
+    productPhotoChange(event) {
+      let files = event.target.files
+      for (let file of files) {
+        this.productPhotos.push({ image: file, type: 'product' })
+      }
+    },
+    facebookBannerChange() {
+      let files = event.target.files
+      for (let file of files) {
+        this.facebookBanner.push({ image: file, type: 'facebook' })
+      }
     },
     async addProduct() {
       var imageUrls = []
       this.progressDialog = true
+      if (this.productPhotos.length === 0) {
+        await Swal.fire('Image is required', '', 'warning')
+        return
+      }
       try {
-        for (let i = 0; i < this.files.length; i++) {
-          const file = this.files[i]
-          var fileCompressed = await imageCompression(file, {
+        let files = [...this.facebookBanner, ...this.productPhotos]
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          var fileCompressed = await imageCompression(file.image, {
             maxSizeMB: 1,
             useWebWorker: true,
             onProgress: () => {},
           })
-          const filename = uuid() + '.' + file.name.split('.').pop()
+          const filename = uuid() + '.' + file.image.name.split('.').pop()
           const snapshot = await fb.st
             .ref()
             .child('Products')
@@ -321,6 +348,7 @@ export default {
             index: i,
             image: downloadURL,
             imageName: filename,
+            type: file.type,
           })
         }
         if (this.selectedProduct === 'Atomizer') {

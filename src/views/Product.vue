@@ -9,7 +9,9 @@
         <v-card v-if="product" width="100%" elevation="0">
           <vue-headful
             :title="`Wikivapeia - ${product.company} ${product.model} Ranking score`"
-            :image="product.images[0].image"
+            :image="
+              product.images.filter((v) => v.type === 'facebook')[0].image
+            "
           />
           <v-col>
             <v-row>
@@ -20,10 +22,7 @@
                   hide-delimiter-background
                   show-arrows-on-hover
                 >
-                  <v-carousel-item
-                    v-for="(image, i) in product.images"
-                    :key="i"
-                  >
+                  <v-carousel-item v-for="(image, i) in images" :key="i">
                     <v-img
                       contain
                       width="100%"
@@ -315,6 +314,9 @@ export default {
   },
   computed: {
     ...mapState(['user']),
+    images() {
+      return this.product.images.filter((v) => v.type === 'product')
+    },
   },
   firestore() {
     return {

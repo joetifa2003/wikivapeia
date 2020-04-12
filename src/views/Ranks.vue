@@ -73,14 +73,13 @@
 
 <script>
 import { sortBy, uniqBy } from 'lodash'
-import PageHeader from '../components/PageHeader'
 import store from '../store'
 const fb = require('../firebaseConfig')
 
 export default {
   name: 'Ranks',
   components: {
-    PageHeader,
+    PageHeader: () => import('../components/PageHeader.vue'),
     ProductItem: () => import('../components/Items/ProductItem'),
     // SignUp: () => import('../components/SignUp'),
   },

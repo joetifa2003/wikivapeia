@@ -57,22 +57,6 @@
         </v-col>
       </v-row>
     </div>
-    <v-dialog width="700px" v-model="vertifyEmailDialog" persistent>
-      <v-card width="100%" height="100%">
-        <div class="d-flex justify-center align-center">
-          <div style="width: 80px; height: 80px;">
-            <v-img
-              src="~@/assets/WikivapeiaLogoBlackNoBg.svg"
-              aspect-ratio="1"
-            ></v-img>
-          </div>
-        </div>
-        <h2 class="text-center">Please vertify your email to continue</h2>
-        <p class="text-center ma-0 mt-5">
-          We have sent an email to {{ email }}, Please check your mail !
-        </p>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
@@ -92,8 +76,6 @@ export default {
       completeInfo: false,
       newUser: false,
       validSignUp: true,
-      email: '',
-      vertifyEmailDialog: false,
     }
   },
   methods: {
@@ -104,23 +86,11 @@ export default {
     async signUp() {
       if (this.validSignUp) {
         try {
-          let user = await fb.auth.createUserWithEmailAndPassword(
+          await fb.auth.createUserWithEmailAndPassword(
             this.txtEmail,
             this.txtPassword,
           )
-          user.user
-            .sendEmailVerification({
-              url: process.env.VUE_APP_SIGNUP_REDIRECT,
-            })
-            .then(
-              async () => {},
-              async (err) => {
-                console.log(err)
-                await user.user.delete()
-              },
-            )
-          this.email = user.user.email
-          this.vertifyEmailDialog = true
+          this.$router.push('/completeInfo')
         } catch (error) {
           if (error.code === 'auth/email-already-in-use') {
             await Swal.fire('Email already signed up', error.message, 'warning')

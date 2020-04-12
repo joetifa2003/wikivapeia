@@ -1,6 +1,6 @@
 <template>
   <v-container fill-height :style="{ height: height }" fluid class="pa-0 main">
-    <v-container fill-height fluid class="hero-container pa-0">
+    <v-img width="100%" height="100%" src="~@/assets/hero.jpg" class="imgCover">
       <v-container fill-height fluid class="pa-0 hero justify-center">
         <v-col class="text-center">
           <h1
@@ -21,7 +21,7 @@
           </v-row>
         </v-col>
       </v-container>
-    </v-container>
+    </v-img>
   </v-container>
 </template>
 
@@ -34,10 +34,6 @@ export default {
 </script>
 
 <style lang="scss">
-.hero-container {
-  background: url('~@/assets/hero.jpg') no-repeat center center fixed;
-  background-size: cover;
-}
 .hero {
   background-color: rgba(0, 0, 0, 0.5);
 }

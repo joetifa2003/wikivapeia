@@ -26,7 +26,9 @@ const routes = [
     path: '/completeInfo',
     name: 'Complete Info',
     component: () =>
-      import(/* webpackChunkName: "Home" */ '../views/CompleteInfo.vue'),
+      import(
+        /* webpackChunkName: "CompleteInfo" */ '../views/auth/CompleteInfo.vue'
+      ),
     meta: {},
   },
   {
@@ -99,19 +101,19 @@ const routes = [
     path: '/privacy',
     name: 'Privacy',
     component: () =>
-      import(/* webpackChunkName: "Product" */ '../views/Privacy.vue'),
+      import(/* webpackChunkName: "Privacy" */ '../views/Privacy.vue'),
   },
   {
     path: '/login',
     name: 'Login',
     component: () =>
-      import(/* webpackChunkName: "Product" */ '../views/auth/Login.vue'),
+      import(/* webpackChunkName: "Login" */ '../views/auth/Login.vue'),
   },
   {
     path: '/signUp',
     name: 'SignUp',
     component: () =>
-      import(/* webpackChunkName: "Product" */ '../views/auth/SignUp.vue'),
+      import(/* webpackChunkName: "SignUp" */ '../views/auth/SignUp.vue'),
   },
 ]
 

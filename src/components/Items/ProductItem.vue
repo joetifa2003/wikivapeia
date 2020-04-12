@@ -60,7 +60,7 @@
           />
         </div>
       </v-overlay>
-      <v-img :src="product.images[0].image" height="250px" contain />
+      <v-img :src="image" height="250px" contain />
       <v-row>
         <v-col class="pa-0">
           <v-card-title>{{ product.model }}</v-card-title>
@@ -93,6 +93,11 @@
 export default {
   name: 'Product_item',
   props: ['product', 'page'],
+  computed: {
+    image() {
+      return this.product.images.filter((v) => v.type === 'product')[0].image
+    },
+  },
 }
 </script>
 
