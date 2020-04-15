@@ -17,6 +17,12 @@
                 @click.stop="$router.push('/admin/product/manage')"
                 >Manage product</v-btn
               >
+              <v-btn
+                width="100%"
+                class="primary white--text mt-5"
+                @click.stop="$router.push('/admin/specs')"
+                >Manage specs</v-btn
+              >
             </v-col>
             <v-col>
               <v-btn

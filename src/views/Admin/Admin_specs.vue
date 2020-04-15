@@ -9,34 +9,34 @@
               v-model="product"
               label="Product"
             />
-            <v-row>
-              <v-col class="d-flex align-center">
-                <v-text-field v-model="specName" label="Name"></v-text-field>
-              </v-col>
-              <v-col class="d-flex align-center">
-                <v-combobox
-                  label="Field type"
-                  :items="['Textfield', 'Combobox']"
-                  v-model="fieldType"
-                />
-              </v-col>
-              <v-col>
-                <v-combobox
-                  label="Unit"
-                  :items="['g', 'mm', 'mAH']"
-                  v-model="unit"
-                />
-              </v-col>
-              <v-col class="d-flex align-center">
-                <v-combobox
-                  v-if="fieldType === 'Combobox'"
-                  v-model="values"
-                  chips
-                  multiple
-                  label="Items"
-                />
-              </v-col>
-            </v-row>
+            <v-form ref="formRef">
+              <v-row>
+                <v-col class="d-flex align-center">
+                  <v-text-field v-model="specName" label="Name"></v-text-field>
+                </v-col>
+                <v-col class="d-flex align-center">
+                  <v-combobox
+                    label="Field type"
+                    :items="['Textfield', 'Combobox']"
+                    v-model="fieldType"
+                  />
+                </v-col>
+                <v-col class="d-flex align-center">
+                  <v-combobox
+                    label="Unit"
+                    :items="['g', 'mm', 'mAH']"
+                    v-model="unit"
+                  />
+                </v-col>
+              </v-row>
+              <v-combobox
+                v-if="fieldType === 'Combobox'"
+                v-model="values"
+                chips
+                multiple
+                label="Items"
+              />
+            </v-form>
             <v-row class="justify-space-around">
               <v-col>
                 <v-btn @click.stop="addSpec" class="primary white--text"
@@ -74,7 +74,11 @@
               </v-row>
               <v-row>
                 <v-col>
-                  <v-btn class="red white--text mt-4">Delete</v-btn>
+                  <v-btn
+                    @click="deleteSpec(spec.id)"
+                    class="red white--text mt-4"
+                    >Delete</v-btn
+                  >
                 </v-col>
                 <v-col class="d-flex justify-end">
                   <div>
@@ -111,6 +115,7 @@ export default {
       specName: '',
       unit: '',
       sortedArray: [],
+      values: [],
     }
   },
   firestore() {
@@ -169,6 +174,7 @@ export default {
           })
           break
       }
+      this.$refs.formRef.reset()
     },
     // eslint-disable-next-line no-unused-vars
     async reIndex(index, upDown) {
@@ -177,9 +183,13 @@ export default {
         if (upDown === 'up') {
           array[index].index += -1
           array[index - 1].index += 1
+          Object.assign(array[index], { indexChanged: true })
+          Object.assign(array[index - 1], { indexChanged: true })
         } else {
           array[index].index += 1
           array[index + 1].index += -1
+          Object.assign(array[index], { indexChanged: true })
+          Object.assign(array[index + 1], { indexChanged: true })
         }
         array = sortBy(array, 'index')
         for (let i = 0; i < array.length; i++) {
@@ -201,6 +211,24 @@ export default {
           .update({ index: spec.index })
       }
       Swal.fire('Updated !', '', 'success')
+    },
+    async deleteSpec(specID) {
+      const res = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      })
+      if (res.value) {
+        if (this.product === 'Mods') {
+          await fb.db.collection('ModSpecs').doc(specID).delete()
+        } else {
+          await fb.db.collection('AtomizerSpecs').doc(specID).delete()
+        }
+      }
     },
   },
 }
