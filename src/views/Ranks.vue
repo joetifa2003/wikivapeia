@@ -15,7 +15,7 @@
                 filled
                 v-model="txtSearch"
                 single-line
-                @keydown.enter="search"
+                @input="search"
               ></v-text-field>
               <v-subheader>Product</v-subheader>
               <v-divider />
@@ -72,9 +72,10 @@
 </template>
 
 <script>
-import { sortBy, uniqBy } from 'lodash'
+import { sortBy } from 'lodash'
 import store from '../store'
 const fb = require('../firebaseConfig')
+import Fuse from 'fuse.js'
 
 export default {
   name: 'Ranks',
@@ -93,6 +94,7 @@ export default {
       filterProduct: undefined,
       page: 1,
       perPage: 10,
+      searchIndex: null,
     }
   },
   created() {
@@ -105,8 +107,10 @@ export default {
   },
   watch: {
     productListQ: {
+      immediate: true,
       handler(productListQ) {
         this.productList = productListQ
+        this.buildIndex(this.productListQ)
       },
     },
     sortBy: {
@@ -127,11 +131,10 @@ export default {
     },
   },
   methods: {
-    async search(e) {
-      var q1 = this.productListQ.filter((v) =>
-        v.model.match(new RegExp('.*' + e.target.value + '.*', 'i')),
-      )
-      this.productList = sortBy(uniqBy([...q1], 'id'), 'model').reverse()
+    search() {
+      this.productList = this.searchedList
+      this.searchFilter(this.filterProduct)
+      this.searchSort(this.sortBy)
     },
     async searchSort(sortByy) {
       switch (sortByy) {
@@ -160,16 +163,24 @@ export default {
     searchFilter(filterProduct) {
       switch (filterProduct) {
         case 0:
-          this.productList = this.productListQ.filter(
+          this.productList = this.searchedList.filter(
             (v) => v.type === 'Atomizer',
           )
           break
         case 1:
-          this.productList = this.productListQ.filter((v) => v.type === 'Mod')
+          this.productList = this.searchedList.filter((v) => v.type === 'Mod')
           break
         case undefined:
-          this.productList = this.productListQ
+          this.productList = this.searchedList
       }
+    },
+    buildIndex(docs) {
+      this.searchIndex = new Fuse(docs, {
+        caseSensitive: false,
+        includeScore: true,
+        keys: ['model'],
+        shouldSort: false,
+      })
     },
   },
   computed: {
@@ -181,6 +192,9 @@ export default {
     },
     totalPages() {
       return Math.ceil(this.productList.length / this.perPage)
+    },
+    searchedList() {
+      return this.searchIndex.search(this.txtSearch).map((v) => v.item)
     },
   },
 }

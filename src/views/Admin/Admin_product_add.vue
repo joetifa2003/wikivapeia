@@ -28,7 +28,7 @@
                   </v-row>
                   <v-combobox
                     @input="productChange"
-                    :items="productList"
+                    :items="['Mod', 'Atomizer']"
                     :rules="[(v) => !!v || 'Product type is required']"
                     clearable
                     label="Select product type"
@@ -57,96 +57,39 @@
                   />
                   <!--- specs -->
                   <div v-if="selectedProduct === 'Atomizer'">
-                    <v-text-field
-                      v-model="specs.Atomizer[0].value"
-                      label="Capacity up to"
-                      :rules="[
-                        (v) =>
-                          !!v || v === 'N/A' || 'Please enter value or N/A',
-                      ]"
-                    />
-                    <v-text-field
-                      v-model="specs.Atomizer[1].value"
-                      label="Base Diameter"
-                      :rules="[
-                        (v) =>
-                          !!v || v === 'N/A' || 'Please enter value or N/A',
-                      ]"
-                    />
-                    <v-combobox
-                      v-model="specs.Atomizer[2].value"
-                      label="Coil type"
-                      :rules="[(v) => !!v || 'Coil type is required']"
-                      clearable
-                      :items="['Mesh', 'Wire', 'Sub ohm']"
-                    />
-                    <v-combobox
-                      v-model="specs.Atomizer[3].value"
-                      label="Drip tip size"
-                      :rules="[(v) => !!v || 'Dript tip size is required']"
-                      clearable
-                      :items="['510', '810', 'Multi']"
-                    />
+                    <v-row>
+                      <v-col
+                        v-for="spec in atomizerSpecs"
+                        :key="spec.id"
+                        cols="6"
+                      >
+                        <v-combobox
+                          v-if="spec.isCombo"
+                          :items="spec.values"
+                          :label="spec.name"
+                          v-model="spec.value"
+                        />
+                        <v-text-field
+                          v-else
+                          :label="spec.name"
+                          v-model="spec.value"
+                        />
+                      </v-col>
+                    </v-row>
                   </div>
                   <div v-if="selectedProduct === 'Mod'">
                     <v-row>
-                      <v-col cols="6">
-                        <v-text-field
-                          v-model="specs.Mod[0].value"
-                          :label="specs.Mod[0].name"
-                          :rules="[
-                            (v) =>
-                              !!v || v === 'N/A' || 'Please enter value or N/A',
-                          ]"
-                        />
+                      <v-col v-for="spec in modSpecs" :key="spec.id" cols="6">
                         <v-combobox
-                          v-model="specs.Mod[1].value"
-                          :label="specs.Mod[1].name"
-                          clearable
-                          :items="['Builtin', 'External']"
-                          :rules="[
-                            (v) => !!v || `${specs.Mod[3].name} is required`,
-                          ]"
+                          v-if="spec.isCombo"
+                          :items="spec.values"
+                          :label="spec.name"
+                          v-model="spec.value"
                         />
                         <v-text-field
-                          v-model="specs.Mod[2].value"
-                          :label="specs.Mod[2].name"
-                          :rules="[
-                            (v) =>
-                              !!v || v === 'N/A' || 'Please enter value or N/A',
-                          ]"
-                        />
-                      </v-col>
-                      <v-col cols="6">
-                        <v-combobox
-                          v-model="specs.Mod[3].value"
-                          :label="specs.Mod[3].name"
-                          clearable
-                          :items="['Yes', 'No']"
-                          :rules="[(v) => !!v || 'Fast charge is required']"
-                        />
-                        <v-combobox
-                          v-model="specs.Mod[4].value"
-                          :label="specs.Mod[4].name"
-                          clearable
-                          :items="['Yes', 'No']"
-                          :rules="[(v) => !!v || 'Touch screen is required']"
-                        />
-                        <v-text-field
-                          v-model="specs.Mod[5].value"
-                          :label="specs.Mod[5].name"
-                          :rules="[
-                            (v) =>
-                              !!v || v === 'N/A' || 'Please enter value or N/A',
-                          ]"
-                        />
-                        <v-text-field
-                          v-model="specs.Mod[6].value"
-                          :label="specs.Mod[6].name"
-                          :rules="[
-                            (v) =>
-                              !!v || v === 'N/A' || 'Please enter value or N/A',
-                          ]"
+                          v-else
+                          :label="spec.name"
+                          v-model="spec.value"
                         />
                       </v-col>
                     </v-row>
@@ -224,7 +167,6 @@ export default {
         'IJoy',
         'Dotmod',
       ],
-      productList: ['Mod', 'Atomizer', 'Pod'],
       featureList: [],
       selectedProduct: '',
       selectedFeatures: [],
@@ -232,60 +174,21 @@ export default {
       txtCompany: '',
       txtModel: '',
       txtDesc: '',
-      specs: {
-        Atomizer: [
-          { name: 'Capacity up to', icon: 'opacity', value: 'N/A', unit: 'mm' },
-          { name: 'Diameter', icon: '360', value: 'N/A', unit: 'mm' },
-          { name: 'Coil type', icon: 'broken_image', value: 'N/A', unit: '' },
-          {
-            name: 'Drip tip size',
-            icon: 'filter_tilt_shift',
-            value: 'N/A',
-            unit: '',
-          },
-        ],
-        Mod: [
-          {
-            name: 'Power output',
-            icon: 'speed',
-            value: 'N/A',
-            unit: 'mah',
-          },
-          {
-            name: 'Power supply',
-            icon: 'battery_unknown',
-            value: 'N/A',
-            unit: '',
-          },
-          {
-            name: 'Power capacity',
-            icon: 'battery_charging_full',
-            value: 'N/A',
-            unit: 'mah',
-          },
-          {
-            name: 'Fast charge',
-            icon: 'offline_bolt',
-            value: 'N/A',
-            unit: '',
-          },
-          { name: 'Touch screen', icon: 'touch_app', value: 'N/A', unit: '' },
-          {
-            name: 'Weight (without battery)',
-            icon: 'fitness_center',
-            value: 'N/A',
-            unit: 'g',
-          },
-          { name: 'Dimention', icon: 'zoom_out_map', value: 'N/A', unit: 'mm' },
-        ],
-      },
       valid: false,
       productPhotos: [],
       facebookBanner: [],
+      modSpecs: [],
+      atomizerSpecs: [],
     }
   },
   async created() {
     this.companies = orderBy(this.companies)
+  },
+  firestore() {
+    return {
+      modSpecs: fb.db.collection('ModSpecs'),
+      atomizerSpecs: fb.db.collection('AtomizerSpecs'),
+    }
   },
   methods: {
     productChange(v) {
@@ -359,7 +262,7 @@ export default {
             desc: this.txtDesc.replace(/\n/g, '<br>'),
             images: imageUrls,
             features: this.selectedFeatures,
-            specs: this.specs.Atomizer,
+            specs: this.atomizerSpecs,
             lastScore: 0,
           })
         } else if (this.selectedProduct === 'Mod') {
@@ -370,7 +273,7 @@ export default {
             desc: this.txtDesc.replace(/\n/g, '<br>'),
             images: imageUrls,
             features: this.selectedFeatures,
-            specs: this.specs.Mod,
+            specs: this.modSpecs,
             lastScore: 0,
           })
         }

@@ -85,6 +85,17 @@ const routes = [
     },
   },
   {
+    path: '/admin/specs',
+    name: 'Admin specs',
+    component: () =>
+      import(
+        /* webpackChunkName: "Admin_banner_manage" */ '../views/Admin/Admin_specs.vue'
+      ),
+    meta: {
+      requireAdmin: true,
+    },
+  },
+  {
     path: '/ranks',
     name: 'Ranks',
     component: () =>
