@@ -30,9 +30,11 @@
                 <v-text-field
                   :rules="[(v) => !!v || 'Password is required']"
                   v-model="txtPassword"
-                  outlined
+                  :append-icon="show1 ? 'visibility' : 'visibility_off'"
+                  :type="show1 ? 'text' : 'password'"
                   label="Password"
-                  type="password"
+                  outlined
+                  @click:append="show1 = !show1"
                 />
               </v-form>
               <v-btn
@@ -76,6 +78,7 @@ export default {
       completeInfo: false,
       newUser: false,
       validSignUp: true,
+      show1: false,
     }
   },
   methods: {

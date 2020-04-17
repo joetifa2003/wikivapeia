@@ -92,7 +92,7 @@
                 <v-row>
                   <v-col>
                     <h1 class="font-weight-medium" style="font-size: 30px;">
-                      {{ product.model }}
+                      {{ product.model.toUpperCase() }}
                     </h1>
                     <div
                       class="pa-0 font-weight-medium grey--text lighten-2"
@@ -179,7 +179,7 @@
                   >Specifications</v-subheader
                 >
                 <v-divider />
-                <v-row v-for="(spec, i) in product.specs" :key="i">
+                <v-row v-for="(spec, i) in specs" :key="i">
                   <v-col cols="6">
                     <div class="d-flex align-center">
                       <v-icon class="mr-2">{{ spec.icon }}</v-icon>
@@ -187,7 +187,7 @@
                     </div>
                   </v-col>
                   <v-col>
-                    <div class="d-flex flex-row justify-end">
+                    <div class="d-flex flex-row justify-start">
                       <div>{{ spec.value }}</div>
                       <div class="ml-2">{{ spec.unit }}</div>
                     </div>
@@ -260,7 +260,7 @@
 
 <script>
 import Swal from 'sweetalert2'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, sortBy } from 'lodash'
 import { mapState } from 'vuex'
 
 const fb = require('../firebaseConfig')
@@ -316,6 +316,9 @@ export default {
     ...mapState(['user']),
     images() {
       return this.product.images.filter((v) => v.type === 'product')
+    },
+    specs() {
+      return sortBy(this.product.specs, 'index')
     },
   },
   firestore() {

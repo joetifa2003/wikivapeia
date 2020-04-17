@@ -9,12 +9,65 @@
       <v-toolbar-title>
         <div class="d-flex flex-row align-end">
           <v-img width="35" src="~@/assets/WikivapeiaLogo.svg" />
-          <div class="font-weight-medium">Wikivapeia</div>
+          <div @click="$router.push('/')" class="font-weight-medium homee">
+            Wikivapeia
+          </div>
         </div>
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
-
+      <div
+        v-if="$vuetify.breakpoint.mdAndUp"
+        :style="{
+          height: '100%',
+          width: $vuetify.breakpoint.lgAndUp ? '400px' : '300px',
+        }"
+        class="d-flex align-center"
+      >
+        <v-autocomplete
+          v-model="searchSelected"
+          append-outer-icon="search"
+          append-icon=""
+          hide-details
+          filled
+          rounded
+          dense
+          clearable
+          :items="products"
+          placeholder="Search"
+          item-text="model"
+          item-value="model"
+          return-object
+        >
+          <template v-slot:item="{ parent, item }">
+            <v-list-item-avatar tile size="70">
+              <v-img
+                :src="item.images.filter((v) => v.type === 'product')[0].image"
+              />
+            </v-list-item-avatar>
+            <v-list-item-content>
+              <v-list-item-title
+                v-html="parent.genFilteredText(item.model.toUpperCase())"
+              ></v-list-item-title>
+              <v-list-item-subtitle
+                v-html="item.company.toUpperCase()"
+              ></v-list-item-subtitle>
+              <v-list-item-subtitle>
+                <v-chip
+                  v-for="(feature, i) in item.features"
+                  :key="i"
+                  class="mr-2 mt-2 font-weight-medium"
+                  style="font-size: 10px;"
+                  >{{ feature }}</v-chip
+                >
+              </v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
+        </v-autocomplete>
+      </div>
+      <v-icon size="30" v-else @click.stop="searchExpand = !searchExpand"
+        >search</v-icon
+      >
       <div
         v-if="$vuetify.breakpoint.mdAndUp && activePage != ''"
         class="d-flex flex-row"
@@ -23,13 +76,15 @@
           text
           @click.stop="homeClick"
           :class="activePage === 'Home' ? 'accent--text' : ''"
-          >Home</v-btn
+        >
+          <v-icon class="mr-2">home</v-icon> Home</v-btn
         >
         <v-btn
           text
           @click.stop="ranksClick"
           :class="activePage === 'Ranks' ? 'accent--text' : ''"
-          >Ranks</v-btn
+        >
+          <v-icon class="mr-2">sort</v-icon>Ranks</v-btn
         >
         <div v-if="!user">
           <v-btn
@@ -48,10 +103,12 @@
         </div>
         <v-menu v-if="user" open-on-hover bottom offset-y>
           <template v-slot:activator="{ on }">
-            <v-btn v-if="userInfo" color="primary" v-on="on">
-              Hi, {{ userInfo.name }}
+            <v-btn v-if="userInfo" color="" v-on="on">
+              <v-icon class="mr-2">account_circle</v-icon> {{ userInfo.name }}
             </v-btn>
-            <v-btn v-else color="primary" v-on="on"> Hi, {{ 'Guest' }} </v-btn>
+            <v-btn v-else color="primary" v-on="on">
+              <v-icon class="mr-2">account_circle</v-icon> {{ 'Guest' }}
+            </v-btn>
           </template>
 
           <v-list color="primary">
@@ -64,7 +121,55 @@
           </v-list>
         </v-menu>
       </div>
+      <v-expand-transition>
+        <div v-show="searchExpand" class="primary searchBar ml-n4">
+          <v-autocomplete
+            v-model="searchSelected"
+            append-icon=""
+            hide-details
+            filled
+            rounded
+            dense
+            clearable
+            :items="products"
+            placeholder="Search"
+            item-text="model"
+            item-value="model"
+            return-object
+          >
+            <template v-slot:item="{ parent, item }">
+              <v-list-item-avatar tile size="70">
+                <v-img
+                  :src="
+                    item.images.filter((v) => v.type === 'product')[0].image
+                  "
+                />
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title
+                  v-html="parent.genFilteredText(item.model.toUpperCase())"
+                ></v-list-item-title>
+                <v-list-item-subtitle
+                  v-html="item.company.toUpperCase()"
+                ></v-list-item-subtitle>
+                <v-list-item-subtitle>
+                  <div>
+                    <v-chip
+                      v-for="(feature, i) in item.features"
+                      :key="i"
+                      class="mr-2 mt-2 font-weight-medium"
+                      style="font-size: 10px;"
+                      >{{ feature }}</v-chip
+                    >
+                  </div>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </template>
+          </v-autocomplete>
+        </div>
+      </v-expand-transition>
     </v-app-bar>
+
     <v-navigation-drawer
       class="onTop"
       app
@@ -74,9 +179,14 @@
     >
       <v-list dense nav>
         <v-list-item>
-          <v-menu v-if="userInfo" open-on-hover bottom offset-y>
+          <v-menu v-if="user" open-on-hover bottom offset-y>
             <template v-slot:activator="{ on }">
-              <v-btn color="primary" v-on="on"> Hi, {{ userInfo.name }} </v-btn>
+              <v-btn v-if="userInfo" color="" v-on="on">
+                <v-icon class="mr-2">account_circle</v-icon> {{ userInfo.name }}
+              </v-btn>
+              <v-btn v-else color="primary" v-on="on">
+                <v-icon class="mr-2">account_circle</v-icon> {{ 'Guest' }}
+              </v-btn>
             </template>
 
             <v-list color="primary">
@@ -94,7 +204,8 @@
             text
             @click.stop="homeClick"
             :class="activePage === 'Home' ? 'accent--text' : ''"
-            >Home</v-btn
+          >
+            <v-icon class="mr-2">home</v-icon> Home</v-btn
           >
         </v-list-item>
         <v-list-item>
@@ -102,7 +213,8 @@
             text
             @click.stop="ranksClick"
             :class="activePage === 'Ranks' ? 'accent--text' : ''"
-            >Ranks</v-btn
+          >
+            <v-icon class="mr-2">sort</v-icon>Ranks</v-btn
           >
         </v-list-item>
         <v-list-item v-if="!user">
@@ -140,6 +252,14 @@ export default {
       login: false,
       userInfo: null,
       vertifyEmailDialog: false,
+      products: null,
+      searchSelected: {},
+      searchExpand: false,
+    }
+  },
+  firestore() {
+    return {
+      products: fb.db.collection('Products'),
     }
   },
   watch: {
@@ -151,6 +271,11 @@ export default {
         } else {
           this.userInfo = false
         }
+      },
+    },
+    searchSelected: {
+      handler(searchSelected) {
+        this.$router.push(`/product/${searchSelected.id}`)
       },
     },
   },
@@ -186,4 +311,15 @@ export default {
 /* .onTop {
   z-index: 500;
 } */
+
+.homee {
+  cursor: pointer;
+}
+.searchBar {
+  height: 50px;
+  width: 100%;
+  position: fixed;
+  top: 48px;
+  z-index: 3;
+}
 </style>

@@ -28,9 +28,11 @@
                 />
                 <v-text-field
                   v-model="txtPassword"
-                  outlined
+                  :append-icon="show1 ? 'visibility' : 'visibility_off'"
+                  :type="show1 ? 'text' : 'password'"
                   label="Password"
-                  type="password"
+                  outlined
+                  @click:append="show1 = !show1"
                 />
               </v-form>
               <v-btn
@@ -70,6 +72,7 @@ export default {
     return {
       txtEmail: '',
       txtPassword: '',
+      show1: false,
     }
   },
   methods: {

@@ -7,19 +7,72 @@
           <v-form v-model="valid" ref="formRef">
             <v-col>
               <v-row>
-                <v-col cols="12" md="6">
+                <v-col cols="12">
                   <v-row>
                     <v-col cols="6">
-                      <div>Product photos</div>
+                      <v-carousel
+                        style="width: 200px;"
+                        height="100"
+                        cycle
+                        hide-delimiter-background
+                        hide-delimiters
+                        show-arrows-on-hover
+                      >
+                        <v-carousel-item
+                          v-for="(image, i) in productImagesPreview"
+                          :key="i"
+                        >
+                          <v-img
+                            contain
+                            width="100%"
+                            height="100%"
+                            :src="image"
+                          >
+                            <div
+                              style="width: 100%; height: 100%;"
+                              class="d-flex align-end justify-center"
+                            >
+                              <v-btn
+                                text
+                                @click="productPhotos.splice(i, 1)"
+                                class="white--text"
+                                >X</v-btn
+                              >
+                            </div>
+                          </v-img>
+                        </v-carousel-item>
+                      </v-carousel>
+                      <div>Product images</div>
                       <input
+                        style="width: 108px;"
                         type="file"
                         multiple
                         @change="productPhotoChange"
                       />
                     </v-col>
                     <v-col cols="6">
-                      <div>Facebook banner</div>
+                      <v-carousel
+                        style="width: 200px;"
+                        height="100"
+                        cycle
+                        hide-delimiter-background
+                        show-arrows-on-hover
+                      >
+                        <v-carousel-item
+                          v-for="(image, i) in facebookImagesPreview"
+                          :key="i"
+                        >
+                          <v-img
+                            contain
+                            width="100%"
+                            height="100%"
+                            :src="image"
+                          />
+                        </v-carousel-item>
+                      </v-carousel>
+                      <div>Facebook image</div>
                       <input
+                        style="width: 108px;"
                         type="file"
                         multiple
                         @change="facebookBannerChange"
@@ -95,7 +148,7 @@
                     </v-row>
                   </div>
                 </v-col>
-                <v-col cols="12" md="6">
+                <v-col cols="12">
                   <v-textarea
                     label="Descreption"
                     class="mt-12"
@@ -179,6 +232,8 @@ export default {
       facebookBanner: [],
       modSpecs: [],
       atomizerSpecs: [],
+      productImagesPreview: [],
+      facebookImagesPreview: [],
     }
   },
   async created() {
@@ -186,9 +241,25 @@ export default {
   },
   firestore() {
     return {
-      modSpecs: fb.db.collection('ModSpecs'),
-      atomizerSpecs: fb.db.collection('AtomizerSpecs'),
+      modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
+      atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
     }
+  },
+  watch: {
+    productPhotos: {
+      handler() {
+        this.productImagesPreview = [
+          ...this.productPhotos.map((v) => URL.createObjectURL(v.image)),
+        ]
+      },
+    },
+    facebookBanner: {
+      handler() {
+        this.facebookImagesPreview = [
+          ...this.facebookBanner.map((v) => URL.createObjectURL(v.image)),
+        ]
+      },
+    },
   },
   methods: {
     productChange(v) {
@@ -217,6 +288,7 @@ export default {
       }
     },
     facebookBannerChange() {
+      this.facebookBanner = []
       let files = event.target.files
       for (let file of files) {
         this.facebookBanner.push({ image: file, type: 'facebook' })

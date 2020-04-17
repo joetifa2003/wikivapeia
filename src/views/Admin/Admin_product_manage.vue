@@ -515,6 +515,7 @@ export default {
           index: 0,
           image: downloadURL,
           imageName: filename,
+          type: file.type,
         })
       }
       this.progressDialog = false
