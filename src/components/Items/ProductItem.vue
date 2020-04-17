@@ -63,15 +63,40 @@
       <v-img :src="image" height="250px" contain />
       <v-row>
         <v-col class="pa-0">
-          <v-card-title>{{ product.model }}</v-card-title>
+          <v-card-title>
+            <div class="pre">
+              {{
+                `${product.model} ${
+                  product.type === 'Mod'
+                    ? product.specs.filter((v) => v.name === 'Power output')[0]
+                        .value + 'W'
+                    : ''
+                } ${
+                  product.type === 'Mod'
+                    ? product.specs.filter((v) => v.name === 'Control')[0].value
+                    : ''
+                } ${
+                  product.type === 'Atomizer'
+                    ? product.specs.filter((v) => v.name === 'Category')[0]
+                        .value
+                    : ''
+                } ${product.specs.filter((v) => v.name === 'Type')[0].value} ${
+                  product.type === 'Mod' ? 'Mod' : ''
+                }`
+              }}
+            </div>
+          </v-card-title>
           <v-card-subtitle>{{ product.company.toUpperCase() }}</v-card-subtitle>
         </v-col>
         <v-col cols="3" class="pl-0">
           <div class="-width d-flex align-end justify-end">
-            <div class="grey darken-1" style="width: 60px;">
+            <div
+              class="primary d-flex justify-center align-center flex-column avgScore"
+              style="width: 70px; height: 70px;"
+            >
               <div
                 class="white--text font-weight-bold text-center"
-                style="font-size: 18px;"
+                style="font-size: 28px;"
               >
                 {{ product.lastScore.toFixed(1) }}
               </div>
@@ -101,4 +126,11 @@ export default {
 }
 </script>
 
-<style></style>
+<style>
+.avgScore {
+  border-radius: 15px;
+}
+.pre {
+  word-break: keep-all; /*this stops the word breaking*/
+}
+</style>

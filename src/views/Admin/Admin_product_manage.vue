@@ -256,12 +256,13 @@
 </template>
 
 <script>
-import { sortBy, uniqBy } from 'lodash'
+import { sortBy } from 'lodash'
 import imageCompression from 'browser-image-compression'
 import { orderBy } from 'lodash'
 import { v1 as uuid } from 'uuid'
 const fb = require('../../firebaseConfig')
 import Swal from 'sweetalert2'
+import Fuse from 'fuse.js'
 
 export default {
   name: 'Admin_product_manage',
@@ -321,6 +322,7 @@ export default {
       cbProductList: ['Mod', 'Atomizer', 'Pod'],
       featureList: [],
       deleteList: [],
+      searchIndex: [],
     }
   },
   created() {
@@ -334,18 +336,22 @@ export default {
       handler(productListQ) {
         this.productList = productListQ
         this.productList.map((v) => Object.assign(v, { checked: false }))
+        this.buildIndex(this.productList)
       },
+    },
+  },
+  computed: {
+    searchedList() {
+      if (this.txtSearch === '') {
+        return this.productList
+      } else {
+        return this.searchIndex.search(this.txtSearch).map((v) => v.item)
+      }
     },
   },
   methods: {
     async search() {
-      var q1 = this.productListQ.filter((v) =>
-        v.model.match(new RegExp('.*' + this.txtSearch + '.*', 'i')),
-      )
-      // var q2 = this.productListQ.filter((v) =>
-      //   v.model.match(new RegExp('^' + e.target.value + '.*$', 'i')),
-      // )
-      this.productList = sortBy(uniqBy([...q1], 'id'), 'model').reverse()
+      this.productList = this.searchedList
     },
     async addImageClick(product) {
       this.currentID = product.id
@@ -542,6 +548,15 @@ export default {
           'Triple',
         ]
       }
+    },
+    buildIndex(docs) {
+      this.searchIndex = new Fuse(docs, {
+        caseSensitive: false,
+        includeScore: true,
+        keys: ['model', 'company'],
+        shouldSort: false,
+        threshold: 0.3,
+      })
     },
   },
 }

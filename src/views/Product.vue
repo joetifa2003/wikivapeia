@@ -2,13 +2,28 @@
   <v-container
     fill-height
     fluid
-    class="align-start pa-0 justify-center pt-5 full"
+    class="align-start pa-2 justify-center pt-5 full"
   >
     <v-row class="justify-center" style="width: 100%;">
       <v-col cols="12" lg="8">
         <v-card v-if="product" width="100%" elevation="0">
           <vue-headful
-            :title="`Wikivapeia - ${product.company} ${product.model} Ranking score`"
+            :title="`Wikivapeia - ${product.model} ${
+              product.type === 'Mod'
+                ? product.specs.filter((v) => v.name === 'Power output')[0]
+                    .value + 'W'
+                : ''
+            } ${
+              product.type === 'Mod'
+                ? product.specs.filter((v) => v.name === 'Control')[0].value
+                : ''
+            } ${
+              product.type === 'Atomizer'
+                ? product.specs.filter((v) => v.name === 'Category')[0].value
+                : ''
+            } ${product.specs.filter((v) => v.name === 'Type')[0].value} ${
+              product.type === 'Mod' ? 'Mod' : ''
+            } Ranking score`"
             :image="
               product.images.filter((v) => v.type === 'facebook')[0].image
             "
@@ -92,7 +107,30 @@
                 <v-row>
                   <v-col>
                     <h1 class="font-weight-medium" style="font-size: 30px;">
-                      {{ product.model.toUpperCase() }}
+                      {{
+                        `${product.model.toUpperCase()} ${
+                          product.type === 'Mod'
+                            ? product.specs.filter(
+                                (v) => v.name === 'Power output',
+                              )[0].value + 'W'
+                            : ''
+                        } ${
+                          product.type === 'Mod'
+                            ? product.specs.filter(
+                                (v) => v.name === 'Control',
+                              )[0].value
+                            : ''
+                        } ${
+                          product.type === 'Atomizer'
+                            ? product.specs.filter(
+                                (v) => v.name === 'Category',
+                              )[0].value
+                            : ''
+                        } ${
+                          product.specs.filter((v) => v.name === 'Type')[0]
+                            .value
+                        } ${product.type === 'Mod' ? 'Mod' : ''}`
+                      }}
                     </h1>
                     <div
                       class="pa-0 font-weight-medium grey--text lighten-2"
@@ -104,7 +142,7 @@
                   <v-col cols="3" class="d-flex justify-end align-end">
                     <div
                       style="height: 85px; width: 85px;"
-                      class="primary white--text"
+                      class="primary white--text avgScore"
                     >
                       <div
                         class="white--text font-weight-bold text-center"
@@ -130,12 +168,12 @@
                 <v-col cols="12" class="pa-0">
                   <v-row v-for="(avg, i) in avgVotes" :key="i">
                     <v-col
-                      cols="4"
-                      class="font-weight-medium d-flex justify-end align-end pa-2 grey lighten-2"
+                      cols="5"
+                      class="font-weight-medium grey lighten-3 black--text d-flex justify-end align-end pa-2 pl-4 font-weight-bold"
                       style="font-size: 15px;"
-                      >{{ avg.name }}</v-col
+                      >{{ avg.name }} :</v-col
                     >
-                    <v-col class="pa-2" cols="8">
+                    <v-col class="pa-2">
                       <div class="d-flex flex-row justify-center align-center">
                         <v-progress-linear
                           background-color="grey lighten-2"
@@ -169,7 +207,7 @@
                 <v-divider />
                 <p
                   v-html="product.desc"
-                  class="mt-8 justify-desc font-weight-bold"
+                  class="mt-8 justify-desc font-weight-medium"
                 ></p>
               </v-col>
               <v-col>
@@ -183,7 +221,9 @@
                   <v-col cols="6">
                     <div class="d-flex align-center">
                       <v-icon class="mr-2">{{ spec.icon }}</v-icon>
-                      <div>{{ spec.name }}</div>
+                      <div class="font-weight-bold primary--text">
+                        {{ spec.name }}
+                      </div>
                     </div>
                   </v-col>
                   <v-col>
@@ -280,7 +320,7 @@ export default {
           { name: 'Design', value: 0 },
           { name: 'Material', value: 0 },
           { name: 'Software', value: 0 },
-          { name: 'Recharging speed', value: 0 },
+          { name: 'Charging speed', value: 0 },
         ],
         atomizers: [
           { name: 'Flavor', value: 0 },
@@ -427,5 +467,8 @@ export default {
 <style scoped>
 .justify-desc {
   text-align: justify;
+}
+.avgScore {
+  border-radius: 15px;
 }
 </style>

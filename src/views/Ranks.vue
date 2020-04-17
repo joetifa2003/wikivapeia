@@ -178,8 +178,9 @@ export default {
       this.searchIndex = new Fuse(docs, {
         caseSensitive: false,
         includeScore: true,
-        keys: ['model'],
+        keys: ['model', 'company'],
         shouldSort: false,
+        threshold: 0.3,
       })
     },
   },
@@ -194,7 +195,11 @@ export default {
       return Math.ceil(this.productList.length / this.perPage)
     },
     searchedList() {
-      return this.searchIndex.search(this.txtSearch).map((v) => v.item)
+      if (this.txtSearch === '') {
+        return this.productList
+      } else {
+        return this.searchIndex.search(this.txtSearch).map((v) => v.item)
+      }
     },
   },
 }

@@ -93,11 +93,47 @@
                     label="Company"
                     v-model="txtCompany"
                   />
-                  <v-text-field
+                  <v-combobox
                     :rules="[(v) => !!v || 'Model is required']"
-                    label="Model"
                     v-model="txtModel"
-                  />
+                    append-icon=""
+                    hide-details
+                    clearable
+                    :items="products"
+                    label="Model"
+                    item-text="model"
+                    item-value="model"
+                  >
+                    <template v-slot:item="{ parent, item }">
+                      <v-list-item-avatar tile size="70">
+                        <v-img
+                          :src="
+                            item.images.filter((v) => v.type === 'product')[0]
+                              .image
+                          "
+                        />
+                      </v-list-item-avatar>
+                      <v-list-item-content>
+                        <v-list-item-title
+                          v-html="
+                            parent.genFilteredText(item.model.toUpperCase())
+                          "
+                        ></v-list-item-title>
+                        <v-list-item-subtitle
+                          v-html="item.company.toUpperCase()"
+                        ></v-list-item-subtitle>
+                        <v-list-item-subtitle>
+                          <v-chip
+                            v-for="(feature, i) in item.features"
+                            :key="i"
+                            class="mr-2 mt-2 font-weight-medium"
+                            style="font-size: 10px;"
+                            >{{ feature }}</v-chip
+                          >
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                    </template>
+                  </v-combobox>
                   <v-combobox
                     :items="featureList"
                     :rules="[(v) => !!v || 'Feature is required']"
@@ -219,6 +255,7 @@ export default {
         'Ofrf',
         'IJoy',
         'Dotmod',
+        'BDvape',
       ],
       featureList: [],
       selectedProduct: '',
@@ -234,6 +271,7 @@ export default {
       atomizerSpecs: [],
       productImagesPreview: [],
       facebookImagesPreview: [],
+      products: [],
     }
   },
   async created() {
@@ -243,6 +281,7 @@ export default {
     return {
       modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
       atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
+      products: fb.db.collection('Products'),
     }
   },
   watch: {
@@ -296,6 +335,8 @@ export default {
     },
     async addProduct() {
       var imageUrls = []
+      this.productImagesPreview = []
+      this.facebookImagesPreview = []
       this.progressDialog = true
       if (this.productPhotos.length === 0) {
         await Swal.fire('Image is required', '', 'warning')
