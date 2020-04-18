@@ -33,10 +33,11 @@
           rounded
           dense
           clearable
-          :items="products"
+          :items="title"
           placeholder="Search"
           item-text="model"
           item-value="model"
+          background-color="#616161"
           return-object
         >
           <template v-slot:item="{ parent, item }">
@@ -54,7 +55,6 @@
               <v-list-item-subtitle
                 v-html="item.company.toUpperCase()"
               ></v-list-item-subtitle>
-              <v-divider class="mt-3" />
             </v-list-item-content>
           </template>
         </v-autocomplete>
@@ -237,6 +237,7 @@
 import Swal from 'sweetalert2'
 const fb = require('../firebaseConfig')
 import { mapState } from 'vuex'
+const util = require('../utils/utlity')
 
 export default {
   name: 'Nav',
@@ -275,6 +276,13 @@ export default {
   },
   computed: {
     ...mapState(['activePage', 'user']),
+    title() {
+      for (let i = 0; i < this.products.length; i++) {
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+        this.products[i].model = util.titleBuilder(this.products[i], false)
+      }
+      return this.products
+    },
   },
   methods: {
     homeClick() {

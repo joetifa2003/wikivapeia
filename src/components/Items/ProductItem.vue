@@ -65,25 +65,7 @@
         <v-col class="pa-0">
           <v-card-title>
             <div class="pre">
-              {{
-                `${product.model} ${
-                  product.type === 'Mod'
-                    ? product.specs.filter((v) => v.name === 'Power output')[0]
-                        .value + 'W'
-                    : ''
-                } ${
-                  product.type === 'Mod'
-                    ? product.specs.filter((v) => v.name === 'Control')[0].value
-                    : ''
-                } ${
-                  product.type === 'Atomizer'
-                    ? product.specs.filter((v) => v.name === 'Category')[0]
-                        .value
-                    : ''
-                } ${product.specs.filter((v) => v.name === 'Type')[0].value} ${
-                  product.type === 'Mod' ? 'Mod' : ''
-                }`
-              }}
+              {{ title }}
             </div>
           </v-card-title>
           <v-card-subtitle>{{ product.company.toUpperCase() }}</v-card-subtitle>
@@ -115,12 +97,17 @@
 </template>
 
 <script>
+const util = require('../../utils/utlity.js')
+
 export default {
   name: 'Product_item',
   props: ['product', 'page'],
   computed: {
     image() {
       return this.product.images.filter((v) => v.type === 'product')[0].image
+    },
+    title() {
+      return util.titleBuilder(this.product, false)
     },
   },
 }

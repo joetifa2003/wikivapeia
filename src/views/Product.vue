@@ -8,22 +8,7 @@
       <v-col cols="12" lg="8">
         <v-card v-if="product" width="100%" elevation="0">
           <vue-headful
-            :title="`Wikivapeia - ${product.model} ${
-              product.type === 'Mod'
-                ? product.specs.filter((v) => v.name === 'Power output')[0]
-                    .value + 'W'
-                : ''
-            } ${
-              product.type === 'Mod'
-                ? product.specs.filter((v) => v.name === 'Control')[0].value
-                : ''
-            } ${
-              product.type === 'Atomizer'
-                ? product.specs.filter((v) => v.name === 'Category')[0].value
-                : ''
-            } ${product.specs.filter((v) => v.name === 'Type')[0].value} ${
-              product.type === 'Mod' ? 'Mod' : ''
-            } Ranking score`"
+            :title="`WIKIVAPEIA - ${facebookTitle} ranking`"
             :image="
               product.images.filter((v) => v.type === 'facebook')[0].image
             "
@@ -107,30 +92,7 @@
                 <v-row>
                   <v-col>
                     <h1 class="font-weight-medium" style="font-size: 30px;">
-                      {{
-                        `${product.model.toUpperCase()} ${
-                          product.type === 'Mod'
-                            ? product.specs.filter(
-                                (v) => v.name === 'Power output',
-                              )[0].value + 'W'
-                            : ''
-                        } ${
-                          product.type === 'Mod'
-                            ? product.specs.filter(
-                                (v) => v.name === 'Control',
-                              )[0].value
-                            : ''
-                        } ${
-                          product.type === 'Atomizer'
-                            ? product.specs.filter(
-                                (v) => v.name === 'Category',
-                              )[0].value
-                            : ''
-                        } ${
-                          product.specs.filter((v) => v.name === 'Type')[0]
-                            .value
-                        } ${product.type === 'Mod' ? 'Mod' : ''}`
-                      }}
+                      {{ title }}
                     </h1>
                     <div
                       class="pa-0 font-weight-medium grey--text lighten-2"
@@ -218,7 +180,7 @@
                 >
                 <v-divider />
                 <v-row v-for="(spec, i) in specs" :key="i">
-                  <v-col cols="6">
+                  <v-col cols="5">
                     <div class="d-flex align-center">
                       <v-icon class="mr-2">{{ spec.icon }}</v-icon>
                       <div class="font-weight-bold primary--text">
@@ -228,8 +190,19 @@
                   </v-col>
                   <v-col>
                     <div class="d-flex flex-row justify-start">
-                      <div>{{ spec.value }}</div>
-                      <div class="ml-2">{{ spec.unit }}</div>
+                      <div v-if="typeof spec.value === 'string'">
+                        {{ spec.value }}
+                      </div>
+                      <div v-else>
+                        <ul>
+                          <li v-for="(x, i) in spec.value" :key="i">
+                            {{ x + spec.unit }}
+                          </li>
+                        </ul>
+                      </div>
+                      <div v-if="typeof spec.value === 'string'" class="ml-0">
+                        {{ spec.unit }}
+                      </div>
                     </div>
                   </v-col>
                 </v-row>
@@ -302,6 +275,7 @@
 import Swal from 'sweetalert2'
 import { cloneDeep, sortBy } from 'lodash'
 import { mapState } from 'vuex'
+const util = require('../utils/utlity.js')
 
 const fb = require('../firebaseConfig')
 
@@ -322,14 +296,7 @@ export default {
           { name: 'Software', value: 0 },
           { name: 'Charging speed', value: 0 },
         ],
-        atomizers: [
-          { name: 'Flavor', value: 0 },
-          { name: 'Ease of Build', value: 0 },
-          { name: 'Air flow', value: 0 },
-          { name: 'Thraot hit', value: 0 },
-          { name: 'Material', value: 0 },
-          { name: 'Design', value: 0 },
-        ],
+        atomizers: [],
       },
       voted: null,
       votedQ: null,
@@ -360,6 +327,12 @@ export default {
     specs() {
       return sortBy(this.product.specs, 'index')
     },
+    title() {
+      return util.titleBuilder(this.product, false)
+    },
+    facebookTitle() {
+      return util.titleBuilder(this.product, true)
+    },
   },
   firestore() {
     return {
@@ -372,6 +345,29 @@ export default {
       async handler() {
         if (this.avgVotes === null) {
           if (this.product.type === 'Atomizer') {
+            if (
+              this.product.specs.filter((v) => v.name === 'Category')[0]
+                .value === 'DL'
+            ) {
+              this.ranks.atomizers.push(
+                { name: 'Flavor', value: 0 },
+                { name: 'Cloud production', value: 0 },
+                { name: 'Ease of Build', value: 0 },
+                { name: 'Air flow', value: 0 },
+                { name: 'Thraot hit', value: 0 },
+                { name: 'Material', value: 0 },
+                { name: 'Design', value: 0 },
+              )
+            } else {
+              this.ranks.atomizers.push(
+                { name: 'Flavor', value: 0 },
+                { name: 'Ease of Build', value: 0 },
+                { name: 'Air flow', value: 0 },
+                { name: 'Thraot hit', value: 0 },
+                { name: 'Material', value: 0 },
+                { name: 'Design', value: 0 },
+              )
+            }
             this.avgVotes = cloneDeep(this.ranks.atomizers)
           } else if (this.product.type === 'Mod') {
             this.avgVotes = cloneDeep(this.ranks.mods)

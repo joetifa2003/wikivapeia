@@ -112,7 +112,7 @@
               <v-col cols="12" md="6">
                 <v-combobox
                   @input="productChange"
-                  :items="cbProductList"
+                  :items="['Mod', 'Atomizer']"
                   :rules="[(v) => !!v || 'Product type is required']"
                   clearable
                   label="Select product type"
@@ -124,11 +124,47 @@
                   label="Company"
                   v-model="product.company"
                 />
-                <v-text-field
+                <v-combobox
                   :rules="[(v) => !!v || 'Model is required']"
-                  label="Model"
                   v-model="product.model"
-                />
+                  append-icon=""
+                  hide-detailsf
+                  clearable
+                  :items="products"
+                  label="Model"
+                  item-text="model"
+                  item-value="model"
+                >
+                  <template v-slot:item="{ parent, item }">
+                    <v-list-item-avatar tile size="70">
+                      <v-img
+                        :src="
+                          item.images.filter((v) => v.type === 'product')[0]
+                            .image
+                        "
+                      />
+                    </v-list-item-avatar>
+                    <v-list-item-content>
+                      <v-list-item-title
+                        v-html="
+                          parent.genFilteredText(item.model.toUpperCase())
+                        "
+                      ></v-list-item-title>
+                      <v-list-item-subtitle
+                        v-html="item.company.toUpperCase()"
+                      ></v-list-item-subtitle>
+                      <v-list-item-subtitle>
+                        <v-chip
+                          v-for="(feature, i) in item.features"
+                          :key="i"
+                          class="mr-2 mt-2 font-weight-medium"
+                          style="font-size: 10px;"
+                          >{{ feature }}</v-chip
+                        >
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                  </template>
+                </v-combobox>
                 <v-combobox
                   :items="featureList"
                   :rules="[(v) => !!v || 'Feature is required']"
@@ -140,93 +176,40 @@
                   v-model="product.features"
                 />
                 <!--- specs -->
-                <div v-if="product.type === 'Atomizer'">
-                  <v-text-field
-                    v-model="product.specs[0].value"
-                    label="Capacity up to"
-                    :rules="[
-                      (v) => !!v || v === 'N/A' || 'Please enter value or N/A',
-                    ]"
-                  />
-                  <v-text-field
-                    v-model="product.specs[1].value"
-                    label="Base Diameter"
-                    :rules="[
-                      (v) => !!v || v === 'N/A' || 'Please enter value or N/A',
-                    ]"
-                  />
-                  <v-combobox
-                    v-model="product.specs[2].value"
-                    label="Coil type"
-                    :rules="[(v) => !!v || 'Coil type is required']"
-                    clearable
-                    :items="['Mesh', 'Wire']"
-                  />
-                  <v-combobox
-                    v-model="product.specs[3].value"
-                    label="Drip tip size"
-                    :rules="[(v) => !!v || 'Dript tip size is required']"
-                    clearable
-                    :items="['510', '810', 'Multi']"
-                  />
-                </div>
                 <div v-if="product.type === 'Mod'">
                   <v-row>
-                    <v-col cols="6">
-                      <v-text-field
-                        v-model="product.specs[0].value"
-                        label="Power output"
-                        :rules="[
-                          (v) =>
-                            !!v || v === 'N/A' || 'Please enter value or N/A',
-                        ]"
-                      />
-                      <v-text-field
-                        v-model="product.specs[1].value"
-                        label="Max tank diameter"
-                        :rules="[
-                          (v) =>
-                            !!v || v === 'N/A' || 'Please enter value or N/A',
-                        ]"
-                      />
-                      <v-text-field
-                        v-model="product.specs[2].value"
-                        label="Dimentions"
-                        :rules="[
-                          (v) =>
-                            !!v || v === 'N/A' || 'Please enter value or N/A',
-                        ]"
-                      />
+                    <v-col v-for="spec in modSpecs" :key="spec.id" cols="6">
                       <v-combobox
-                        v-model="product.specs[3].value"
-                        label="Power supply"
-                        clearable
-                        :items="['Builtin', 'External']"
-                        :rules="[(v) => !!v || 'Power supply is required']"
+                        v-if="spec.isCombo"
+                        :items="spec.values"
+                        :label="spec.name"
+                        v-model="spec.value"
+                      />
+                      <v-text-field
+                        v-else
+                        :label="spec.name"
+                        v-model="spec.value"
                       />
                     </v-col>
-                    <v-col cols="6">
+                  </v-row>
+                </div>
+                <div v-else>
+                  <v-row>
+                    <v-col
+                      v-for="spec in atomizerSpecs"
+                      :key="spec.id"
+                      cols="6"
+                    >
+                      <v-combobox
+                        v-if="spec.isCombo"
+                        :items="spec.values"
+                        :label="spec.name"
+                        v-model="spec.value"
+                      />
                       <v-text-field
-                        v-model="product.specs[4].value"
-                        label="Power capacity"
-                        :rules="[
-                          (v) =>
-                            !!v || v === 'N/A' || 'Please enter value or N/A',
-                        ]"
-                      />
-                      <v-combobox
-                        v-model="product.specs[5].value"
-                        label="Fast charge"
-                        clearable
-                        :items="['Yes', 'No']"
-                        :rules="[(v) => !!v || 'Fast charge is required']"
-                      />
-                      <v-combobox
-                        v-model="product.specs[6].value"
-                        label="Touch screen"
-                        clearable
-                        :items="['Yes', 'No']"
-                        :rules="[(v) => !!v || 'Touch screen is required']"
+                        v-else
+                        :label="spec.name"
+                        v-model="spec.value"
                       />
                     </v-col>
                   </v-row>
@@ -319,10 +302,11 @@ export default {
         'IJoy',
         'Dotmod',
       ],
-      cbProductList: ['Mod', 'Atomizer', 'Pod'],
       featureList: [],
       deleteList: [],
       searchIndex: [],
+      modSpecs: [],
+      atomizerSpecs: [],
     }
   },
   created() {
@@ -330,6 +314,8 @@ export default {
   },
   firestore: {
     productListQ: fb.db.collection('Products'),
+    modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
+    atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
   },
   watch: {
     productListQ: {
@@ -341,6 +327,15 @@ export default {
     },
   },
   computed: {
+    productListQWithId() {
+      if (!this.productListQ) {
+        return []
+      }
+      return this.productListQ.map((product) => ({
+        ...product,
+        id: product.id,
+      }))
+    },
     searchedList() {
       if (this.txtSearch === '') {
         return this.productList

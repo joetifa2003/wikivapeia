@@ -21,6 +21,16 @@
                     v-model="fieldType"
                   />
                 </v-col>
+                <v-col
+                  class="d-flex align-center"
+                  v-if="fieldType === 'Combobox'"
+                >
+                  <v-combobox
+                    label="Multi"
+                    :items="['Yes', 'No']"
+                    v-model="multi"
+                  />
+                </v-col>
                 <v-col class="d-flex align-center">
                   <v-combobox
                     label="Unit"
@@ -116,6 +126,7 @@ export default {
       unit: '',
       sortedArray: [],
       values: [],
+      multi: false,
     }
   },
   firestore() {
@@ -161,6 +172,7 @@ export default {
             unit: this.unit,
             value: '',
             values: this.values,
+            multi: this.multi === 'Yes' ? true : false,
           })
           break
         case 'Atomizers':
@@ -171,6 +183,7 @@ export default {
             unit: this.unit,
             value: '',
             values: this.values,
+            multi: this.multi === 'Yes' ? true : false,
           })
           break
       }

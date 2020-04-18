@@ -22,3 +22,7 @@ yarn-error.log*
 *.sw?
 package-lock.json
 capacitor.config.json
+.VSCodeCounter/details.md
+.VSCodeCounter/results.csv
+.VSCodeCounter/results.md
+.VSCodeCounter/results.txt

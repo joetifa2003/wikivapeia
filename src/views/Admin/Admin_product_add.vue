@@ -80,7 +80,6 @@
                     </v-col>
                   </v-row>
                   <v-combobox
-                    @input="productChange"
                     :items="['Mod', 'Atomizer']"
                     :rules="[(v) => !!v || 'Product type is required']"
                     clearable
@@ -103,6 +102,7 @@
                     label="Model"
                     item-text="model"
                     item-value="model"
+                    class="mb-7"
                   >
                     <template v-slot:item="{ parent, item }">
                       <v-list-item-avatar tile size="70">
@@ -134,16 +134,6 @@
                       </v-list-item-content>
                     </template>
                   </v-combobox>
-                  <v-combobox
-                    :items="featureList"
-                    :rules="[(v) => !!v || 'Feature is required']"
-                    clearable
-                    multiple
-                    class="multiple"
-                    small-chips
-                    label="Select features"
-                    v-model="selectedFeatures"
-                  />
                   <!--- specs -->
                   <div v-if="selectedProduct === 'Atomizer'">
                     <v-row>
@@ -153,7 +143,14 @@
                         cols="6"
                       >
                         <v-combobox
-                          v-if="spec.isCombo"
+                          v-if="spec.isCombo && spec.multi"
+                          :items="spec.values"
+                          :label="spec.name"
+                          v-model="spec.value"
+                          multiple
+                        />
+                        <v-combobox
+                          v-else-if="spec.isCombo"
                           :items="spec.values"
                           :label="spec.name"
                           v-model="spec.value"
@@ -170,7 +167,14 @@
                     <v-row>
                       <v-col v-for="spec in modSpecs" :key="spec.id" cols="6">
                         <v-combobox
-                          v-if="spec.isCombo"
+                          v-if="spec.isCombo && spec.multi"
+                          :items="spec.values"
+                          :label="spec.name"
+                          v-model="spec.value"
+                          multiple
+                        />
+                        <v-combobox
+                          v-else-if="spec.isCombo"
                           :items="spec.values"
                           :label="spec.name"
                           v-model="spec.value"
@@ -257,7 +261,6 @@ export default {
         'Dotmod',
         'BDvape',
       ],
-      featureList: [],
       selectedProduct: '',
       selectedFeatures: [],
       progressDialog: false,
@@ -301,25 +304,6 @@ export default {
     },
   },
   methods: {
-    productChange(v) {
-      this.selectedFeatures = []
-      if (v === 'Mod') {
-        this.featureList = ['Box', 'Squonk', 'Mechanical', 'Regulated']
-      } else if (v === 'Atomizer') {
-        this.featureList = [
-          'DL',
-          'MTL',
-          'RTA',
-          'RDA',
-          'RDTA',
-          'Top airflow',
-          'Bottom airflow',
-          'Single',
-          'Dual',
-          'Triple',
-        ]
-      }
-    },
     productPhotoChange(event) {
       let files = event.target.files
       for (let file of files) {
@@ -334,6 +318,53 @@ export default {
       }
     },
     async addProduct() {
+      this.selectedFeatures = []
+      if (this.selectedProduct === 'Mod') {
+        this.modSpecs
+          .filter((v) => v.isFeature === true)
+          .forEach((feature) => {
+            if (typeof feature.value === 'string') {
+              if (feature.value === 'Yes') {
+                this.selectedFeatures.push(feature.name)
+              } else if (feature.value !== 'No') {
+                if (feature.unit) {
+                  this.selectedFeatures.push(feature.value + feature.unit)
+                } else {
+                  this.selectedFeatures.push(feature.value)
+                }
+              }
+            } else {
+              if (feature.value.length !== 0) {
+                Array.prototype.push.apply(this.selectedFeatures, feature.value)
+              }
+            }
+          })
+      } else {
+        this.atomizerSpecs
+          .filter((v) => v.isFeature === true)
+          .forEach((feature) => {
+            if (typeof feature.value === 'string') {
+              if (feature.value === 'Yes') {
+                this.selectedFeatures.push(
+                  feature.name + feature.unit ? feature.unit : '',
+                )
+              } else if (feature.value !== 'No') {
+                if (feature.unit) {
+                  this.selectedFeatures.push(feature.value + feature.unit)
+                } else {
+                  this.selectedFeatures.push(feature.value)
+                }
+              }
+            } else {
+              if (feature.value.length !== 0) {
+                Array.prototype.push.apply(this.selectedFeatures, feature.value)
+              }
+            }
+          })
+      }
+      this.selectedFeatures = this.selectedFeatures.filter(
+        (v) => v !== '' || v !== null,
+      )
       var imageUrls = []
       this.productImagesPreview = []
       this.facebookImagesPreview = []
@@ -375,7 +406,7 @@ export default {
             desc: this.txtDesc.replace(/\n/g, '<br>'),
             images: imageUrls,
             features: this.selectedFeatures,
-            specs: this.atomizerSpecs,
+            specs: this.atomizerSpecs.filter((v) => v.value.length !== 0),
             lastScore: 0,
           })
         } else if (this.selectedProduct === 'Mod') {
@@ -386,7 +417,7 @@ export default {
             desc: this.txtDesc.replace(/\n/g, '<br>'),
             images: imageUrls,
             features: this.selectedFeatures,
-            specs: this.modSpecs,
+            specs: this.modSpecs.filter((v) => v.value.length !== 0),
             lastScore: 0,
           })
         }
