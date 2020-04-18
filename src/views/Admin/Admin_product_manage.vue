@@ -521,7 +521,7 @@ export default {
           index: 0,
           image: downloadURL,
           imageName: filename,
-          type: file.type,
+          type: 'product',
         })
       }
       this.progressDialog = false
