@@ -5,7 +5,7 @@
     class="align-start pa-2 justify-center pt-5 full"
   >
     <v-row class="justify-center" style="width: 100%;">
-      <v-col cols="12" lg="8">
+      <v-col cols="12" md="10" lg="7">
         <v-card v-if="product" width="100%" elevation="0">
           <vue-headful
             :title="`WIKIVAPEIA - ${facebookTitle} ranking`"
@@ -17,7 +17,8 @@
             <v-row>
               <v-col cols="12" md="6" class="d-flex align-start flex-column">
                 <v-carousel
-                  height="540"
+                  interval="4000"
+                  height="400"
                   cycle
                   hide-delimiter-background
                   show-arrows-on-hover
@@ -91,20 +92,20 @@
               <v-col cols="12" md="6">
                 <v-row>
                   <v-col>
-                    <h1 class="font-weight-medium" style="font-size: 30px;">
+                    <h1 class="font-weight-medium" style="font-size: 25px;">
                       {{ title }}
                     </h1>
                     <div
                       class="pa-0 font-weight-medium grey--text lighten-2"
-                      style="font-size: 18px;"
+                      style="font-size: 15px;"
                     >
                       {{ product.company.toUpperCase() }}
                     </div>
                   </v-col>
-                  <v-col cols="3" class="d-flex justify-end align-end">
+                  <v-col cols="3" class="d-flex justify-end align-end pr-0">
                     <div
                       style="height: 85px; width: 85px;"
-                      class="primary white--text avgScore"
+                      class="grey darken-2 white--text avgScore"
                     >
                       <div
                         class="white--text font-weight-bold text-center"
@@ -129,14 +130,14 @@
                 </div>
                 <v-col cols="12" class="pa-0">
                   <v-row v-for="(avg, i) in avgVotes" :key="i">
-                    <v-col
-                      cols="5"
-                      class="font-weight-medium grey lighten-3 black--text d-flex justify-end align-end pa-2 pl-4 font-weight-bold"
-                      style="font-size: 15px;"
-                      >{{ avg.name }} :</v-col
-                    >
                     <v-col class="pa-2">
                       <div class="d-flex flex-row justify-center align-center">
+                        <div
+                          style="width: 300px;"
+                          class="font-weight-bold black--text"
+                        >
+                          {{ avg.name }}
+                        </div>
                         <v-progress-linear
                           background-color="grey lighten-2"
                           class="mr-5"
@@ -148,19 +149,41 @@
                     </v-col>
                   </v-row>
                 </v-col>
-                <v-btn
-                  v-if="voted !== null"
-                  @click.stop="voteClick"
-                  :class="[
-                    'red darken-4 white--text mt-3',
-                    voted ? 'v-btn--disabled' : '',
-                  ]"
-                  >{{ voted ? 'Voted' : 'Vote now' }}</v-btn
-                >
+                <v-row>
+                  <v-col class="pa-0">
+                    <v-hover v-slot:default="{ hover }">
+                      <div style="width: 1px;">
+                        <v-btn
+                          v-if="voted !== null && !hover"
+                          @click.stop="voteClick"
+                          :class="[
+                            'white--text mt-3 ml-2',
+                            voted ? 'grey darken-2' : 'red darken-4',
+                          ]"
+                          >{{ voted ? 'Unvote' : 'Vote now' }}</v-btn
+                        >
+                        <v-btn
+                          v-if="voted !== null && hover"
+                          @click.stop="voteClick"
+                          :class="['white--text mt-3', 'red darken-4']"
+                          >{{ voted ? 'Unvote' : 'Vote now' }}</v-btn
+                        >
+                      </div>
+                    </v-hover>
+                  </v-col>
+                  <v-col class="d-flex justify-end">
+                    <v-icon color="black" class="mr-2">person</v-icon>
+                    <v-chip
+                      class="font-weight-medium red darken-4 white--text mr-n2"
+                    >
+                      {{ voteSum ? voteSum.votersCount : 0 }} Voted</v-chip
+                    >
+                  </v-col>
+                </v-row>
               </v-col>
             </v-row>
             <v-row>
-              <v-col cols="12" md="7" class="">
+              <v-col cols="12" md="8" class="">
                 <v-subheader
                   class="font-weight-bold pa-0"
                   style="font-size: 18px;"
@@ -168,9 +191,33 @@
                 >
                 <v-divider />
                 <p
+                  v-if="descReadMore"
                   v-html="product.desc"
                   class="mt-8 justify-desc font-weight-medium"
                 ></p>
+                <p
+                  v-else
+                  v-html="
+                    product.desc.split(' ').slice(0, 50).join(' ') + '....'
+                  "
+                  class="mt-8 justify-desc font-weight-medium"
+                ></p>
+                <div class="d-flex justify-end">
+                  <v-btn
+                    text
+                    @click.stop="descReadMore = !descReadMore"
+                    class="blue--text"
+                  >
+                    {{ descReadMore ? 'Read less' : 'Read more' }}
+                    <v-icon>
+                      {{
+                        descReadMore
+                          ? 'keyboard_arrow_up'
+                          : 'keyboard_arrow_down'
+                      }}
+                    </v-icon>
+                  </v-btn>
+                </div>
               </v-col>
               <v-col>
                 <v-subheader
@@ -180,7 +227,7 @@
                 >
                 <v-divider />
                 <v-row v-for="(spec, i) in specs" :key="i">
-                  <v-col cols="5">
+                  <v-col>
                     <div class="d-flex align-center">
                       <v-icon class="mr-2">{{ spec.icon }}</v-icon>
                       <div class="font-weight-bold primary--text">
@@ -189,7 +236,7 @@
                     </div>
                   </v-col>
                   <v-col>
-                    <div class="d-flex flex-row justify-start">
+                    <div class="d-flex flex-row justify-end">
                       <div v-if="typeof spec.value === 'string'">
                         {{ spec.value }}
                       </div>
@@ -284,6 +331,7 @@ export default {
   props: ['id'],
   data() {
     return {
+      descReadMore: false,
       productID: this.id,
       product: null,
       voteDialog: false,
@@ -377,16 +425,23 @@ export default {
     },
     voteSum: {
       async handler(voteSum) {
-        this.overall = 0
-        if (this.product.type === 'Atomizer') {
-          this.avgVotes = cloneDeep(this.ranks.atomizers)
-        } else if (this.product.type === 'Mod') {
-          this.avgVotes = cloneDeep(this.ranks.mods)
-        }
-        const votersCount = voteSum.votersCount
-        for (const [i, v] of voteSum.sum.entries()) {
-          this.avgVotes[i].value = v.value / votersCount
-          this.overall += v.value / (votersCount * voteSum.sum.length)
+        if (voteSum) {
+          this.overall = 0
+          if (this.product.type === 'Atomizer') {
+            this.avgVotes = cloneDeep(this.ranks.atomizers)
+          } else if (this.product.type === 'Mod') {
+            this.avgVotes = cloneDeep(this.ranks.mods)
+          }
+          const votersCount = voteSum.votersCount
+          for (const [i, v] of voteSum.sum.entries()) {
+            this.avgVotes[i].value = v.value / votersCount
+            this.overall += v.value / (votersCount * voteSum.sum.length)
+          }
+        } else {
+          for (let i = 0; i < this.avgVotes.length; i++) {
+            this.avgVotes[i].value = 0
+          }
+          this.overall = 0
         }
       },
     },
@@ -447,11 +502,32 @@ export default {
         lastScore: this.overall,
       })
       this.voteDialog = false
+      this.voteIsclicked = false
       Swal.fire('Voted!', 'Voted successfully!!', 'success')
     },
-    voteClick() {
+    async voteClick() {
       if (this.user) {
-        this.voteDialog = true
+        if (this.voted === false) {
+          this.voteDialog = true
+        } else {
+          if (this.voteSum.votersCount === 1) {
+            await fb.db.collection('VoteSum').doc(this.productID).delete()
+            await fb.db.collection('Votes').doc(this.votedQ[0].id).delete()
+          } else {
+            for (let i = 0; i < this.votedQ[0].votes.length; i++) {
+              let votedValue = this.votedQ[0].votes[i].value
+              this.voteSum.sum[i].value -= votedValue
+            }
+            await fb.db
+              .collection('VoteSum')
+              .doc(this.productID)
+              .set({
+                sum: this.voteSum.sum,
+                votersCount: this.voteSum.votersCount - 1,
+              })
+            await fb.db.collection('Votes').doc(this.votedQ[0].id).delete()
+          }
+        }
       } else {
         this.$router.push('/signUp')
       }

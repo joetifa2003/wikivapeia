@@ -125,14 +125,15 @@
             rounded
             dense
             clearable
-            :items="products"
+            :items="title"
             placeholder="Search"
             item-text="model"
             item-value="model"
+            background-color="#616161"
             return-object
           >
             <template v-slot:item="{ parent, item }">
-              <v-list-item-avatar tile size="70">
+              <v-list-item-avatar tile size="80">
                 <v-img
                   :src="
                     item.images.filter((v) => v.type === 'product')[0].image
@@ -141,22 +142,13 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title
+                  style="font-size: 15px;"
                   v-html="parent.genFilteredText(item.model.toUpperCase())"
-                ></v-list-item-title>
+                >
+                </v-list-item-title>
                 <v-list-item-subtitle
                   v-html="item.company.toUpperCase()"
                 ></v-list-item-subtitle>
-                <v-list-item-subtitle>
-                  <div>
-                    <v-chip
-                      v-for="(feature, i) in item.features"
-                      :key="i"
-                      class="mr-2 mt-2 font-weight-medium"
-                      style="font-size: 10px;"
-                      >{{ feature }}</v-chip
-                    >
-                  </div>
-                </v-list-item-subtitle>
               </v-list-item-content>
             </template>
           </v-autocomplete>
