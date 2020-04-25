@@ -189,14 +189,8 @@
                   </div>
                 </v-col>
                 <v-col cols="12">
-                  <v-textarea
-                    label="Descreption"
-                    class="mt-12"
-                    v-model="txtDesc"
-                    :rules="[
-                      (v) => !!v || v === 'N/A' || 'Please enter value or N/A',
-                    ]"
-                  />
+                  <quill-editor v-model="txtDesc" :options="editorOption" />
+                  <div class="content ql-editor" v-html="txtDesc"></div>
                 </v-col>
               </v-row>
               <v-btn
@@ -227,6 +221,23 @@ export default {
   },
   data() {
     return {
+      editorOption: {
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            [{ direction: 'rtl' }],
+            [{ header: [1, 2, 3, 4, 5, 6, false] }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['clean'],
+            ['link', 'image', 'video'],
+          ],
+        },
+      },
       companies: [
         'Vandy vape',
         'Geek vape',
@@ -403,7 +414,7 @@ export default {
             type: this.selectedProduct,
             company: this.txtCompany,
             model: this.txtModel,
-            desc: this.txtDesc.replace(/\n/g, '<br>'),
+            desc: this.txtDesc,
             images: imageUrls,
             features: this.selectedFeatures,
             specs: this.atomizerSpecs.filter((v) => v.value.length !== 0),
@@ -414,7 +425,7 @@ export default {
             type: this.selectedProduct,
             company: this.txtCompany,
             model: this.txtModel,
-            desc: this.txtDesc.replace(/\n/g, '<br>'),
+            desc: this.txtDesc,
             images: imageUrls,
             features: this.selectedFeatures,
             specs: this.modSpecs.filter((v) => v.value.length !== 0),

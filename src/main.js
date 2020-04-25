@@ -8,6 +8,11 @@ const fb = require('./firebaseConfig')
 import vueHeadful from 'vue-headful'
 var SocialSharing = require('vue-social-sharing')
 
+import VueQuillEditor from 'vue-quill-editor'
+import 'quill/dist/quill.core.css' // import styles
+import 'quill/dist/quill.snow.css' // for snow theme
+
+Vue.use(VueQuillEditor)
 Vue.config.productionTip = false
 Vue.config.devtools = true
 Vue.config.performance = true

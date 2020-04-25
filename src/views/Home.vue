@@ -19,7 +19,6 @@
 
 <script>
 import Landing from '../components/Landing.vue'
-import store from '../store/index.js'
 
 export default {
   name: 'Home',
@@ -30,7 +29,7 @@ export default {
     Landing,
   },
   created() {
-    store.commit('activePage', 'Home')
+    this.$store.commit('activePage', 'Home')
   },
 }
 </script>

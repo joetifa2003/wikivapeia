@@ -7,6 +7,7 @@ export default new Vuex.Store({
   state() {
     return {
       user: null,
+      userInfo: null,
       activePage: '',
       facebookUser: false,
       fName: '',
@@ -16,6 +17,9 @@ export default new Vuex.Store({
   mutations: {
     user: (state, p) => {
       state.user = p
+    },
+    userInfo: (state, p) => {
+      state.userInfo = p
     },
     activePage: (state, p) => {
       state.activePage = p

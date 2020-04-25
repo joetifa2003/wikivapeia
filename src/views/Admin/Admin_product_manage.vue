@@ -479,17 +479,14 @@ export default {
       }
     },
     async updateProduct() {
-      await fb.db
-        .collection('Products')
-        .doc(this.currentID)
-        .update({
-          type: this.product.type,
-          company: this.product.company,
-          model: this.product.model,
-          features: this.product.features,
-          specs: this.product.specs,
-          desc: this.product.desc.replace(/\n/g, '<br>'),
-        })
+      await fb.db.collection('Products').doc(this.currentID).update({
+        type: this.product.type,
+        company: this.product.company,
+        model: this.product.model,
+        features: this.product.features,
+        specs: this.product.specs,
+        desc: this.product.desc,
+      })
       this.updateImageDialog = false
       Swal.fire('Updated!', 'Product has been updated.', 'success')
     },

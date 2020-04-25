@@ -10,5 +10,6 @@ module.exports = {
         },
       },
     ],
+    'object-to-json-parse',
   ],
 }

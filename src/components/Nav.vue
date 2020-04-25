@@ -19,7 +19,7 @@
       <div
         v-if="$vuetify.breakpoint.mdAndUp"
         :style="{
-          height: '100%',
+          height: '1px',
           width: $vuetify.breakpoint.lgAndUp ? '400px' : '300px',
         }"
         class="d-flex align-center"
@@ -229,6 +229,7 @@
 import Swal from 'sweetalert2'
 const fb = require('../firebaseConfig')
 import { mapState } from 'vuex'
+import store from '../store'
 const util = require('../utils/utlity')
 
 export default {
@@ -258,6 +259,11 @@ export default {
         } else {
           this.userInfo = false
         }
+      },
+    },
+    userInfo: {
+      handler(userInfo) {
+        store.commit('userInfo', userInfo)
       },
     },
     searchSelected: {

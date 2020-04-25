@@ -73,7 +73,6 @@
 
 <script>
 import { sortBy } from 'lodash'
-import store from '../store'
 const fb = require('../firebaseConfig')
 import Fuse from 'fuse.js'
 
@@ -98,7 +97,7 @@ export default {
     }
   },
   created() {
-    store.commit('activePage', 'Ranks')
+    this.$store.commit('activePage', 'Ranks')
   },
   firestore() {
     return {
