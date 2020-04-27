@@ -55,7 +55,7 @@
                         class="white--text font-weight-bold text-center"
                         style="font-size: 40px;"
                       >
-                        {{ overall.toFixed(1) }}
+                        {{ overall.toFixed(2) }}
                       </div>
                       <div class="text-center" style="letter-spacing: 2px;">
                         Score
@@ -447,15 +447,13 @@ import { mapState } from 'vuex'
 import differenceInSeconds from 'date-fns/differenceInSeconds'
 const fb = require('../firebaseConfig')
 const util = require('../utils/utlity.js')
-import Comment from '../components/Comment'
-import Reply from '../components/Reply'
 
 export default {
   name: 'Product',
   props: ['id'],
   components: {
-    Comment,
-    Reply,
+    Comment: () => import('../components/Comment'),
+    Reply: () => import('../components/Reply'),
   },
   data() {
     return {
@@ -639,25 +637,20 @@ export default {
     },
     async vote() {
       this.voteIsclicked = true
-      if (this.product.type === 'Atomizer') {
-        await fb.db.collection('Votes').add({
-          productID: this.productID,
-          voter: this.user.uid,
-          votes: this.ranks.atomizers,
-        })
-      } else if (this.product.type === 'Mod') {
-        await fb.db.collection('Votes').add({
-          productID: this.productID,
-          voter: this.user.uid,
-          votes: this.ranks.mods,
-        })
-      }
-      var totalRank = []
+      let totalRank = []
+      let ranks = {}
       if (this.product.type === 'Atomizer') {
         totalRank = cloneDeep(this.ranks.atomizers)
+        ranks = this.ranks.atomizers
       } else if (this.product.type === 'Mod') {
         totalRank = cloneDeep(this.ranks.mods)
+        ranks = this.ranks.mods
       }
+      fb.db.collection('Votes').add({
+        productID: this.productID,
+        voter: this.user.uid,
+        votes: ranks,
+      })
       if (this.voteSum) {
         //eslint-disable-next-line no-unused-vars
         for (const [i, rank] of totalRank.entries()) {
@@ -676,7 +669,7 @@ export default {
           votersCount: 1,
         })
       }
-      await fb.db.collection('Products').doc(this.productID).update({
+      fb.db.collection('Products').doc(this.productID).update({
         lastScore: this.overall,
       })
       this.voteDialog = false
@@ -704,6 +697,9 @@ export default {
                 votersCount: this.voteSum.votersCount - 1,
               })
             await fb.db.collection('Votes').doc(this.votedQ[0].id).delete()
+            await fb.db.collection('Products').doc(this.productID).update({
+              lastScore: this.overall,
+            })
           }
         }
       } else {

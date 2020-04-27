@@ -5,69 +5,72 @@
       subtitle="Ranking for mods and automizers, From people for people"
       height="70vh"
     />
-    <div class="page d-flex align-start justify-center">
-      <v-row justify="center" style="width: 100%;">
-        <v-col cols="12" lg="8">
-          <v-row>
-            <v-col>
-              <v-text-field
-                label="Search"
-                filled
-                v-model="txtSearch"
-                single-line
-                @input="search"
-              ></v-text-field>
-              <v-subheader>Product</v-subheader>
-              <v-divider />
-              <v-btn-toggle class="mt-5" v-model="filterProduct">
-                <v-btn>Atomizer</v-btn>
-                <v-btn>Mod</v-btn>
-              </v-btn-toggle>
-              <v-subheader class="mt-5">Sort by</v-subheader>
-              <v-divider />
-              <v-btn-toggle class="mt-5" v-model="sortBy">
-                <v-btn>Score</v-btn>
-                <v-btn>Model</v-btn>
-                <v-btn>Company</v-btn>
-              </v-btn-toggle>
-              <v-subheader class="mt-5">Sorting direction</v-subheader>
-              <v-divider />
-              <v-btn-toggle class="mt-5" v-model="direction">
-                <v-btn>
-                  <v-icon>arrow_downward</v-icon>
-                </v-btn>
-                <v-btn>
-                  <v-icon>arrow_upward</v-icon>
-                </v-btn>
-              </v-btn-toggle>
-              <v-combobox
-                class="mt-5"
-                v-model.number="perPage"
-                label="Product per page"
-                :items="[10, 20, 50, 100]"
-              />
-            </v-col>
-            <v-col cols="12" md="8" class="pt-0">
-              <v-row>
-                <v-col
-                  cols="12"
-                  sm="6"
-                  v-for="product in visiblePages"
-                  :key="product.id"
-                >
-                  <ProductItem :product="product" page="Ranks" />
-                </v-col>
-              </v-row>
-            </v-col>
-          </v-row>
-          <v-pagination
-            v-model="page"
-            total-visible="10"
-            :length="totalPages"
-          ></v-pagination>
-        </v-col>
-      </v-row>
-    </div>
+    <v-container fluid>
+      <div class="page d-flex align-start justify-center">
+        <v-row justify="center" style="width: 100%;">
+          <v-col cols="12" lg="8">
+            <v-row>
+              <v-col>
+                <v-text-field
+                  label="Search"
+                  filled
+                  v-model="txtSearch"
+                  single-line
+                  @input="search"
+                ></v-text-field>
+                <v-subheader>Product</v-subheader>
+                <v-divider />
+                <v-btn-toggle class="mt-5" v-model="filterProduct">
+                  <v-btn>Atomizer</v-btn>
+                  <v-btn>Mod</v-btn>
+                </v-btn-toggle>
+                <v-subheader class="mt-5">Sort by</v-subheader>
+                <v-divider />
+                <v-btn-toggle class="mt-5" v-model="sortBy">
+                  <v-btn>Score</v-btn>
+                  <v-btn>Model</v-btn>
+                  <v-btn>Company</v-btn>
+                </v-btn-toggle>
+                <v-subheader class="mt-5">Sorting direction</v-subheader>
+                <v-divider />
+                <v-btn-toggle class="mt-5" v-model="direction">
+                  <v-btn>
+                    <v-icon>arrow_downward</v-icon>
+                  </v-btn>
+                  <v-btn>
+                    <v-icon>arrow_upward</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
+                <v-combobox
+                  class="mt-5"
+                  v-model.number="perPage"
+                  label="Product per page"
+                  :items="[10, 20, 50, 100]"
+                />
+                <ProductRequest />
+              </v-col>
+              <v-col cols="12" md="8" class="pt-0">
+                <v-row>
+                  <v-col
+                    cols="12"
+                    sm="6"
+                    v-for="product in visiblePages"
+                    :key="product.id"
+                  >
+                    <ProductItem :product="product" page="Ranks" />
+                  </v-col>
+                </v-row>
+              </v-col>
+            </v-row>
+            <v-pagination
+              v-model="page"
+              total-visible="10"
+              :length="totalPages"
+            ></v-pagination>
+          </v-col>
+        </v-row>
+      </div>
+    </v-container>
   </v-container>
 </template>
 
@@ -81,7 +84,7 @@ export default {
   components: {
     PageHeader: () => import('../components/PageHeader.vue'),
     ProductItem: () => import('../components/Items/ProductItem'),
-    // SignUp: () => import('../components/SignUp'),
+    ProductRequest: () => import('../components/ProductRequest'),
   },
   data() {
     return {

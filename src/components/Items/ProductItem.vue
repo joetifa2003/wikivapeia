@@ -80,7 +80,7 @@
                 class="white--text font-weight-bold text-center"
                 style="font-size: 28px;"
               >
-                {{ product.lastScore.toFixed(1) }}
+                {{ product.lastScore.toFixed(2) }}
               </div>
               <div
                 class="text-center white--text"

@@ -37,6 +37,12 @@
                 @click.stop="$router.push('/admin/banner/manage')"
                 >Manage banners</v-btn
               >
+              <v-btn
+                width="100%"
+                class="primary white--text mt-5"
+                @click.stop="$router.push('/admin/companies')"
+                >Companies</v-btn
+              >
             </v-col>
           </v-row>
           <v-btn class="red white--text" @click.stop="logout">Logout</v-btn>

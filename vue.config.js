@@ -3,23 +3,7 @@ const imageminMozjpeg = require('imagemin-mozjpeg')
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 
 module.exports = {
-  transpileDependencies: [
-    'vuetify',
-    'browser-image-compression',
-    'country-reverse-geocoding',
-    'firebase',
-    'lodash',
-    'moment',
-    'secure-ls',
-    'sweetalert2',
-    'uuid',
-    'vue-cropper',
-    'vue-firestore',
-    'vue-headful',
-    'vue-router',
-    'vue-social-sharing',
-    'vuefire',
-  ],
+  transpileDependencies: ['vuetify'],
   productionSourceMap: false,
   configureWebpack: {
     optimization: {

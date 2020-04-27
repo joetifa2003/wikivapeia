@@ -208,16 +208,20 @@
 </template>
 
 <script>
+import { sortBy } from 'lodash'
 import Swal from 'sweetalert2'
 import { orderBy } from 'lodash'
 import imageCompression from 'browser-image-compression'
 import { v1 as uuid } from 'uuid'
 const fb = require('../../firebaseConfig.js')
 
+import { quillEditor } from 'vue-quill-editor'
+
 export default {
   name: 'Admin_add',
   components: {
     Progress: () => import('../../components/Progress'),
+    quillEditor,
   },
   data() {
     return {
@@ -238,42 +242,7 @@ export default {
           ],
         },
       },
-      companies: [
-        'Vandy vape',
-        'Geek vape',
-        'Wootofo',
-        'Smoke',
-        'Voopoo',
-        'Vaporesso',
-        'Aspire',
-        'Eleaf',
-        'Sigelei',
-        'Wismec',
-        'Kaees',
-        'DoVopo',
-        'AugVape',
-        'ExVape',
-        'Vapefly',
-        'Vapor',
-        'Vapes',
-        'OBS',
-        'Think vape',
-        'Rincoe',
-        'Steam crave',
-        'Hell vape',
-        'Fumytech',
-        'Kaees',
-        'Cthulhu',
-        'Damn vape',
-        'Ehpro',
-        'Uwell',
-        'Ofrf',
-        'IJoy',
-        'Dotmod',
-        'BDvape',
-      ],
       selectedProduct: '',
-      selectedFeatures: [],
       progressDialog: false,
       txtCompany: '',
       txtModel: '',
@@ -286,6 +255,7 @@ export default {
       productImagesPreview: [],
       facebookImagesPreview: [],
       products: [],
+      companiesQ: [],
     }
   },
   async created() {
@@ -296,7 +266,16 @@ export default {
       modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
       atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
       products: fb.db.collection('Products'),
+      companiesQ: fb.db.collection('Companies'),
     }
+  },
+  computed: {
+    companies: {
+      set: function () {},
+      get: function () {
+        return sortBy(this.companiesQ.map((v) => v.name))
+      },
+    },
   },
   watch: {
     productPhotos: {
@@ -329,61 +308,39 @@ export default {
       }
     },
     async addProduct() {
-      this.selectedFeatures = []
-      if (this.selectedProduct === 'Mod') {
-        this.modSpecs
-          .filter((v) => v.isFeature === true)
-          .forEach((feature) => {
-            if (typeof feature.value === 'string') {
-              if (feature.value === 'Yes') {
-                this.selectedFeatures.push(feature.name)
-              } else if (feature.value !== 'No') {
-                if (feature.unit) {
-                  this.selectedFeatures.push(feature.value + feature.unit)
-                } else {
-                  this.selectedFeatures.push(feature.value)
-                }
-              }
-            } else {
-              if (feature.value.length !== 0) {
-                Array.prototype.push.apply(this.selectedFeatures, feature.value)
-              }
-            }
-          })
-      } else {
-        this.atomizerSpecs
-          .filter((v) => v.isFeature === true)
-          .forEach((feature) => {
-            if (typeof feature.value === 'string') {
-              if (feature.value === 'Yes') {
-                this.selectedFeatures.push(
-                  feature.name + feature.unit ? feature.unit : '',
-                )
-              } else if (feature.value !== 'No') {
-                if (feature.unit) {
-                  this.selectedFeatures.push(feature.value + feature.unit)
-                } else {
-                  this.selectedFeatures.push(feature.value)
-                }
-              }
-            } else {
-              if (feature.value.length !== 0) {
-                Array.prototype.push.apply(this.selectedFeatures, feature.value)
-              }
-            }
-          })
-      }
-      this.selectedFeatures = this.selectedFeatures.filter(
-        (v) => v !== '' || v !== null,
-      )
-      var imageUrls = []
-      this.productImagesPreview = []
-      this.facebookImagesPreview = []
-      this.progressDialog = true
       if (this.productPhotos.length === 0) {
         await Swal.fire('Image is required', '', 'warning')
         return
       }
+      this.selectedFeatures = []
+      let imageUrls = []
+      this.productImagesPreview = []
+      this.facebookImagesPreview = []
+      this.progressDialog = true
+      let specs =
+        this.selectedProduct === 'Mod' ? this.modSpecs : this.atomizerSpecs
+      specs
+        .filter((v) => v.isFeature === true)
+        .forEach((feature) => {
+          if (typeof feature.value === 'string') {
+            if (feature.value === 'Yes') {
+              this.selectedFeatures.push(feature.name)
+            } else if (feature.value !== 'No') {
+              if (feature.unit) {
+                this.selectedFeatures.push(feature.value + feature.unit)
+              } else {
+                this.selectedFeatures.push(feature.value)
+              }
+            }
+          } else {
+            if (feature.value.length !== 0) {
+              Array.prototype.push.apply(this.selectedFeatures, feature.value)
+            }
+          }
+        })
+      this.selectedFeatures = this.selectedFeatures.filter(
+        (v) => v !== '' || v !== null,
+      )
       try {
         let files = [...this.facebookBanner, ...this.productPhotos]
         for (let i = 0; i < files.length; i++) {
@@ -409,32 +366,17 @@ export default {
             type: file.type,
           })
         }
-        if (this.selectedProduct === 'Atomizer') {
-          await fb.db.collection('Products').add({
-            type: this.selectedProduct,
-            company: this.txtCompany,
-            model: this.txtModel,
-            desc: this.txtDesc,
-            images: imageUrls,
-            features: this.selectedFeatures,
-            specs: this.atomizerSpecs.filter((v) => v.value.length !== 0),
-            lastScore: 0,
-          })
-        } else if (this.selectedProduct === 'Mod') {
-          await fb.db.collection('Products').add({
-            type: this.selectedProduct,
-            company: this.txtCompany,
-            model: this.txtModel,
-            desc: this.txtDesc,
-            images: imageUrls,
-            features: this.selectedFeatures,
-            specs: this.modSpecs.filter((v) => v.value.length !== 0),
-            lastScore: 0,
-          })
-        }
+        fb.db.collection('Products').add({
+          type: this.selectedProduct,
+          company: this.txtCompany,
+          model: this.txtModel,
+          desc: this.txtDesc,
+          images: imageUrls,
+          features: this.selectedFeatures,
+          specs: specs.filter((v) => v.value.length !== 0),
+          lastScore: 0,
+        })
         this.$refs.formRef.reset()
-        this.specs.Atomizer.map((v) => (v.value = 'N/A'))
-        this.specs.Mod.map((v) => (v.value = 'N/A'))
       } catch (error) {
         console.log(error)
         this.progressDialog = false

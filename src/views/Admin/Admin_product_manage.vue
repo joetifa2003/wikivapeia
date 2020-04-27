@@ -269,44 +269,12 @@ export default {
       progressMsg: '',
       product: {},
       currentImages: [],
-      companies: [
-        'Vandy vape',
-        'Geek vape',
-        'Wootofo',
-        'Smoke',
-        'Voopoo',
-        'Vaporesso',
-        'Aspire',
-        'Eleaf',
-        'Sigelei',
-        'Wismec',
-        'Kaees',
-        'DoVopo',
-        'AugVape',
-        'ExVape',
-        'Vapefly',
-        'Vapor',
-        'Vapes',
-        'OBS',
-        'Think vape',
-        'Rincoe',
-        'Steam crave',
-        'Hell vape',
-        'Fumytech',
-        'Kaees',
-        'Cthulhu',
-        'Damn vape',
-        'Ehpro',
-        'Uwell',
-        'Ofrf',
-        'IJoy',
-        'Dotmod',
-      ],
       featureList: [],
       deleteList: [],
       searchIndex: [],
       modSpecs: [],
       atomizerSpecs: [],
+      companiesQ: [],
     }
   },
   created() {
@@ -316,6 +284,7 @@ export default {
     productListQ: fb.db.collection('Products'),
     modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
     atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
+    companiesQ: fb.db.collection('Companies'),
   },
   watch: {
     productListQ: {
@@ -327,6 +296,12 @@ export default {
     },
   },
   computed: {
+    companies: {
+      set: function () {},
+      get: function () {
+        return sortBy(this.companiesQ.map((v) => v.name))
+      },
+    },
     productListQWithId() {
       if (!this.productListQ) {
         return []

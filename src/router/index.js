@@ -41,6 +41,17 @@ const routes = [
     },
   },
   {
+    path: '/admin/companies',
+    name: 'Companies',
+    component: () =>
+      import(
+        /* webpackChunkName: "Admin_product_add" */ '../views/Admin/Admin_companies.vue'
+      ),
+    meta: {
+      requireAdmin: true,
+    },
+  },
+  {
     path: '/admin/product/add',
     name: 'Admin product add',
     component: () =>
