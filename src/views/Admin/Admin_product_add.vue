@@ -256,6 +256,7 @@ export default {
       facebookImagesPreview: [],
       products: [],
       companiesQ: [],
+      selectedFeatures: [],
     }
   },
   async created() {
@@ -280,16 +281,16 @@ export default {
   watch: {
     productPhotos: {
       handler() {
-        this.productImagesPreview = [
-          ...this.productPhotos.map((v) => URL.createObjectURL(v.image)),
-        ]
+        this.productImagesPreview = this.productPhotos.map((v) =>
+          URL.createObjectURL(v.image),
+        )
       },
     },
     facebookBanner: {
       handler() {
-        this.facebookImagesPreview = [
-          ...this.facebookBanner.map((v) => URL.createObjectURL(v.image)),
-        ]
+        this.facebookImagesPreview = this.facebookBanner.map((v) =>
+          URL.createObjectURL(v.image),
+        )
       },
     },
   },
@@ -312,11 +313,9 @@ export default {
         await Swal.fire('Image is required', '', 'warning')
         return
       }
+      this.progressDialog = true
       this.selectedFeatures = []
       let imageUrls = []
-      this.productImagesPreview = []
-      this.facebookImagesPreview = []
-      this.progressDialog = true
       let specs =
         this.selectedProduct === 'Mod' ? this.modSpecs : this.atomizerSpecs
       specs
@@ -338,9 +337,9 @@ export default {
             }
           }
         })
-      this.selectedFeatures = this.selectedFeatures.filter(
-        (v) => v !== '' || v !== null,
-      )
+      this.selectedFeatures = this.selectedFeatures.filter(function (el) {
+        return el != null
+      })
       try {
         let files = [...this.facebookBanner, ...this.productPhotos]
         for (let i = 0; i < files.length; i++) {
@@ -375,6 +374,8 @@ export default {
           features: this.selectedFeatures,
           specs: specs.filter((v) => v.value.length !== 0),
           lastScore: 0,
+          approved: true,
+          date: new Date(),
         })
         this.$refs.formRef.reset()
       } catch (error) {
@@ -382,6 +383,11 @@ export default {
         this.progressDialog = false
       }
       this.progressDialog = false
+      this.productImagesPreview = []
+      this.facebookImagesPreview = []
+      this.txtDesc = ''
+      this.productPhotos = []
+      this.facebookBanner = []
       Swal.fire('Added!', 'Product has been added!', 'success')
     },
   },

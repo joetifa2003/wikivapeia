@@ -109,7 +109,7 @@
         <v-form ref="formRef">
           <v-col>
             <v-row>
-              <v-col cols="12" md="6">
+              <v-col cols="12">
                 <v-combobox
                   @input="productChange"
                   :items="['Mod', 'Atomizer']"
@@ -215,20 +215,13 @@
                   </v-row>
                 </div>
               </v-col>
-              <v-col cols="12" md="6">
-                <v-textarea
-                  label="Descreption"
-                  class="mt-12"
-                  v-model="product.desc"
-                  :rules="[
-                    (v) => !!v || v === 'N/A' || 'Please enter value or N/A',
-                  ]"
-                />
+              <v-col cols="12">
+                <quill-editor v-model="product.desc" :options="editorOption" />
               </v-col>
             </v-row>
           </v-col>
         </v-form>
-        <v-col>
+        <v-col cols="12">
           <v-btn @click="updateProduct" class="primary white--text"
             >Update</v-btn
           >
@@ -246,12 +239,14 @@ import { v1 as uuid } from 'uuid'
 const fb = require('../../firebaseConfig')
 import Swal from 'sweetalert2'
 import Fuse from 'fuse.js'
+import { quillEditor } from 'vue-quill-editor'
 
 export default {
   name: 'Admin_product_manage',
   components: {
     Progress: () => import('../../components/Progress'),
     ProductItem: () => import('../../components/Items/ProductItem'),
+    quillEditor,
   },
   data() {
     return {
@@ -275,6 +270,23 @@ export default {
       modSpecs: [],
       atomizerSpecs: [],
       companiesQ: [],
+      editorOption: {
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            [{ direction: 'rtl' }],
+            [{ header: [1, 2, 3, 4, 5, 6, false] }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['clean'],
+            ['link', 'image', 'video'],
+          ],
+        },
+      },
     }
   },
   created() {

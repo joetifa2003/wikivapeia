@@ -104,7 +104,7 @@ export default {
   },
   firestore() {
     return {
-      productListQ: fb.db.collection('Products'),
+      productListQ: fb.db.collection('Products').where('approved', '==', true),
     }
   },
   watch: {

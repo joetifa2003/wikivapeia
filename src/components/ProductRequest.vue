@@ -3,6 +3,7 @@
     <!-- <div style="position: fixed; bottom: 10px; right: 10px; z-index: 100;">
       <v-btn small class="red darken-4 white--text">Request new product</v-btn>
     </div> -->
+    <Progress :progressDialog="progressDialog" msg="Sending product request" />
     <v-dialog
       v-model="productReuestDialog"
       :width="$vuetify.breakpoint.smAndDown ? '100%' : '50%'"
@@ -140,10 +141,17 @@
 
 <script>
 import { sortBy } from 'lodash'
+import { v1 as uuid } from 'uuid'
+import imageCompression from 'browser-image-compression'
+import { quillEditor } from 'vue-quill-editor'
 const fb = require('../firebaseConfig')
 
 export default {
   name: 'ProductRequest',
+  components: {
+    Progress: () => import('../components/Progress'),
+    quillEditor,
+  },
   data() {
     return {
       productReuestDialog: false,
@@ -169,6 +177,8 @@ export default {
       productImagesPreview: [],
       companiesQ: [],
       products: [],
+      progressDialog: false,
+      selectedFeatures: [],
     }
   },
   firestore() {
@@ -195,7 +205,66 @@ export default {
         this.productPhotos.push({ image: file, type: 'product' })
       }
     },
-    sendProductRequest() {},
+    async sendProductRequest() {
+      let file = this.productPhotos[0]
+      let imageUrls = []
+      let specs =
+        this.selectedProduct === 'Mod' ? this.modSpecs : this.atomizerSpecs
+      specs
+        .filter((v) => v.isFeature === true)
+        .forEach((feature) => {
+          if (typeof feature.value === 'string') {
+            if (feature.value === 'Yes') {
+              this.selectedFeatures.push(feature.name)
+            } else if (feature.value !== 'No') {
+              if (feature.unit) {
+                this.selectedFeatures.push(feature.value + feature.unit)
+              } else {
+                this.selectedFeatures.push(feature.value)
+              }
+            }
+          } else {
+            if (feature.value.length !== 0) {
+              Array.prototype.push.apply(this.selectedFeatures, feature.value)
+            }
+          }
+        })
+      this.selectedFeatures = this.selectedFeatures.filter(
+        (v) => v !== '' || v !== null,
+      )
+      var fileCompressed = await imageCompression(file.image, {
+        maxSizeMB: 1,
+        useWebWorker: true,
+        onProgress: () => {},
+      })
+      const filename = uuid() + '.' + file.image.name.split('.').pop()
+      const snapshot = await fb.st
+        .ref()
+        .child('Products')
+        .child(this.selectedProduct + 's')
+        .child('images')
+        .child(filename)
+        .put(fileCompressed)
+      const downloadURL = await snapshot.ref.getDownloadURL()
+      imageUrls.push({
+        index: 0,
+        image: downloadURL,
+        imageName: filename,
+        type: file.type,
+      })
+      fb.db.collection('Products').add({
+        type: this.selectedProduct,
+        company: this.txtCompany,
+        model: this.txtModel,
+        desc: this.txtDesc,
+        images: imageUrls,
+        features: this.selectedFeatures,
+        specs: specs.filter((v) => v.value.length !== 0),
+        lastScore: 0,
+        approved: false,
+        date: new Date(),
+      })
+    },
   },
   watch: {
     productPhotos: {

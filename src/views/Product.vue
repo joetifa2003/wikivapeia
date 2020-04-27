@@ -10,7 +10,9 @@
           <vue-headful
             :title="`WIKIVAPEIA - ${facebookTitle.toUpperCase()} RANKING`"
             :image="
-              product.images.filter((v) => v.type === 'facebook')[0].image
+              product.images.filter((v) => v.type === 'facebook')[0]
+                ? product.images.filter((v) => v.type === 'facebook')[0].image
+                : product.images.filter((v) => v.type === 'product')[0].image
             "
           />
           <v-col>
@@ -684,6 +686,9 @@ export default {
           if (this.voteSum.votersCount === 1) {
             await fb.db.collection('VoteSum').doc(this.productID).delete()
             await fb.db.collection('Votes').doc(this.votedQ[0].id).delete()
+            await fb.db.collection('Products').doc(this.productID).update({
+              lastScore: this.overall,
+            })
           } else {
             for (let i = 0; i < this.votedQ[0].votes.length; i++) {
               let votedValue = this.votedQ[0].votes[i].value
