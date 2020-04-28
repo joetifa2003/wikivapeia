@@ -13,9 +13,10 @@ const firebaseConfig = {
   storageBucket: 'wikivapia.appspot.com',
   messagingSenderId: '520679833961',
   appId: '1:520679833961:web:ced8aec847beb39c543df8',
-  measurementId: 'G-CL84JEE1LY',
+  measurementId: 'G-HGYBNQCS7V',
 }
 firebase.initializeApp(firebaseConfig)
+firebase.analytics()
 
 // firebase utils
 const db = firebase.firestore()
