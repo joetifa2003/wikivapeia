@@ -55,7 +55,7 @@
                     >
                       <div
                         class="white--text font-weight-bold text-center"
-                        style="font-size: 40px;"
+                        style="font-size: 35px;"
                       >
                         {{ overall.toFixed(2) }}
                       </div>

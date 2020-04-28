@@ -21,97 +21,103 @@
           accept="image/x-png,image/jpeg"
           @change="productPhotoChange"
         />
-        <v-combobox
-          :items="['Mod', 'Atomizer']"
-          :rules="[(v) => !!v || 'Product type is required']"
-          clearable
-          label="Select product type"
-          v-model="selectedProduct"
-        />
-        <v-combobox
-          :items="companies"
-          :rules="[(v) => !!v || 'Company is required']"
-          label="Company"
-          v-model="txtCompany"
-        />
-        <v-combobox
-          :rules="[(v) => !!v || 'Model is required']"
-          v-model="txtModel"
-          append-icon=""
-          hide-details
-          clearable
-          :items="products"
-          label="Model"
-          item-text="model"
-          item-value="model"
-          class="mb-7"
-        >
-          <template v-slot:item="{ parent, item }">
-            <v-list-item-avatar tile size="70">
-              <v-img
-                :src="item.images.filter((v) => v.type === 'product')[0].image"
-              />
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title
-                v-html="parent.genFilteredText(item.model.toUpperCase())"
-              ></v-list-item-title>
-              <v-list-item-subtitle
-                v-html="item.company.toUpperCase()"
-              ></v-list-item-subtitle>
-              <v-list-item-subtitle>
-                <v-chip
-                  v-for="(feature, i) in item.features"
-                  :key="i"
-                  class="mr-2 mt-2 font-weight-medium"
-                  style="font-size: 10px;"
-                  >{{ feature }}</v-chip
-                >
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </template>
-        </v-combobox>
-        <!--- specs -->
-        <div v-if="selectedProduct === 'Atomizer'">
-          <v-row>
-            <v-col v-for="spec in atomizerSpecs" :key="spec.id" cols="6">
-              <v-combobox
-                v-if="spec.isCombo && spec.multi"
-                :items="spec.values"
-                :label="spec.name"
-                v-model="spec.value"
-                multiple
-              />
-              <v-combobox
-                v-else-if="spec.isCombo"
-                :items="spec.values"
-                :label="spec.name"
-                v-model="spec.value"
-              />
-              <v-text-field v-else :label="spec.name" v-model="spec.value" />
-            </v-col>
-          </v-row>
-        </div>
-        <div v-if="selectedProduct === 'Mod'">
-          <v-row>
-            <v-col v-for="spec in modSpecs" :key="spec.id" cols="6">
-              <v-combobox
-                v-if="spec.isCombo && spec.multi"
-                :items="spec.values"
-                :label="spec.name"
-                v-model="spec.value"
-                multiple
-              />
-              <v-combobox
-                v-else-if="spec.isCombo"
-                :items="spec.values"
-                :label="spec.name"
-                v-model="spec.value"
-              />
-              <v-text-field v-else :label="spec.name" v-model="spec.value" />
-            </v-col>
-          </v-row>
-        </div>
+        <v-form ref="form">
+          <v-combobox
+            :items="['Mod', 'Atomizer']"
+            :rules="[(v) => !!v || 'Product type is required']"
+            clearable
+            label="Select product type"
+            v-model="selectedProduct"
+          />
+          <v-combobox
+            :disabled="!selectedProduct"
+            :items="companies"
+            :rules="[(v) => !!v || 'Company is required']"
+            label="Company"
+            v-model="txtCompany"
+          />
+          <v-combobox
+            :disabled="!txtCompany"
+            :rules="[(v) => !!v || 'Product name is required']"
+            v-model="txtModel"
+            append-icon=""
+            hide-details
+            clearable
+            :items="products"
+            label="Product name"
+            item-text="model"
+            item-value="model"
+            class="mb-7"
+          >
+            <template v-slot:item="{ parent, item }">
+              <v-list-item-avatar tile size="70">
+                <v-img
+                  :src="
+                    item.images.filter((v) => v.type === 'product')[0].image
+                  "
+                />
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title
+                  v-html="parent.genFilteredText(item.model.toUpperCase())"
+                ></v-list-item-title>
+                <v-list-item-subtitle
+                  v-html="item.company.toUpperCase()"
+                ></v-list-item-subtitle>
+                <v-list-item-subtitle>
+                  <v-chip
+                    v-for="(feature, i) in item.features"
+                    :key="i"
+                    class="mr-2 mt-2 font-weight-medium"
+                    style="font-size: 10px;"
+                    >{{ feature }}</v-chip
+                  >
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </template>
+          </v-combobox>
+          <!--- specs -->
+          <div v-if="selectedProduct === 'Atomizer'">
+            <v-row>
+              <v-col v-for="spec in atomizerSpecs" :key="spec.id" cols="6">
+                <v-combobox
+                  v-if="spec.isCombo && spec.multi"
+                  :items="spec.values"
+                  :label="spec.name"
+                  v-model="spec.value"
+                  multiple
+                />
+                <v-combobox
+                  v-else-if="spec.isCombo"
+                  :items="spec.values"
+                  :label="spec.name"
+                  v-model="spec.value"
+                />
+                <v-text-field v-else :label="spec.name" v-model="spec.value" />
+              </v-col>
+            </v-row>
+          </div>
+          <div v-if="selectedProduct === 'Mod'">
+            <v-row>
+              <v-col v-for="spec in modSpecs" :key="spec.id" cols="6">
+                <v-combobox
+                  v-if="spec.isCombo && spec.multi"
+                  :items="spec.values"
+                  :label="spec.name"
+                  v-model="spec.value"
+                  multiple
+                />
+                <v-combobox
+                  v-else-if="spec.isCombo"
+                  :items="spec.values"
+                  :label="spec.name"
+                  v-model="spec.value"
+                />
+                <v-text-field v-else :label="spec.name" v-model="spec.value" />
+              </v-col>
+            </v-row>
+          </div>
+        </v-form>
         <v-col cols="12" class="pa-0">
           <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
             >Descreption</v-subheader
@@ -206,6 +212,7 @@ export default {
       }
     },
     async sendProductRequest() {
+      this.progressDialog = true
       let file = this.productPhotos[0]
       let imageUrls = []
       let specs =
@@ -264,6 +271,11 @@ export default {
         approved: false,
         date: new Date(),
       })
+      this.productPhotos.length = 0
+      this.productImagesPreview.length = 0
+      this.txtDesc = ''
+      this.$refs.form.reset()
+      this.progressDialog = false
     },
   },
   watch: {

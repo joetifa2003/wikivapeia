@@ -22,9 +22,9 @@ function titleBuilder({ company, model, type, specs }, hasCompany) {
     let category = specs.filter((v) => v.name === 'Category')[0].value
     let coil = specs.filter((v) => v.name === 'Coil building')[0].value
 
-    return `${
-      hasCompany ? company + ' ' : ''
-    }${model} ${category} ${specType} ${coil}`
+    return `${hasCompany ? company + ' ' : ''}${model ? model : ''} ${
+      category ? category : ''
+    } ${specType ? specType : ''} ${coil ? coil : ''} Tank`
   }
 }
 

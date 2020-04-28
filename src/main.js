@@ -7,6 +7,7 @@ import { firestorePlugin } from 'vuefire'
 const fb = require('./firebaseConfig')
 import vueHeadful from 'vue-headful'
 var SocialSharing = require('vue-social-sharing')
+import VueGtag from 'vue-gtag'
 import 'quill/dist/quill.core.css' // import styles
 import 'quill/dist/quill.snow.css' // for snow theme
 
@@ -14,6 +15,9 @@ Vue.config.productionTip = false
 Vue.config.devtools = true
 Vue.config.performance = true
 
+Vue.use(VueGtag, {
+  config: { id: 'UA-164765217-1' },
+})
 Vue.use(firestorePlugin)
 Vue.use(SocialSharing)
 Vue.component('vue-headful', vueHeadful)

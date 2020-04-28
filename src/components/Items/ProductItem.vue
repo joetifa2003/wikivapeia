@@ -45,6 +45,11 @@
             >Update product</v-btn
           >
           <v-btn
+            @click.stop="publish(product)"
+            :color="product.approved ? 'red' : 'blue'"
+            >{{ product.approved ? 'unpublish' : 'publish' }}</v-btn
+          >
+          <v-btn
             min-width="200"
             max-height="200"
             @click.stop="$emit('deleteProduct', product)"
@@ -97,6 +102,7 @@
 </template>
 
 <script>
+const fb = require('../../firebaseConfig')
 const util = require('../../utils/utlity.js')
 
 export default {
@@ -108,6 +114,13 @@ export default {
     },
     title() {
       return util.titleBuilder(this.product, false)
+    },
+  },
+  methods: {
+    publish(product) {
+      fb.db.collection('Products').doc(product.id).update({
+        approved: !product.approved,
+      })
     },
   },
 }

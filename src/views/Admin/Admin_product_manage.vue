@@ -10,12 +10,13 @@
               label="Search"
               @input="search"
             />
+            <v-switch color="black" label="Requests only" v-model="reqOnly" />
             <v-row>
               <v-col
                 cols="12"
                 sm="6"
                 xl="4"
-                v-for="product in productList"
+                v-for="product in products"
                 :key="product.id"
               >
                 <ProductItem
@@ -165,41 +166,9 @@
                     </v-list-item-content>
                   </template>
                 </v-combobox>
-                <v-combobox
-                  :items="featureList"
-                  :rules="[(v) => !!v || 'Feature is required']"
-                  clearable
-                  multiple
-                  class="multiple"
-                  small-chips
-                  label="Select features"
-                  v-model="product.features"
-                />
-                <!--- specs -->
-                <div v-if="product.type === 'Mod'">
+                <div>
                   <v-row>
-                    <v-col v-for="spec in modSpecs" :key="spec.id" cols="6">
-                      <v-combobox
-                        v-if="spec.isCombo"
-                        :items="spec.values"
-                        :label="spec.name"
-                        v-model="spec.value"
-                      />
-                      <v-text-field
-                        v-else
-                        :label="spec.name"
-                        v-model="spec.value"
-                      />
-                    </v-col>
-                  </v-row>
-                </div>
-                <div v-else>
-                  <v-row>
-                    <v-col
-                      v-for="spec in atomizerSpecs"
-                      :key="spec.id"
-                      cols="6"
-                    >
+                    <v-col v-for="spec in productSpecs" :key="spec.id" cols="6">
                       <v-combobox
                         v-if="spec.isCombo"
                         :items="spec.values"
@@ -263,6 +232,7 @@ export default {
       progressDialog: false,
       progressMsg: '',
       product: {},
+      productQ: {},
       currentImages: [],
       featureList: [],
       deleteList: [],
@@ -287,13 +257,14 @@ export default {
           ],
         },
       },
+      reqOnly: false,
     }
   },
   created() {
     this.companies = orderBy(this.companies)
   },
   firestore: {
-    productListQ: fb.db.collection('Products'),
+    productListQ: fb.db.collection('Products').orderBy('date', 'desc'),
     modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
     atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
     companiesQ: fb.db.collection('Companies'),
@@ -308,6 +279,13 @@ export default {
     },
   },
   computed: {
+    products() {
+      if (this.reqOnly) {
+        return this.productList.filter((v) => v.approved === false)
+      } else {
+        return this.productList
+      }
+    },
     companies: {
       set: function () {},
       get: function () {
@@ -324,10 +302,17 @@ export default {
       }))
     },
     searchedList() {
-      if (this.txtSearch === '') {
-        return this.productList
+      return this.searchIndex.search(this.txtSearch).map((v) => v.item)
+    },
+    productSpecs() {
+      if (this.product.type === this.productQ.type) {
+        return this.product.specs
       } else {
-        return this.searchIndex.search(this.txtSearch).map((v) => v.item)
+        if (this.product.type === 'Mod') {
+          return this.modSpecs
+        } else {
+          return this.atomizerSpecs
+        }
       }
     },
   },
@@ -351,6 +336,7 @@ export default {
     async updateProductClick(product) {
       this.currentID = product.id
       this.product = product
+      this.productQ = Object.assign({}, product)
       this.updateImageDialog = !this.updateImageDialog
       this.featureListFill()
     },
