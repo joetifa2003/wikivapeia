@@ -3,6 +3,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/firestore/memory'
 import 'firebase/auth'
+import 'firebase/analytics'
 
 // firebase init goes here
 const firebaseConfig = {
