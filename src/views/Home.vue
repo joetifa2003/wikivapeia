@@ -1,9 +1,5 @@
 <template>
   <v-container fill-height fluid class="pa-0">
-    <vue-headful
-      :title="`Wikivapeia - Worldwide vape ranking service`"
-      description="Wikivapeia offers ranking for vape components like Atomizers, Mods and E-liquid by voting from users around the world to guide them to their needs."
-    />
     <Landing
       title="Wikivapeia"
       subtitle="Occaecat deserunt sit occaecat et labore ipsum. Amet ut nisi
