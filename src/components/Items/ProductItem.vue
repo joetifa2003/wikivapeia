@@ -1,17 +1,80 @@
 <template>
   <v-hover v-slot:default="{ hover }">
     <v-card
+      v-if="product"
       class="pa-3"
       height="100%"
       width="100%"
       :elevation="hover ? 12 : ''"
     >
       <v-overlay v-if="page === 'Ranks'" :absolute="true" :value="hover">
-        <v-btn
-          @click.stop="$router.push('/product/' + product.id)"
-          class="primary secondary--text"
-          >Details</v-btn
+        <div
+          style="width: 100%; height: 100%;"
+          class="d-flex justify-center flex-column"
         >
+          <div
+            v-if="userInfo !== null"
+            style="height: 50%;"
+            class="d-flex justify-end"
+          >
+            <v-tooltip bottom v-if="!product.sellers.includes(user.uid)">
+              <template v-slot:activator="{ on }">
+                <v-btn
+                  @click.stop="addToSellers('add')"
+                  color="green"
+                  icon
+                  width="50px"
+                  height="50px"
+                  v-on="on"
+                >
+                  <v-img
+                    width="50px"
+                    height="50px"
+                    src="~@/assets/addtostore.svg"
+                  />
+                </v-btn>
+              </template>
+              <span>Add to {{ userInfo.name }} product list</span>
+            </v-tooltip>
+            <v-tooltip bottom v-else>
+              <template v-slot:activator="{ on }">
+                <v-btn
+                  icon
+                  width="50px"
+                  height="50px"
+                  @click.stop="addToSellers('remove')"
+                  color="red"
+                  v-on="on"
+                >
+                  <v-img
+                    width="50px"
+                    height="50px"
+                    src="~@/assets/removefstore.svg"
+                /></v-btn>
+              </template>
+              <span>Remove from {{ userInfo.name }} product list</span>
+            </v-tooltip>
+          </div>
+          <div
+            v-if="userInfo && userInfo.type === 'store'"
+            style="height: 50%;"
+            class="d-flex justify-center"
+          >
+            <v-btn
+              style="margin-top: -20px;"
+              @click.stop="$router.push('/product/' + product.id)"
+              class="black white--text"
+              >More Details</v-btn
+            >
+          </div>
+          <div v-else class="d-flex justify-center">
+            <v-btn
+              @click.stop="$router.push('/product/' + product.id)"
+              class="black white--text"
+              >More Details</v-btn
+            >
+          </div>
+        </div>
       </v-overlay>
       <v-overlay
         class="d-flex pa-0"
@@ -65,15 +128,15 @@
           />
         </div>
       </v-overlay>
-      <v-img :src="image" height="250px" contain />
+      <v-img :src="product.productImages[0].image" height="250px" contain />
       <v-row>
         <v-col class="pa-0">
           <v-card-title>
-            <div class="pre">
-              {{ title }}
+            <div class="pre" style="font-size: 18px;">
+              {{ product.titleBuilder(false) }}
             </div>
           </v-card-title>
-          <v-card-subtitle>{{ product.company.toUpperCase() }}</v-card-subtitle>
+          <v-card-subtitle>{{ product.getCompany }}</v-card-subtitle>
         </v-col>
         <v-col cols="3" class="pl-0">
           <div class="-width d-flex align-end justify-end">
@@ -85,7 +148,7 @@
                 class="white--text font-weight-bold text-center"
                 style="font-size: 28px;"
               >
-                {{ product.lastScore.toFixed(2) }}
+                {{ product.getLastScore }}
               </div>
               <div
                 class="text-center white--text"
@@ -102,25 +165,50 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import Product from '../../classes/Product'
 const fb = require('../../firebaseConfig')
-const util = require('../../utils/utlity.js')
 
 export default {
   name: 'Product_item',
-  props: ['product', 'page'],
+  props: {
+    product: Product,
+    page: String,
+  },
   computed: {
-    image() {
-      return this.product.images.filter((v) => v.type === 'product')[0].image
-    },
-    title() {
-      return util.titleBuilder(this.product, false)
-    },
+    ...mapState(['user', 'userInfo']),
   },
   methods: {
     publish(product) {
       fb.db.collection('Products').doc(product.id).update({
         approved: !product.approved,
       })
+    },
+    addToSellers(addRemove) {
+      if (addRemove === 'add') {
+        fb.db
+          .collection('Products')
+          .doc(this.product.id)
+          .get()
+          .then((doc) => {
+            let data = doc.data()
+            doc.ref.update({
+              sellers: [...data.sellers, this.user.uid],
+            })
+          })
+      } else {
+        fb.db
+          .collection('Products')
+          .doc(this.product.id)
+          .get()
+          .then((doc) => {
+            let data = doc.data()
+            data.sellers.splice(data.sellers.indexOf(this.user.uid), 1)
+            doc.ref.update({
+              sellers: data.sellers,
+            })
+          })
+      }
     },
   },
 }
@@ -131,6 +219,16 @@ export default {
   border-radius: 15px;
 }
 .pre {
+  white-space: initial;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   word-break: keep-all; /*this stops the word breaking*/
+}
+.v-overlay__content {
+  width: 100%;
+  height: 100%;
+}
+.v-overlay__scrim {
+  background: transparent !important;
 }
 </style>

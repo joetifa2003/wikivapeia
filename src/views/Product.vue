@@ -2,30 +2,83 @@
   <v-container
     fill-height
     fluid
-    class="align-start pa-2 justify-center pt-5 full"
+    class="align-start pa-2 justify-center pt-5 full grey lighten-3"
   >
     <v-row class="justify-center" style="width: 100%;">
-      <v-col cols="12" lg="7">
+      <v-col cols="12" md="8" lg="6">
         <v-card v-if="product" width="100%" elevation="0">
           <vue-headful
-            :title="`WIKIVAPEIA - ${facebookTitle.toUpperCase()} RANKING`"
+            :title="`WIKIVAPEIA - ${product
+              .titleBuilder(true)
+              .toUpperCase()} RANKING`"
             :image="
-              product.images.filter((v) => v.type === 'facebook')[0]
-                ? product.images.filter((v) => v.type === 'facebook')[0].image
-                : product.images.filter((v) => v.type === 'product')[0].image
+              product.facebookImages[0]
+                ? product.facebookImages[0].image
+                : product.productImages[0].image
             "
           />
           <v-col>
+            <div class="d-flex flex-row pa-3">
+              <div class="flex-grow-1">
+                <h1
+                  class="font-weight-medium"
+                  :style="{
+                    fontSize: $vuetify.breakpoint.smAndDown ? '20px' : '25px',
+                  }"
+                >
+                  {{ product.titleBuilder(false) }}
+                </h1>
+                <div
+                  class="pa-0 font-weight-medium grey--text lighten-2"
+                  style="font-size: 15px;"
+                >
+                  {{ product.company.toUpperCase() }}
+                </div>
+              </div>
+              <div>
+                <div
+                  class="d-flex justify-end align-end ml-1"
+                  style="height: 100%;"
+                >
+                  <div
+                    style="height: 85px; width: 85px;"
+                    class="black white--text avgScore"
+                  >
+                    <div
+                      class="white--text font-weight-bold text-center"
+                      style="font-size: 35px;"
+                    >
+                      {{ overall.toFixed(2) }}
+                    </div>
+                    <div class="text-center" style="letter-spacing: 2px;">
+                      Score
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="width: 100%; height: 2px;" class="black" />
+            <div class="mt-2 d-flex justify-center grey lighten-4 py-2">
+              <v-chip
+                v-for="(feature, i) in product.features"
+                :key="i"
+                class="mr-2 font-weight-bold"
+                >{{ feature }}</v-chip
+              >
+            </div>
             <v-row>
-              <v-col cols="12" md="6">
+              <v-col cols="12" md="6" class="d-flex flex-column align-start">
                 <v-carousel
                   interval="4000"
-                  height="400"
+                  height="350px"
                   cycle
                   hide-delimiter-background
                   show-arrows-on-hover
                 >
-                  <v-carousel-item v-for="(image, i) in images" :key="i">
+                  <v-carousel-item
+                    v-for="(image, i) in product.productImages"
+                    :key="i"
+                  >
                     <v-img
                       contain
                       width="100%"
@@ -35,75 +88,33 @@
                   </v-carousel-item>
                 </v-carousel>
               </v-col>
-              <v-col cols="12" md="6">
-                <v-row>
-                  <v-col>
-                    <h1 class="font-weight-medium" style="font-size: 25px;">
-                      {{ title }}
-                    </h1>
+              <v-col cols="12" md="6" class="d-flex flex-column">
+                <div class="pa-2" v-for="(avg, i) in avgVotes" :key="i">
+                  <div class="d-flex flex-row justify-center align-center">
                     <div
-                      class="pa-0 font-weight-medium grey--text lighten-2"
-                      style="font-size: 15px;"
+                      style="width: 300px;"
+                      class="font-weight-bold black--text"
                     >
-                      {{ product.company.toUpperCase() }}
+                      {{ avg.name }}
                     </div>
-                  </v-col>
-                  <v-col cols="3" class="d-flex justify-end align-end pr-0">
-                    <div
-                      style="height: 85px; width: 85px;"
-                      class="grey darken-2 white--text avgScore"
-                    >
-                      <div
-                        class="white--text font-weight-bold text-center"
-                        style="font-size: 35px;"
-                      >
-                        {{ overall.toFixed(2) }}
-                      </div>
-                      <div class="text-center" style="letter-spacing: 2px;">
-                        Score
-                      </div>
-                    </div>
-                  </v-col>
-                </v-row>
-                <v-divider />
-                <div class="mt-2 mb-5">
-                  <v-chip
-                    v-for="(feature, i) in product.features"
-                    :key="i"
-                    class="mr-2 mt-2 font-weight-bold"
-                    >{{ feature }}</v-chip
-                  >
+                    <v-progress-linear
+                      background-color="grey lighten-2"
+                      class="mr-5"
+                      :value="avg.value * 10"
+                      height="15"
+                    />
+                    {{ avg.value.toFixed(1) }}
+                  </div>
                 </div>
-                <v-col cols="12" class="pa-0">
-                  <v-row v-for="(avg, i) in avgVotes" :key="i">
-                    <v-col class="pa-2">
-                      <div class="d-flex flex-row justify-center align-center">
-                        <div
-                          style="width: 300px;"
-                          class="font-weight-bold black--text"
-                        >
-                          {{ avg.name }}
-                        </div>
-                        <v-progress-linear
-                          background-color="grey lighten-2"
-                          class="mr-5"
-                          :value="avg.value * 10"
-                          height="15"
-                        />
-                        {{ avg.value.toFixed(1) }}
-                      </div>
-                    </v-col>
-                  </v-row>
-                </v-col>
-                <v-row>
-                  <v-col class="pa-0">
+                <v-row align="end">
+                  <v-col class="pa-0 pl-3">
                     <v-hover v-slot:default="{ hover }">
                       <div style="width: 1px;">
                         <v-btn
                           v-if="voted !== null && !hover"
                           @click.stop="voteClick"
                           :class="[
-                            'white--text mt-3 ml-2',
+                            'white--text',
                             voted ? 'grey darken-2' : 'red darken-4',
                           ]"
                           >{{ voted ? 'Unvote' : 'Vote now' }}</v-btn
@@ -111,115 +122,89 @@
                         <v-btn
                           v-if="voted !== null && hover"
                           @click.stop="voteClick"
-                          :class="['white--text mt-3 ml-2', 'red darken-4']"
+                          :class="['white--text', 'red darken-4']"
                           >{{ voted ? 'Unvote' : 'Vote now' }}</v-btn
                         >
                       </div>
                     </v-hover>
                   </v-col>
-                  <v-col class="d-flex justify-end">
+                  <v-col class="d-flex justify-end pa-0 pr-3">
                     <v-icon color="black" class="mr-2">person</v-icon>
-                    <v-chip
-                      class="font-weight-medium red darken-4 white--text mr-n2"
-                    >
+                    <v-chip class="font-weight-medium red darken-4 white--text">
                       {{ voteSum ? voteSum.votersCount : 0 }} Voted</v-chip
                     >
                   </v-col>
                 </v-row>
               </v-col>
             </v-row>
-            <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
-              >Share
-            </v-subheader>
-            <v-col cols="6" class="pa-0 mb-5">
-              <v-divider />
-            </v-col>
-            <social-sharing
-              :url="'wikivapeia.com' + $route.path"
-              hashtags="WIKIVAPEIA"
-              network-tag="span"
-              inline-template
+            <div
+              style="height: 48px;"
+              class="grey lighten-4 d-flex align-center"
             >
-              <div class="d-flex justify-space-around" style="width: 150px;">
-                <network network="facebook">
-                  <font-awesome-icon
-                    class="indigo--text darken-4"
-                    :icon="['fab', 'facebook-square']"
-                    size="2x"
-                  />
-                </network>
-                <network network="twitter">
-                  <font-awesome-icon
-                    class="blue--text darken-2"
-                    :icon="['fab', 'twitter-square']"
-                    size="2x"
-                  />
-                </network>
-                <network network="whatsapp">
-                  <font-awesome-icon
-                    class="green--text darken-3"
-                    :icon="['fab', 'whatsapp-square']"
-                    size="2x"
-                  />
-                </network>
-                <network network="telegram">
-                  <font-awesome-icon
-                    class="blue--text darken-3"
-                    :icon="['fab', 'telegram']"
-                    size="2x"
-                  />
-                </network>
+              <social-sharing
+                class="my-4"
+                :url="'wikivapeia.com' + $route.path"
+                hashtags="WIKIVAPEIA"
+                network-tag="span"
+                inline-template
+              >
+                <div class="d-flex justify-space-around" style="width: 150px;">
+                  <network network="facebook">
+                    <font-awesome-icon
+                      class="indigo--text darken-4"
+                      :icon="['fab', 'facebook-square']"
+                      size="2x"
+                    />
+                  </network>
+                  <network network="twitter">
+                    <font-awesome-icon
+                      class="blue--text darken-2"
+                      :icon="['fab', 'twitter-square']"
+                      size="2x"
+                    />
+                  </network>
+                  <network network="whatsapp">
+                    <font-awesome-icon
+                      class="green--text darken-3"
+                      :icon="['fab', 'whatsapp-square']"
+                      size="2x"
+                    />
+                  </network>
+                  <network network="telegram">
+                    <font-awesome-icon
+                      class="blue--text darken-3"
+                      :icon="['fab', 'telegram']"
+                      size="2x"
+                    />
+                  </network>
 
-                <network network="instagram">
-                  <font-awesome-icon
-                    class="blue--text darken-3"
-                    :icon="['fab', 'telegram']"
-                    size="2x"
-                  />
-                </network>
-              </div>
-            </social-sharing>
+                  <network network="instagram">
+                    <font-awesome-icon
+                      class="blue--text darken-3"
+                      :icon="['fab', 'telegram']"
+                      size="2x"
+                    />
+                  </network>
+                </div>
+              </social-sharing>
+            </div>
             <v-row>
-              <v-col cols="12" md="8" class="">
+              <v-col cols="12" md="6" class="d-flex flex-column">
                 <v-subheader
                   class="font-weight-bold pa-0"
                   style="font-size: 18px;"
-                  >Description</v-subheader
-                >
-                <v-divider />
-                <div class="content ql-editor">
-                  <div v-if="descReadMore" v-html="product.desc"></div>
-                  <div
-                    v-else
-                    v-html="
-                      product.desc.split(' ').slice(0, 50).join(' ') + '....'
-                    "
-                  ></div>
-                  <div class="d-flex justify-end">
-                    <v-btn
-                      text
-                      @click.stop="descReadMore = !descReadMore"
-                      class="blue--text"
-                    >
-                      {{ descReadMore ? 'Read less' : 'Read more' }}
-                      <v-icon>
-                        {{
-                          descReadMore
-                            ? 'keyboard_arrow_up'
-                            : 'keyboard_arrow_down'
-                        }}
-                      </v-icon>
-                    </v-btn>
-                  </div>
-                </div>
+                  >Where to buy?
+                </v-subheader>
+                <div style="width: 100%; height: 2px;" class="grey lighten-1" />
+                <div class="flex-grow-1"></div>
               </v-col>
-              <v-col>
+              <v-col class="d-flex flex-column">
                 <v-subheader
                   class="font-weight-bold pa-0"
                   style="font-size: 18px;"
                   >Specifications</v-subheader
                 >
-                <v-divider />
+                <div style="width: 100%; height: 2px;" class="grey lighten-1" />
                 <v-row v-for="(spec, i) in specs" :key="i">
                   <v-col>
                     <div class="d-flex align-center">
@@ -249,136 +234,161 @@
                 </v-row>
               </v-col>
             </v-row>
-            <v-col cols="12" md="8" class="pa-0 mt-6">
-              <v-subheader
-                class="font-weight-bold pa-0"
-                style="font-size: 18px;"
-                >Comments
-              </v-subheader>
-              <v-divider class="mb-1" />
-              <div class="grey lighten-3 comment-wrapper">
-                <Comment :productID="productID" />
-              </div>
+            <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
+              >Description</v-subheader
+            >
+            <div
+              style="width: 100%; height: 2px;"
+              class="grey lighten-1 mb-3"
+            />
+            <div
+              class="content ql-editor text-justify"
+              style="padding: 0 !important;"
+            >
+              <div v-if="descReadMore" v-html="product.desc"></div>
               <div
-                v-for="comment in getComments"
-                :key="comment.id"
-                class="mt-2"
-              >
-                <div class="chip grey lighten-4">
-                  <div
-                    class="black--text font-weight-bold"
-                    style="font-size: 13px;"
-                  >
-                    {{ comment.name }}:
-                  </div>
-                  <div
-                    style="width: 100%; font-size: 15px;"
-                    class="rtl text-justify black--text pre-formatted"
-                  >
-                    {{ comment.value }}
-                  </div>
+                v-else
+                v-html="
+                  product.desc.split(' ').slice(0, 100).join(' ') + '....'
+                "
+              ></div>
+              <div class="d-flex justify-end">
+                <v-btn
+                  text
+                  @click.stop="descReadMore = !descReadMore"
+                  class="blue--text"
+                >
+                  {{ descReadMore ? 'Read less' : 'Read more' }}
+                  <v-icon>
+                    {{
+                      descReadMore ? 'keyboard_arrow_up' : 'keyboard_arrow_down'
+                    }}
+                  </v-icon>
+                </v-btn>
+              </div>
+            </div>
+            <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
+              >Comments
+            </v-subheader>
+            <div
+              style="width: 100%; height: 2px;"
+              class="grey lighten-1 mb-5"
+            />
+            <div class="grey lighten-3 comment-wrapper">
+              <Comment :productID="productID" />
+            </div>
+            <div v-for="comment in getComments" :key="comment.id" class="mt-2">
+              <div class="chip grey lighten-4">
+                <div
+                  class="black--text font-weight-bold"
+                  style="font-size: 13px;"
+                >
+                  {{ comment.name }}:
                 </div>
-                <div class="d-flex align-center">
+                <div
+                  style="width: 100%; font-size: 15px;"
+                  class="rtl text-justify black--text pre-formatted"
+                >
+                  {{ comment.value }}
+                </div>
+              </div>
+              <div class="d-flex align-center">
+                <v-btn
+                  @click="
+                    commentsUtil[comment.id].showReplyBox = !commentsUtil[
+                      comment.id
+                    ].showReplyBox
+                  "
+                  text
+                  color="blue"
+                  small
+                  >Reply</v-btn
+                >
+                <div
+                  style="font-size: 13px;"
+                  class="black--text font-weight-bold"
+                >
+                  {{ getCommentTime(comment.date.toDate()) }}
+                </div>
+              </div>
+              <div class="ml-7 d-flex flex-column">
+                <div v-for="(reply, i) in getReplies(comment)" :key="i">
                   <v-btn
-                    @click="
-                      commentsUtil[comment.id].showReplyBox = !commentsUtil[
-                        comment.id
-                      ].showReplyBox
+                    @click.stop="commentsUtil[comment.id].showReplies = true"
+                    v-if="
+                      !commentsUtil[comment.id].showReplies &&
+                      comment.replies.length !== 1
                     "
+                    class="d-block text-capitalize"
                     text
                     color="blue"
                     small
-                    >Reply</v-btn
-                  >
+                    >View {{ comment.replies.length - 1 }} previous replies...
+                    <v-icon>keyboard_arrow_down</v-icon>
+                  </v-btn>
+                  <div class="chip grey lighten-4">
+                    <div class="font-weight-bold mr-3" style="font-size: 13px;">
+                      <div v-if="reply.replyTo === ''">
+                        {{ reply.name }}
+                      </div>
+                      <div v-else class="d-flex overflow-hidden">
+                        {{ reply.name }}
+                        <div
+                          class="blue--text mx-1 font-weight-regular font-italic"
+                          style="font-size: 10px;"
+                        >
+                          To
+                        </div>
+                        <div
+                          class="blue--text font-weight-regular font-italic pr-1"
+                          style="font-size: 10px;"
+                        >
+                          {{ reply.replyTo }}
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      v-if="reply.quote !== ''"
+                      class="grey lighten-3 grey--text text--darken-2 quote mb-2"
+                      style="font-size: 14px;"
+                    >
+                      {{ `"${reply.quote}"` }}
+                    </div>
+                    <div class="text-justify pre-formatted">
+                      {{ reply.value }}
+                    </div>
+                  </div>
                   <div
                     style="font-size: 13px;"
                     class="black--text font-weight-bold"
                   >
-                    {{ getCommentTime(comment.date.toDate()) }}
-                  </div>
-                </div>
-                <div class="ml-7 d-flex flex-column">
-                  <div v-for="(reply, i) in getReplies(comment)" :key="i">
                     <v-btn
-                      @click.stop="commentsUtil[comment.id].showReplies = true"
-                      v-if="
-                        !commentsUtil[comment.id].showReplies &&
-                        comment.replies.length !== 1
-                      "
-                      class="d-block text-capitalize"
+                      @click.stop="replyToReply(comment, reply)"
                       text
                       color="blue"
                       small
-                      >View {{ comment.replies.length - 1 }} previous replies...
-                      <v-icon>keyboard_arrow_down</v-icon>
-                    </v-btn>
-                    <div class="chip grey lighten-4">
-                      <div
-                        class="font-weight-bold mr-3"
-                        style="font-size: 13px;"
-                      >
-                        <div v-if="reply.replyTo === ''">
-                          {{ reply.name }}
-                        </div>
-                        <div v-else class="d-flex overflow-hidden">
-                          {{ reply.name }}
-                          <div
-                            class="blue--text mx-1 font-weight-regular font-italic"
-                            style="font-size: 10px;"
-                          >
-                            To
-                          </div>
-                          <div
-                            class="blue--text font-weight-regular font-italic pr-1"
-                            style="font-size: 10px;"
-                          >
-                            {{ reply.replyTo }}
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        v-if="reply.quote !== ''"
-                        class="grey lighten-3 grey--text text--darken-2 quote mb-2"
-                        style="font-size: 14px;"
-                      >
-                        {{ `"${reply.quote}"` }}
-                      </div>
-                      <div class="text-justify pre-formatted">
-                        {{ reply.value }}
-                      </div>
-                    </div>
-                    <div
-                      style="font-size: 13px;"
-                      class="black--text font-weight-bold"
+                      >Reply</v-btn
                     >
-                      <v-btn
-                        @click.stop="replyToReply(comment, reply)"
-                        text
-                        color="blue"
-                        small
-                        >Reply</v-btn
-                      >
-                      {{ getCommentTime(reply.date.toDate()) }}
-                    </div>
+                    {{ getCommentTime(reply.date.toDate()) }}
                   </div>
-                  <Reply
-                    v-show="commentsUtil[comment.id].showReplyBox"
-                    :comment="comment"
-                    :commentUtil="commentsUtil[comment.id]"
-                    @clear="clearUtils(comment)"
-                  />
                 </div>
-                <v-divider />
+                <Reply
+                  v-show="commentsUtil[comment.id].showReplyBox"
+                  :comment="comment"
+                  :commentUtil="commentsUtil[comment.id]"
+                  @clear="clearUtils(comment)"
+                />
               </div>
-              <v-btn
-                v-if="commentsVis < comments.length"
-                @click.stop="commentsVis += commentsPerPage"
-                text
-                color="blue"
-                small
-                >Load more comments <v-icon>keyboard_arrow_down</v-icon></v-btn
-              >
-            </v-col>
+              <v-divider />
+            </div>
+            <v-btn
+              v-if="commentsVis < comments.length"
+              @click.stop="commentsVis += commentsPerPage"
+              text
+              color="blue"
+              small
+              >Load more comments <v-icon>keyboard_arrow_down</v-icon></v-btn
+            >
           </v-col>
         </v-card>
       </v-col>
@@ -448,7 +458,8 @@ import { cloneDeep, sortBy } from 'lodash'
 import { mapState } from 'vuex'
 import differenceInSeconds from 'date-fns/differenceInSeconds'
 const fb = require('../firebaseConfig')
-const util = require('../utils/utlity.js')
+import { plainToClass } from 'class-transformer'
+import Product from '../classes/Product'
 
 export default {
   name: 'Product',
@@ -462,7 +473,7 @@ export default {
       comment: '',
       descReadMore: false,
       productID: this.id,
-      product: null,
+      productQ: null,
       voteDialog: false,
       signUp: false,
       ranks: {
@@ -505,25 +516,28 @@ export default {
   },
   computed: {
     ...mapState(['user', 'userInfo']),
-    images() {
-      return this.product.images.filter((v) => v.type === 'product')
-    },
+    /**
+     * @returns {Array}
+     */
     specs() {
       return sortBy(this.product.specs, 'index')
     },
-    title() {
-      return util.titleBuilder(this.product, false)
-    },
-    facebookTitle() {
-      return util.titleBuilder(this.product, true)
-    },
+    /**
+     * @returns {Array}
+     */
     getComments() {
       return this.comments.slice(0, this.commentsVis)
+    },
+    /**
+     * @returns {Product}
+     */
+    product() {
+      return /** @type {Product} */ plainToClass(Product, this.productQ)
     },
   },
   firestore() {
     return {
-      product: fb.db.collection('Products').doc(this.productID),
+      productQ: fb.db.collection('Products').doc(this.productID),
       voteSum: fb.db.collection('VoteSum').doc(this.productID),
       comments: fb.db
         .collection('Comments')
@@ -783,7 +797,6 @@ input {
 }
 .chip {
   display: inline-block;
-  white-space: nowrap;
   border-radius: 20px;
   padding: 8px 10px 8px 10px;
   max-width: 100%;

@@ -7,14 +7,12 @@
     />
     <Nav />
     <v-content>
-      <v-container
-        fill-height
-        fluid
-        class="pa-0 align-start"
-      >
-        <div :class="[
+      <v-container fill-height fluid class="pa-0 align-start">
+        <div
+          :class="[
             'warn d-flex justify-center align-center font-weight-bold pa-5',
-          ]">
+          ]"
+        >
           <p class="mb-0 text-center">
             WARNING: This product contains nicotine. Nicotine is an addictive
             chemical.

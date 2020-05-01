@@ -33,7 +33,7 @@
           rounded
           dense
           clearable
-          :items="title"
+          :items="products"
           placeholder="Search"
           item-text="model"
           item-value="model"
@@ -49,11 +49,11 @@
             <v-list-item-content>
               <v-list-item-title
                 style="font-size: 15px;"
-                v-html="parent.genFilteredText(item.model.toUpperCase())"
+                v-html="parent.genFilteredText(item.titleBuilder(false))"
               >
               </v-list-item-title>
               <v-list-item-subtitle
-                v-html="item.company.toUpperCase()"
+                v-html="item.getCompany"
               ></v-list-item-subtitle>
             </v-list-item-content>
           </template>
@@ -78,7 +78,7 @@
           @click.stop="ranksClick"
           :class="activePage === 'Ranks' ? 'accent--text' : ''"
         >
-          <v-icon class="mr-2">sort</v-icon>Ranks</v-btn
+          <v-icon class="mr-2">sort</v-icon>Products</v-btn
         >
         <div v-if="!user">
           <v-btn
@@ -125,7 +125,7 @@
             rounded
             dense
             clearable
-            :items="title"
+            :items="products"
             placeholder="Search"
             item-text="model"
             item-value="model"
@@ -134,20 +134,16 @@
           >
             <template v-slot:item="{ parent, item }">
               <v-list-item-avatar tile size="80">
-                <v-img
-                  :src="
-                    item.images.filter((v) => v.type === 'product')[0].image
-                  "
-                />
+                <v-img :src="product.productImages[0].image" />
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title
                   style="font-size: 15px;"
-                  v-html="parent.genFilteredText(item.model.toUpperCase())"
+                  v-html="parent.genFilteredText(item.titleBuilder(false))"
                 >
                 </v-list-item-title>
                 <v-list-item-subtitle
-                  v-html="item.company.toUpperCase()"
+                  v-html="item.getCompany"
                 ></v-list-item-subtitle>
               </v-list-item-content>
             </template>
@@ -164,8 +160,8 @@
       disable-resize-watcher
     >
       <v-list dense nav>
-        <v-list-item>
-          <v-menu v-if="user" open-on-hover bottom offset-y>
+        <v-list-item v-if="user">
+          <v-menu open-on-hover bottom offset-y>
             <template v-slot:activator="{ on }">
               <v-btn v-if="userInfo" color="" v-on="on">
                 <v-icon class="mr-2">account_circle</v-icon> {{ userInfo.name }}
@@ -200,7 +196,7 @@
             @click.stop="ranksClick"
             :class="activePage === 'Ranks' ? 'accent--text' : ''"
           >
-            <v-icon class="mr-2">sort</v-icon>Ranks</v-btn
+            <v-icon class="mr-2">sort</v-icon>Products</v-btn
           >
         </v-list-item>
         <v-list-item v-if="!user">
@@ -230,7 +226,8 @@ import Swal from 'sweetalert2'
 const fb = require('../firebaseConfig')
 import { mapState } from 'vuex'
 import store from '../store'
-const util = require('../utils/utlity')
+import { plainToClass } from 'class-transformer'
+import Product from '../classes/Product'
 
 export default {
   name: 'Nav',
@@ -240,14 +237,14 @@ export default {
       login: false,
       userInfo: null,
       vertifyEmailDialog: false,
-      products: null,
+      productsQ: null,
       searchSelected: {},
       searchExpand: false,
     }
   },
   firestore() {
     return {
-      products: fb.db.collection('Products'),
+      productsQ: fb.db.collection('Products'),
     }
   },
   watch: {
@@ -268,18 +265,18 @@ export default {
     },
     searchSelected: {
       handler(searchSelected) {
+        this.$gtag.event('search', {
+          event_label: searchSelected.model,
+          event_category: 'product_search',
+        })
         this.$router.push(`/product/${searchSelected.id}`)
       },
     },
   },
   computed: {
     ...mapState(['activePage', 'user']),
-    title() {
-      for (let i = 0; i < this.products.length; i++) {
-        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-        this.products[i].model = util.titleBuilder(this.products[i], false)
-      }
-      return this.products
+    products() {
+      return plainToClass(Product, this.productsQ)
     },
   },
   methods: {

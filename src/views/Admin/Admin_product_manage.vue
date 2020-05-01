@@ -205,10 +205,12 @@ import { sortBy } from 'lodash'
 import imageCompression from 'browser-image-compression'
 import { orderBy } from 'lodash'
 import { v1 as uuid } from 'uuid'
-const fb = require('../../firebaseConfig')
 import Swal from 'sweetalert2'
 import Fuse from 'fuse.js'
 import { quillEditor } from 'vue-quill-editor'
+import Product from '../../classes/Product'
+import { plainToClass } from 'class-transformer'
+const fb = require('../../firebaseConfig')
 
 export default {
   name: 'Admin_product_manage',
@@ -271,8 +273,8 @@ export default {
   },
   watch: {
     productListQ: {
-      handler(productListQ) {
-        this.productList = productListQ
+      handler() {
+        this.productList = plainToClass(Product, this.productListQWithID)
         this.productList.map((v) => Object.assign(v, { checked: false }))
         this.buildIndex(this.productList)
       },
@@ -292,28 +294,39 @@ export default {
         return sortBy(this.companiesQ.map((v) => v.name))
       },
     },
-    productListQWithId() {
-      if (!this.productListQ) {
-        return []
-      }
-      return this.productListQ.map((product) => ({
-        ...product,
-        id: product.id,
-      }))
-    },
     searchedList() {
       return this.searchIndex.search(this.txtSearch).map((v) => v.item)
     },
     productSpecs() {
-      if (this.product.type === this.productQ.type) {
-        return this.product.specs
-      } else {
-        if (this.product.type === 'Mod') {
-          return this.modSpecs
-        } else {
-          return this.atomizerSpecs
+      if (this.product.type === 'Mod') {
+        for (let name of this.modSpecs.map((v) => v.name)) {
+          if (this.product.specs.filter((v) => v.name === name)[0]) {
+            this.modSpecs.filter(
+              (v) => v.name === name,
+            )[0].value = this.product.specs.filter(
+              (v) => v.name === name,
+            )[0].value
+          }
         }
+        return this.modSpecs
+      } else {
+        for (let name of this.atomizerSpecs.map((v) => v.name)) {
+          if (this.product.specs.filter((v) => v.name === name)[0]) {
+            this.atomizerSpecs.filter(
+              (v) => v.name === name,
+            )[0].value = this.product.specs.filter(
+              (v) => v.name === name,
+            )[0].value
+          }
+        }
+        return this.atomizerSpecs
       }
+    },
+    productListQWithID() {
+      return this.productListQ.map((v) => ({
+        ...v,
+        id: v.id,
+      }))
     },
   },
   methods: {
@@ -466,14 +479,14 @@ export default {
     async fileChange(event) {
       this.progressDialog = true
       this.progressMsg = 'Uploading images'
-      var files = event.target.files
+      let files = event.target.files
       for (const file of files) {
-        var fileCompressed = await imageCompression(file, {
+        let fileCompressed = await imageCompression(file, {
           maxSizeMB: 1,
           useWebWorker: true,
           onProgress: () => {},
         })
-        var filename = uuid() + '.' + file.name.split('.').pop()
+        let filename = uuid() + '.' + file.name.split('.').pop()
         const snapshot = await fb.st
           .ref()
           .child('Products')

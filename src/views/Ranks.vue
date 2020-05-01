@@ -78,7 +78,8 @@
 import { sortBy } from 'lodash'
 const fb = require('../firebaseConfig')
 import Fuse from 'fuse.js'
-
+import { plainToClass } from 'class-transformer'
+import Product from '../classes/Product'
 export default {
   name: 'Ranks',
   components: {
@@ -89,12 +90,33 @@ export default {
   data() {
     return {
       productListQ: [],
+      /**
+       * @type {Product[]} productList
+       */
       productList: [],
+      /**
+       * @type {string}
+       */
       txtSearch: '',
+      /**
+       * @type {number}
+       */
       sortBy: undefined,
+      /**
+       * @type {number}
+       */
       direction: undefined,
+      /**
+       * @type {number}
+       */
       filterProduct: undefined,
+      /**
+       * @type {number}
+       */
       page: 1,
+      /**
+       * @type {number}
+       */
       perPage: 10,
       searchIndex: null,
     }
@@ -104,15 +126,19 @@ export default {
   },
   firestore() {
     return {
-      productListQ: fb.db.collection('Products').where('approved', '==', true),
+      productListQ: fb.db
+        .collection('Products')
+        .where('approved', '==', true)
+        .orderBy('date', 'desc'),
     }
   },
   watch: {
     productListQ: {
       immediate: true,
-      handler(productListQ) {
-        this.productList = productListQ
-        this.buildIndex(this.productListQ)
+      handler() {
+        this.productList = plainToClass(Product, this.productListQWithID)
+        this.buildIndex(this.productList)
+        this.search()
       },
     },
     sortBy: {
@@ -198,10 +224,16 @@ export default {
     },
     searchedList() {
       if (this.txtSearch === '') {
-        return this.productList
+        return plainToClass(Product, this.productListQWithID)
       } else {
         return this.searchIndex.search(this.txtSearch).map((v) => v.item)
       }
+    },
+    productListQWithID() {
+      return this.productListQ.map((v) => ({
+        ...v,
+        id: v.id,
+      }))
     },
   },
 }

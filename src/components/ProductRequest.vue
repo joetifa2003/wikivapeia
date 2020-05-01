@@ -135,11 +135,14 @@
       </v-card>
     </v-dialog>
     <div>
+      <div class="grey--text text--darken-2" style="font-size: 14px;">
+        Couldn't find your proudct ?
+      </div>
       <v-btn
         @click.stop="productReuestDialog = true"
         class="red darken-4 white--text"
         style="width: 100%;"
-        >Request new product</v-btn
+        >Add new product</v-btn
       >
     </div>
   </v-container>

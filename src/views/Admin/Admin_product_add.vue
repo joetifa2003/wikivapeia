@@ -213,9 +213,10 @@ import Swal from 'sweetalert2'
 import { orderBy } from 'lodash'
 import imageCompression from 'browser-image-compression'
 import { v1 as uuid } from 'uuid'
-const fb = require('../../firebaseConfig.js')
-
 import { quillEditor } from 'vue-quill-editor'
+import Product from '../../classes/Product'
+import { classToPlain } from 'class-transformer'
+const fb = require('../../firebaseConfig.js')
 
 export default {
   name: 'Admin_add',
@@ -324,7 +325,7 @@ export default {
           if (typeof feature.value === 'string') {
             if (feature.value === 'Yes') {
               this.selectedFeatures.push(feature.name)
-            } else if (feature.value !== 'No') {
+            } else if (feature.value !== 'No' && feature.value === '') {
               if (feature.unit) {
                 this.selectedFeatures.push(feature.value + feature.unit)
               } else {
@@ -365,18 +366,25 @@ export default {
             type: file.type,
           })
         }
-        fb.db.collection('Products').add({
-          type: this.selectedProduct,
-          company: this.txtCompany,
-          model: this.txtModel,
-          desc: this.txtDesc,
-          images: imageUrls,
-          features: this.selectedFeatures,
-          specs: specs.filter((v) => v.value.length !== 0),
-          lastScore: 0,
-          approved: true,
-          date: new Date(),
-        })
+        fb.db.collection('Products').add(
+          classToPlain(
+            new Product(
+              this.selectedProduct,
+              this.txtCompany,
+              this.txtModel,
+              this.txtDesc,
+              imageUrls,
+              this.selectedFeatures,
+              specs
+                .filter((v) => v.value.length !== 0)
+                .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
+              0,
+              true,
+              [],
+              new Date(),
+            ),
+          ),
+        )
         this.$refs.formRef.reset()
       } catch (error) {
         console.log(error)

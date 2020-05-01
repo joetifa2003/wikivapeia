@@ -10,7 +10,10 @@ import {
   faTwitterSquare,
   faWhatsappSquare,
 } from '@fortawesome/free-brands-svg-icons'
-import { faShareAltSquare } from '@fortawesome/free-solid-svg-icons'
+import {
+  faShareAltSquare,
+  faInfoCircle,
+} from '@fortawesome/free-solid-svg-icons'
 import { faLaugh } from '@fortawesome/free-regular-svg-icons'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
@@ -24,6 +27,7 @@ library.add(
   faWhatsappSquare,
   faShareAltSquare,
   faLaugh,
+  faInfoCircle,
 )
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 

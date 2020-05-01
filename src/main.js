@@ -10,6 +10,7 @@ var SocialSharing = require('vue-social-sharing')
 import VueGtag from 'vue-gtag'
 import 'quill/dist/quill.core.css' // import styles
 import 'quill/dist/quill.snow.css' // for snow theme
+import 'reflect-metadata'
 
 Vue.config.productionTip = false
 Vue.config.devtools = true

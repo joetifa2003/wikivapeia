@@ -20,6 +20,44 @@
                 Sign up for full features
               </div>
               <v-form v-model="validSignUp">
+                <div class="d-flex">
+                  <div class="d-inline">Account type:</div>
+                  <v-radio-group v-model="accountType" column class="ma-0 ml-3">
+                    <v-radio label="Personal" />
+                    <div class="d-flex align-center">
+                      <v-radio class="ma-0" label="Business" />
+                      <v-tooltip
+                        content-class="text-justify"
+                        fixed
+                        v-model="show"
+                        right
+                        max-width="200"
+                      >
+                        <template v-slot:activator="{ on }">
+                          <v-btn
+                            class="ml-3"
+                            width="20px"
+                            height="20px"
+                            icon
+                            v-on="on"
+                          >
+                            <font-awesome-icon
+                              icon="info-circle"
+                              style="height: 20px; width: 20px;"
+                              class="mr-3"
+                            />
+                          </v-btn>
+                        </template>
+                        <span
+                          >Business account gives you additional features. Your
+                          company is listed on the product page under "Where to
+                          buy" list. And you can create your own virtual store
+                          through wikivapeia.com</span
+                        >
+                      </v-tooltip>
+                    </div>
+                  </v-radio-group>
+                </div>
                 <v-text-field
                   :rules="[(v) => !!v || 'Email is required']"
                   v-model="txtEmail"
@@ -79,6 +117,7 @@ export default {
       newUser: false,
       validSignUp: true,
       show1: false,
+      accountType: 0,
     }
   },
   methods: {
@@ -93,7 +132,11 @@ export default {
             this.txtEmail,
             this.txtPassword,
           )
-          this.$router.push('/completeInfo')
+          if (this.accountType === 0) {
+            this.$router.push('/completeInfo')
+          } else {
+            this.$router.push('/storeInfo')
+          }
         } catch (error) {
           if (error.code === 'auth/email-already-in-use') {
             await Swal.fire('Email already signed up', error.message, 'warning')
@@ -112,7 +155,11 @@ export default {
         this.newUser = result.additionalUserInfo.isNewUser
 
         if (this.newUser) {
-          this.$router.push('/completeInfo')
+          if (this.accountType === 0) {
+            this.$router.push('/completeInfo')
+          } else {
+            this.$router.push('/storeInfo')
+          }
         } else {
           await Swal.fire('Logged in !', '', 'success')
         }

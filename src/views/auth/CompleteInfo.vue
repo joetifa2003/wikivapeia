@@ -114,7 +114,7 @@ export default {
     }
   },
   async created() {
-    let data = await fetch('https://geolocation-db.com/json/')
+    let data = await fetch('https://freegeoip.app/json/')
     this.location = await data.json()
   },
   methods: {
@@ -155,19 +155,23 @@ export default {
             }`,
             'success',
           )
-          this.user
-            .sendEmailVerification({
-              url: process.env.VUE_APP_SIGNUP_REDIRECT,
-            })
-            .then(
-              async () => {},
-              async (err) => {
-                console.log(err)
-                await this.user.delete()
-              },
-            )
-          this.email = this.user.email
-          this.vertifyEmailDialog = true
+          if (this.user.providerId != 'facebook.com') {
+            this.user
+              .sendEmailVerification({
+                url: process.env.VUE_APP_SIGNUP_REDIRECT,
+              })
+              .then(
+                async () => {},
+                async (err) => {
+                  console.log(err)
+                  await this.user.delete()
+                },
+              )
+            this.email = this.user.email
+            this.vertifyEmailDialog = true
+          } else {
+            this.$router.push('/')
+          }
         } catch (error) {
           Swal.fire('Error', error.message, 'error')
         }

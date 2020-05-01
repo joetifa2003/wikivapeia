@@ -1,26 +1,25 @@
 function titleBuilder({ company, model, type, specs }, hasCompany) {
-  let specType = specs.filter((v) => v.name === 'Type')[0].value
+  const getSpecByName = (name) => {
+    let query = specs.filter((v) => v.name === name)[0]
+    return query ? query.value : ''
+  }
+
+  let specType = getSpecByName('Type')
 
   if (type === 'Mod') {
-    let powerOutput =
-      specs.filter((v) => v.name === 'Power output')[0].value + 'W'
-    let tc =
-      specs.filter((v) => v.name === 'TC')[0].value === 'Yes' ? ' TC ' : ''
-    let squonk =
-      specs.filter((v) => v.name === 'Squonk')[0].value === 'Yes'
-        ? ' Squonk '
-        : ''
-    let mechanical =
-      specs.filter((v) => v.name === 'Mechanical')[0].value === 'Yes'
-        ? 'Mechanical'
-        : ''
+    let powerOutput = getSpecByName('Power output') + 'W'
+    let tc = getSpecByName('TC') === 'Yes' ? ' TC ' : ''
+    let squonk = getSpecByName('Squonk') === 'Yes' ? ' Squonk ' : ''
+    let mechanical = getSpecByName('Mechanical') === 'Yes' ? 'Mechanical' : ''
 
-    return `${
-      hasCompany ? company + ' ' : ''
-    }${model} ${powerOutput}${tc}${squonk}${mechanical} ${specType} ${type}`
+    return `${hasCompany ? company + ' ' : ''}${model ? model : ''} ${
+      powerOutput ? powerOutput : ''
+    }${tc ? tc : ''}${squonk ? squonk : ''}${mechanical ? mechanical : ''} ${
+      specType ? specType : ''
+    } ${type ? type : ''}`
   } else {
-    let category = specs.filter((v) => v.name === 'Category')[0].value
-    let coil = specs.filter((v) => v.name === 'Coil building')[0].value
+    let category = getSpecByName('Category')
+    let coil = getSpecByName('Coil building')
 
     return `${hasCompany ? company + ' ' : ''}${model ? model : ''} ${
       category ? category : ''
