@@ -26,3 +26,6 @@ capacitor.config.json
 .VSCodeCounter/results.csv
 .VSCodeCounter/results.md
 .VSCodeCounter/results.txt
+
+# Local Netlify folder
+.netlify

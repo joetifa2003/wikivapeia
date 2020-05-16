@@ -1,6 +1,7 @@
 const ImageminPlugin = require('imagemin-webpack-plugin').default
 const imageminMozjpeg = require('imagemin-mozjpeg')
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
+const CompressionPlugin = require('compression-webpack-plugin')
 
 module.exports = {
   transpileDependencies: ['vuetify'],
@@ -43,16 +44,10 @@ module.exports = {
         logo: './src/assets/WikivapeiaLogoBlack.svg',
         outputPath: '/img/icons',
       }),
-      // new CompressionPlugin({
-      //   compressionOptions: {
-      //     numiterations: 15,
-      //   },
-      //   algorithm(input, compressionOptions, callback) {
-      //     return zopfli.gzip(input, compressionOptions, callback)
-      //   },
-      //   deleteOriginalAssets: true,
-      //   exclude: 'index.html',
-      // }),
+      new CompressionPlugin({
+        deleteOriginalAssets: true,
+        exclude: 'index.html',
+      }),
     ],
   },
 }
