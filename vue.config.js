@@ -45,7 +45,7 @@ module.exports = {
         outputPath: '/img/icons',
       }),
       new CompressionPlugin({
-        deleteOriginalAssets: true,
+        deleteOriginalAssets: false,
         exclude: 'index.html',
       }),
     ],
