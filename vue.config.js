@@ -44,10 +44,7 @@ module.exports = {
         logo: './src/assets/WikivapeiaLogoBlack.svg',
         outputPath: '/img/icons',
       }),
-      new CompressionPlugin({
-        deleteOriginalAssets: false,
-        exclude: 'index.html',
-      }),
+      new CompressionPlugin(),
     ],
   },
 }
