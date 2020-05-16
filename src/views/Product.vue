@@ -2,7 +2,7 @@
   <v-container
     fill-height
     fluid
-    class="align-start pa-2 justify-center pt-5 full grey lighten-3"
+    class="align-start pa-2 justify-center pt-10 full grey lighten-3"
   >
     <v-row class="justify-center" style="width: 100%;">
       <v-col cols="12" md="8" lg="6">
@@ -89,7 +89,7 @@
                 </v-carousel>
               </v-col>
               <v-col cols="12" md="6" class="d-flex flex-column">
-                <div class="pa-2" v-for="(avg, i) in avgVotes" :key="i">
+                <div class="pa-2 mb-1" v-for="(avg, i) in avgVotes" :key="i">
                   <div class="d-flex flex-row justify-center align-center">
                     <div
                       style="width: 300px;"
@@ -107,26 +107,26 @@
                   </div>
                 </div>
                 <v-row align="end">
-                  <v-col class="pa-0 pl-3">
-                    <v-hover v-slot:default="{ hover }">
-                      <div style="width: 1px;">
-                        <v-btn
-                          v-if="voted !== null && !hover"
-                          @click.stop="voteClick"
-                          :class="[
-                            'white--text',
-                            voted ? 'grey darken-2' : 'red darken-4',
-                          ]"
-                          >{{ voted ? 'Unvote' : 'Vote now' }}</v-btn
-                        >
-                        <v-btn
-                          v-if="voted !== null && hover"
-                          @click.stop="voteClick"
-                          :class="['white--text', 'red darken-4']"
-                          >{{ voted ? 'Unvote' : 'Vote now' }}</v-btn
-                        >
-                      </div>
-                    </v-hover>
+                  <v-col
+                    :class="[
+                      'pa-0 px-3',
+                      $vuetify.breakpoint.smAndDown ? 'mb-3' : '',
+                    ]"
+                    cols="12"
+                    md="6"
+                  >
+                    <div style="width: 100%;">
+                      <v-btn
+                        :width="$vuetify.breakpoint.smAndDown ? '100%' : ''"
+                        v-if="voted !== null"
+                        @click.stop="voteClick"
+                        :class="[
+                          'white--text',
+                          voted ? 'grey darken-2' : 'red darken-4',
+                        ]"
+                        >{{ voted ? 'Undo' : 'Share your experience' }}</v-btn
+                      >
+                    </div>
                   </v-col>
                   <v-col class="d-flex justify-end pa-0 pr-3">
                     <v-icon color="black" class="mr-2">person</v-icon>
@@ -188,207 +188,166 @@
                 </div>
               </social-sharing>
             </div>
+            <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
+              >Where to buy ?</v-subheader
+            >
+            <div
+              style="width: 100%; height: 2px;"
+              class="grey lighten-1 mb-1"
+            />
+            <div v-if="stores.length > 4">
+              <hooper :settings="hooperOptions" style="height: auto;">
+                <slide
+                  class="d-flex justify-center"
+                  v-for="(store, i) in stores"
+                  :key="i"
+                  index="1"
+                >
+                  <v-card
+                    @click="$router.push(`/store/${store.username}`)"
+                    elevation="8"
+                    max-width="150px"
+                    class="my-5 grey lighten-4"
+                    height="212px"
+                  >
+                    <v-img :src="store.img" width="150px" height="150px" />
+                    <v-card-title
+                      class="pre d-flex justify-center"
+                      style="font-size: 16px;"
+                    >
+                      <h5 class="text-center linespaced">
+                        {{ store.name.toUpperCase() }}
+                      </h5>
+                    </v-card-title>
+                  </v-card>
+                </slide>
+                <hooper-navigation slot="hooper-addons"></hooper-navigation>
+              </hooper>
+            </div>
+            <div v-else class="d-flex flex-row">
+              <v-row>
+                <v-col
+                  class="d-flex justify-center"
+                  v-for="store in stores"
+                  :key="store.id"
+                >
+                  <v-card
+                    @click="$router.push(`/store/${store.username}`)"
+                    elevation="8"
+                    max-width="150px"
+                    class="my-5"
+                    height="212px"
+                  >
+                    <v-img :src="store.img" width="150px" height="150px" />
+                    <v-card-title
+                      class="pre d-flex justify-center"
+                      style="font-size: 16px;"
+                    >
+                      <h5 class="text-center linespaced">
+                        {{ store.name.toUpperCase() }}
+                      </h5>
+                    </v-card-title>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </div>
             <v-row>
-              <v-col cols="12" md="6" class="d-flex flex-column">
-                <v-subheader
-                  class="font-weight-bold pa-0"
-                  style="font-size: 18px;"
-                  >Where to buy?
-                </v-subheader>
-                <div style="width: 100%; height: 2px;" class="grey lighten-1" />
-                <div class="flex-grow-1"></div>
-              </v-col>
-              <v-col class="d-flex flex-column">
+              <v-col>
                 <v-subheader
                   class="font-weight-bold pa-0"
                   style="font-size: 18px;"
                   >Specifications</v-subheader
                 >
-                <div style="width: 100%; height: 2px;" class="grey lighten-1" />
-                <v-row v-for="(spec, i) in specs" :key="i">
-                  <v-col>
-                    <div class="d-flex align-center">
-                      <v-icon class="mr-2">{{ spec.icon }}</v-icon>
-                      <div class="font-weight-bold primary--text">
-                        {{ spec.name }}
-                      </div>
-                    </div>
+                <div
+                  style="width: 100%; height: 2px;"
+                  class="grey lighten-1 mb-3"
+                />
+                <div
+                  style="
+                    max-height: 400px;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                  "
+                  class="scrollbar"
+                  id="style-8"
+                >
+                  <v-col v-for="(spec, i) in specs" :key="i" class="pa-0">
+                    <v-row>
+                      <v-col>
+                        <div class="d-flex align-center">
+                          <v-icon class="mr-2">{{ spec.icon }}</v-icon>
+                          <div class="font-weight-bold primary--text">
+                            {{ spec.name }}
+                          </div>
+                        </div>
+                      </v-col>
+                      <v-col>
+                        <div class="d-flex flex-row">
+                          <div v-if="typeof spec.value === 'string'">
+                            {{ spec.value }}
+                          </div>
+                          <div v-else>
+                            <ul>
+                              <li v-for="(x, i) in spec.value" :key="i">
+                                {{ x + spec.unit }}
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            v-if="typeof spec.value === 'string'"
+                            class="ml-0"
+                          >
+                            {{ spec.unit }}
+                          </div>
+                        </div>
+                      </v-col>
+                    </v-row>
+                    <v-divider />
                   </v-col>
-                  <v-col>
-                    <div class="d-flex flex-row justify-end">
-                      <div v-if="typeof spec.value === 'string'">
-                        {{ spec.value }}
-                      </div>
-                      <div v-else>
-                        <ul>
-                          <li v-for="(x, i) in spec.value" :key="i">
-                            {{ x + spec.unit }}
-                          </li>
-                        </ul>
-                      </div>
-                      <div v-if="typeof spec.value === 'string'" class="ml-0">
-                        {{ spec.unit }}
-                      </div>
-                    </div>
-                  </v-col>
-                </v-row>
+                </div>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-subheader
+                  class="font-weight-bold pa-0"
+                  style="font-size: 18px;"
+                  >Description</v-subheader
+                >
+                <div
+                  style="width: 100%; height: 2px;"
+                  class="grey lighten-1 mb-3"
+                />
+                <div
+                  class="content ql-editor text-justify"
+                  style="padding: 0 !important;"
+                >
+                  <div v-if="descReadMore" v-html="product.desc"></div>
+                  <div
+                    v-else
+                    v-html="
+                      product.desc.split(' ').slice(0, 100).join(' ') + '....'
+                    "
+                  ></div>
+                  <div class="d-flex justify-end">
+                    <v-btn
+                      v-if="product.desc.split(' ').length > 100"
+                      text
+                      @click.stop="descReadMore = !descReadMore"
+                      class="blue--text"
+                    >
+                      {{ descReadMore ? 'Read less' : 'Read more' }}
+                      <v-icon>
+                        {{
+                          descReadMore
+                            ? 'keyboard_arrow_up'
+                            : 'keyboard_arrow_down'
+                        }}
+                      </v-icon>
+                    </v-btn>
+                  </div>
+                </div>
               </v-col>
             </v-row>
-            <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
-              >Description</v-subheader
-            >
-            <div
-              style="width: 100%; height: 2px;"
-              class="grey lighten-1 mb-3"
-            />
-            <div
-              class="content ql-editor text-justify"
-              style="padding: 0 !important;"
-            >
-              <div v-if="descReadMore" v-html="product.desc"></div>
-              <div
-                v-else
-                v-html="
-                  product.desc.split(' ').slice(0, 100).join(' ') + '....'
-                "
-              ></div>
-              <div class="d-flex justify-end">
-                <v-btn
-                  text
-                  @click.stop="descReadMore = !descReadMore"
-                  class="blue--text"
-                >
-                  {{ descReadMore ? 'Read less' : 'Read more' }}
-                  <v-icon>
-                    {{
-                      descReadMore ? 'keyboard_arrow_up' : 'keyboard_arrow_down'
-                    }}
-                  </v-icon>
-                </v-btn>
-              </div>
-            </div>
-            <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
-              >Comments
-            </v-subheader>
-            <div
-              style="width: 100%; height: 2px;"
-              class="grey lighten-1 mb-5"
-            />
-            <div class="grey lighten-3 comment-wrapper">
-              <Comment :productID="productID" />
-            </div>
-            <div v-for="comment in getComments" :key="comment.id" class="mt-2">
-              <div class="chip grey lighten-4">
-                <div
-                  class="black--text font-weight-bold"
-                  style="font-size: 13px;"
-                >
-                  {{ comment.name }}:
-                </div>
-                <div
-                  style="width: 100%; font-size: 15px;"
-                  class="rtl text-justify black--text pre-formatted"
-                >
-                  {{ comment.value }}
-                </div>
-              </div>
-              <div class="d-flex align-center">
-                <v-btn
-                  @click="
-                    commentsUtil[comment.id].showReplyBox = !commentsUtil[
-                      comment.id
-                    ].showReplyBox
-                  "
-                  text
-                  color="blue"
-                  small
-                  >Reply</v-btn
-                >
-                <div
-                  style="font-size: 13px;"
-                  class="black--text font-weight-bold"
-                >
-                  {{ getCommentTime(comment.date.toDate()) }}
-                </div>
-              </div>
-              <div class="ml-7 d-flex flex-column">
-                <div v-for="(reply, i) in getReplies(comment)" :key="i">
-                  <v-btn
-                    @click.stop="commentsUtil[comment.id].showReplies = true"
-                    v-if="
-                      !commentsUtil[comment.id].showReplies &&
-                      comment.replies.length !== 1
-                    "
-                    class="d-block text-capitalize"
-                    text
-                    color="blue"
-                    small
-                    >View {{ comment.replies.length - 1 }} previous replies...
-                    <v-icon>keyboard_arrow_down</v-icon>
-                  </v-btn>
-                  <div class="chip grey lighten-4">
-                    <div class="font-weight-bold mr-3" style="font-size: 13px;">
-                      <div v-if="reply.replyTo === ''">
-                        {{ reply.name }}
-                      </div>
-                      <div v-else class="d-flex overflow-hidden">
-                        {{ reply.name }}
-                        <div
-                          class="blue--text mx-1 font-weight-regular font-italic"
-                          style="font-size: 10px;"
-                        >
-                          To
-                        </div>
-                        <div
-                          class="blue--text font-weight-regular font-italic pr-1"
-                          style="font-size: 10px;"
-                        >
-                          {{ reply.replyTo }}
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      v-if="reply.quote !== ''"
-                      class="grey lighten-3 grey--text text--darken-2 quote mb-2"
-                      style="font-size: 14px;"
-                    >
-                      {{ `"${reply.quote}"` }}
-                    </div>
-                    <div class="text-justify pre-formatted">
-                      {{ reply.value }}
-                    </div>
-                  </div>
-                  <div
-                    style="font-size: 13px;"
-                    class="black--text font-weight-bold"
-                  >
-                    <v-btn
-                      @click.stop="replyToReply(comment, reply)"
-                      text
-                      color="blue"
-                      small
-                      >Reply</v-btn
-                    >
-                    {{ getCommentTime(reply.date.toDate()) }}
-                  </div>
-                </div>
-                <Reply
-                  v-show="commentsUtil[comment.id].showReplyBox"
-                  :comment="comment"
-                  :commentUtil="commentsUtil[comment.id]"
-                  @clear="clearUtils(comment)"
-                />
-              </div>
-              <v-divider />
-            </div>
-            <v-btn
-              v-if="commentsVis < comments.length"
-              @click.stop="commentsVis += commentsPerPage"
-              text
-              color="blue"
-              small
-              >Load more comments <v-icon>keyboard_arrow_down</v-icon></v-btn
-            >
+            <CommentSection :productIDD="productID" />
           </v-col>
         </v-card>
       </v-col>
@@ -403,23 +362,8 @@
           >Vote for {{ product.model }}</v-card-title
         >
         <v-col>
-          <div v-if="product.type === 'Atomizer'">
-            <v-row v-for="(rank, i) in ranks.atomizers" :key="i">
-              <v-col>
-                <h4>{{ rank.name }}</h4>
-              </v-col>
-              <v-col class="d-flex justify-end">
-                <v-slider
-                  v-model="rank.value"
-                  thumb-label="always"
-                  max="10"
-                  min="1"
-                />
-              </v-col>
-            </v-row>
-          </div>
-          <div v-if="product.type === 'Mod'">
-            <v-row v-for="(rank, i) in ranks.mods" :key="i">
+          <div>
+            <v-row v-for="(rank, i) in votes" :key="i">
               <v-col>
                 <h4>{{ rank.name }}</h4>
               </v-col>
@@ -457,19 +401,42 @@ import Swal from 'sweetalert2'
 import { cloneDeep, sortBy } from 'lodash'
 import { mapState } from 'vuex'
 import differenceInSeconds from 'date-fns/differenceInSeconds'
-const fb = require('../firebaseConfig')
 import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
+import Store from '../classes/Store'
+import { Slide, Hooper, Navigation as HooperNavigation } from 'hooper'
+import 'hooper/dist/hooper.css'
+
+const fb = require('../firebaseConfig')
 
 export default {
   name: 'Product',
   props: ['id'],
   components: {
-    Comment: () => import('../components/Comment'),
-    Reply: () => import('../components/Reply'),
+    CommentSection: () => import('../components/CommentSection'),
+    Hooper,
+    Slide,
+    HooperNavigation,
   },
   data() {
     return {
+      hooperOptions: {
+        itemsToShow: 2,
+        infiniteScroll: true,
+        autoPlay: true,
+        playSpeed: 2000,
+        breakpoints: {
+          800: {
+            itemsToShow: 3,
+          },
+          1024: {
+            itemsToShow: 4,
+          },
+          1500: {
+            itemsToShow: 5,
+          },
+        },
+      },
       comment: '',
       descReadMore: false,
       productID: this.id,
@@ -485,7 +452,38 @@ export default {
           { name: 'Charging speed', value: 0 },
           { name: 'Value for price', value: 0 },
         ],
-        atomizers: [],
+        atomizersDL: [
+          { name: 'Flavor', value: 0 },
+          { name: 'Cloud production', value: 0 },
+          { name: 'Ease of Build', value: 0 },
+          { name: 'Air flow', value: 0 },
+          { name: 'Thraot hit', value: 0 },
+          { name: 'Material', value: 0 },
+          { name: 'Design', value: 0 },
+          { name: 'Value for price', value: 0 },
+        ],
+        atomizersMTL: [
+          { name: 'Flavor', value: 0 },
+          { name: 'Ease of Build', value: 0 },
+          { name: 'Air flow', value: 0 },
+          { name: 'Thraot hit', value: 0 },
+          { name: 'Material', value: 0 },
+          { name: 'Design', value: 0 },
+          { name: 'Value for price', value: 0 },
+        ],
+        pods: [
+          { name: 'Flavor', value: 0 },
+          { name: 'Airflow control', value: 0 },
+          { name: 'Ease of refill', value: 0 },
+          { name: 'Battery life', value: 0 },
+          { name: 'Design', value: 0 },
+          { name: 'Value for price', value: 0 },
+        ],
+        liquid: [
+          { name: 'Recipe', value: 0 },
+          { name: 'Material', value: 0 },
+          { name: 'Nicotine', value: 0 },
+        ],
       },
       voted: null,
       votedQ: null,
@@ -493,11 +491,11 @@ export default {
       overall: 0,
       voteSum: null,
       voteIsclicked: false,
-      comments: [],
-      commentsUtil: {},
+      commentsQ: [],
       replies: [],
       commentsPerPage: 5,
       commentsVis: 5,
+      storesQ: [],
     }
   },
   created() {
@@ -520,13 +518,11 @@ export default {
      * @returns {Array}
      */
     specs() {
-      return sortBy(this.product.specs, 'index')
-    },
-    /**
-     * @returns {Array}
-     */
-    getComments() {
-      return this.comments.slice(0, this.commentsVis)
+      if (this.storesQ) {
+        return sortBy(this.product.specs, 'index')
+      } else {
+        return []
+      }
     },
     /**
      * @returns {Product}
@@ -534,68 +530,64 @@ export default {
     product() {
       return /** @type {Product} */ plainToClass(Product, this.productQ)
     },
+    /** @returns {Store[]} */
+    stores() {
+      return plainToClass(Store, this.storesQ).filter(
+        (v) => v.region === 'Cairo',
+      )
+    },
+    votes() {
+      if (this.product.type === 'Mod') {
+        return cloneDeep(this.ranks.mods)
+      } else if (this.product.type === 'Atomizer') {
+        if (
+          this.product.specs.filter((v) => v.name === 'Category')[0].value ===
+          'DL'
+        ) {
+          return cloneDeep(this.ranks.atomizersDL)
+        } else {
+          return cloneDeep(this.ranks.atomizersDL)
+        }
+      } else if (this.product.type === 'Pod system') {
+        return cloneDeep(this.ranks.pods)
+      } else {
+        return cloneDeep(this.ranks.liquid)
+      }
+    },
   },
   firestore() {
     return {
       productQ: fb.db.collection('Products').doc(this.productID),
       voteSum: fb.db.collection('VoteSum').doc(this.productID),
-      comments: fb.db
-        .collection('Comments')
-        .where('productID', '==', this.productID)
-        .orderBy('date', 'desc'),
       replies: fb.db.collection('Replies').orderBy('date', 'asc'),
     }
   },
   watch: {
-    comments: {
-      immediate: true,
-      handler(comments) {
-        for (let i = 0; i < comments.length; i++) {
-          const comment = comments[i]
-          if (!(comment.id in this.commentsUtil)) {
-            this.$set(this.commentsUtil, comment.id, {
-              replyTo: '',
-              showReplies: false,
-              showReplyBox: false,
-              quote: '',
-            })
-          }
-        }
-      },
-    },
     product: {
-      async handler() {
-        if (this.avgVotes === null) {
-          if (this.product.type === 'Atomizer') {
-            if (
-              this.product.specs.filter((v) => v.name === 'Category')[0]
-                .value === 'DL'
-            ) {
-              this.ranks.atomizers.push(
-                { name: 'Flavor', value: 0 },
-                { name: 'Cloud production', value: 0 },
-                { name: 'Ease of Build', value: 0 },
-                { name: 'Air flow', value: 0 },
-                { name: 'Thraot hit', value: 0 },
-                { name: 'Material', value: 0 },
-                { name: 'Design', value: 0 },
-                { name: 'Value for price', value: 0 },
-              )
-            } else {
-              this.ranks.atomizers.push(
-                { name: 'Flavor', value: 0 },
-                { name: 'Ease of Build', value: 0 },
-                { name: 'Air flow', value: 0 },
-                { name: 'Thraot hit', value: 0 },
-                { name: 'Material', value: 0 },
-                { name: 'Design', value: 0 },
-                { name: 'Value for price', value: 0 },
-              )
-            }
-            this.avgVotes = cloneDeep(this.ranks.atomizers)
-          } else if (this.product.type === 'Mod') {
-            this.avgVotes = cloneDeep(this.ranks.mods)
+      async handler(product) {
+        if (product.sellers.length !== 0) {
+          let country
+          if (this.userInfo) {
+            country = this.userInfo.country
+          } else {
+            let data = await fetch('https://freegeoip.app/json/')
+            let location = await data.json()
+            country = location.country_name
           }
+          this.$bind(
+            'storesQ',
+            fb.db
+              .collection('Users')
+              .where(
+                'id',
+                'in',
+                this.product.sellers.map((v) => v.id),
+              )
+              .where('country', '==', country),
+          )
+        }
+        if (!this.voteSum) {
+          this.avgVotes = cloneDeep(this.votes)
         }
       },
     },
@@ -603,11 +595,7 @@ export default {
       async handler(voteSum) {
         if (voteSum) {
           this.overall = 0
-          if (this.product.type === 'Atomizer') {
-            this.avgVotes = cloneDeep(this.ranks.atomizers)
-          } else if (this.product.type === 'Mod') {
-            this.avgVotes = cloneDeep(this.ranks.mods)
-          }
+          this.avgVotes = cloneDeep(this.votes)
           const votersCount = voteSum.votersCount
           for (const [i, v] of voteSum.sum.entries()) {
             this.avgVotes[i].value = v.value / votersCount
@@ -630,38 +618,20 @@ export default {
         }
       },
     },
+    carouselData() {
+      this.$refs.carousel.slideTo(this.carouselData)
+    },
   },
   methods: {
     signUpDialog() {
       this.signUp = !this.signUp
     },
-    clearUtils(comment) {
-      this.commentsUtil[comment.id].replyTo = ''
-      this.commentsUtil[comment.id].quote = ''
-    },
-    getReplies(comment) {
-      let replies = comment.replies
-      if (this.commentsUtil[comment.id].showReplies) {
-        return replies
-      } else {
-        if (replies.length !== 0) {
-          return [replies.slice(-1)[0]]
-        } else {
-          return replies
-        }
-      }
-    },
     async vote() {
       this.voteIsclicked = true
       let totalRank = []
       let ranks = {}
-      if (this.product.type === 'Atomizer') {
-        totalRank = cloneDeep(this.ranks.atomizers)
-        ranks = this.ranks.atomizers
-      } else if (this.product.type === 'Mod') {
-        totalRank = cloneDeep(this.ranks.mods)
-        ranks = this.ranks.mods
-      }
+      totalRank = cloneDeep(this.votes)
+      ranks = this.votes
       fb.db.collection('Votes').add({
         productID: this.productID,
         voter: this.user.uid,
@@ -739,14 +709,6 @@ export default {
         return (time / (60 * 60 * 24 * 7)).toFixed(0) + 'w'
       }
     },
-    replyToReply(comment, reply) {
-      if (this.user.uid !== reply.userID) {
-        this.commentsUtil[comment.id].replyTo = reply.name
-        this.commentsUtil[comment.id].quote =
-          reply.value.split(' ').slice(0, 10).join(' ') + '...'
-      }
-      this.commentsUtil[comment.id].showReplyBox = true
-    },
   },
 }
 </script>
@@ -786,28 +748,33 @@ input {
 #btn-emoji-default {
   margin: 0 !important;
 }
-.rtl {
-  text-align: start;
-  unicode-bidi: plaintext;
+
+.hooper-track {
+  padding: 0 !important;
 }
-.comment-wrapper {
-  // border-top-left-radius: 22px;
-  // border-top-right-radius: 22px;
-  border-radius: 30px;
+img {
+  object-fit: cover;
 }
-.chip {
-  display: inline-block;
-  border-radius: 20px;
-  padding: 8px 10px 8px 10px;
-  max-width: 100%;
+.pre {
   white-space: initial;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  word-break: keep-all; /*this stops the word breaking*/
 }
-.pre-formatted {
-  white-space: pre-line;
+
+#style-8::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
 }
-.quote {
-  border-radius: 15px;
+
+#style-8::-webkit-scrollbar {
+  width: 10px;
+  background-color: #f5f5f5;
+}
+
+#style-8::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+}
+.linespaced {
+  line-height: 15px;
 }
 </style>

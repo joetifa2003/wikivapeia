@@ -10,21 +10,21 @@
           </v-carousel>
         </v-responsive>
         <v-row>
-          <v-col cols="12" xl="4">
+          <v-col>
             <v-carousel cycle show-arrows-on-hover hide-delimiters height="200">
               <v-carousel-item v-for="(image, i) in imagesLeft" :key="i">
                 <BannerItem :image="image" />
               </v-carousel-item>
             </v-carousel>
           </v-col>
-          <v-col cols="12" xl="4">
+          <v-col>
             <v-carousel cycle show-arrows-on-hover hide-delimiters height="200">
               <v-carousel-item v-for="(image, i) in imagesCenter" :key="i">
                 <BannerItem :image="image" />
               </v-carousel-item>
             </v-carousel>
           </v-col>
-          <v-col cols="12" xl="4">
+          <v-col>
             <v-carousel cycle show-arrows-on-hover hide-delimiters height="200">
               <v-carousel-item v-for="(image, i) in imagesRight" :key="i">
                 <BannerItem :image="image" />

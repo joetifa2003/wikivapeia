@@ -5,7 +5,7 @@
         <v-col cols="12" md="8" lg="6">
           <v-card class="pa-10" width="100%">
             <v-combobox
-              :items="['Mods', 'Atomizers']"
+              :items="['Mods', 'Atomizers', 'Pod systems', 'E-Liquid']"
               v-model="product"
               label="Product"
             />
@@ -120,6 +120,7 @@ export default {
     return {
       modSpecs: [],
       atomizerSpecs: [],
+      podSpecs: [],
       product: '',
       fieldType: '',
       specName: '',
@@ -127,12 +128,15 @@ export default {
       sortedArray: [],
       values: [],
       multi: false,
+      liquidSpecs: [],
     }
   },
   firestore() {
     return {
       modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
       atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
+      podSpecs: fb.db.collection('PodSpecs').orderBy('index'),
+      liquidSpecs: fb.db.collection('LiquidSpecs').orderBy('index'),
     }
   },
   computed: {
@@ -140,59 +144,53 @@ export default {
       switch (this.product) {
         case 'Mods':
           return this.modSpecs
-
         case 'Atomizers':
           return this.atomizerSpecs
-
+        case 'Pod systems':
+          return this.podSpecs
+        case 'E-Liquid':
+          return this.liquidSpecs
         default:
           return []
       }
     },
-    lastSpec() {
+    currentCollection() {
       switch (this.product) {
         case 'Mods':
-          return this.modSpecs[this.modSpecs.length - 1]
-
+          return 'ModSpecs'
         case 'Atomizers':
-          return this.atomizerSpecs[this.atomizerSpecs.length - 1]
-
+          return 'AtomizerSpecs'
+        case 'Pod systems':
+          return 'PodSpecs'
+        case 'E-Liquid':
+          return 'LiquidSpecs'
         default:
-          return {}
+          return null
       }
+    },
+    lastSpecIndex() {
+      return this.specs.length === 0
+        ? -1
+        : this.specs[this.specs.length - 1].index
     },
   },
   methods: {
     async addSpec() {
-      switch (this.product) {
-        case 'Mods':
-          await fb.db.collection('ModSpecs').add({
-            index: this.lastSpec.index + 1,
-            isCombo: this.fieldType === 'Combobox',
-            name: this.specName,
-            unit: this.unit,
-            value: '',
-            values: this.values,
-            multi: this.multi === 'Yes' ? true : false,
-          })
-          break
-        case 'Atomizers':
-          await fb.db.collection('AtomizerSpecs').add({
-            index: this.lastSpec.index + 1,
-            isCombo: this.fieldType === 'Combobox',
-            name: this.specName,
-            unit: this.unit,
-            value: '',
-            values: this.values,
-            multi: this.multi === 'Yes' ? true : false,
-          })
-          break
-      }
+      await fb.db.collection(this.currentCollection).add({
+        index: this.lastSpecIndex + 1,
+        isCombo: this.fieldType === 'Combobox',
+        name: this.specName,
+        unit: this.unit ? this.unit : '',
+        value: '',
+        values: this.values,
+        multi: this.multi === 'Yes',
+      })
       this.$refs.formRef.reset()
     },
     // eslint-disable-next-line no-unused-vars
     async reIndex(index, upDown) {
       if (index !== 0) {
-        let array = this.product === 'Mods' ? this.modSpecs : this.atomizerSpecs
+        let array = this.specs
         if (upDown === 'up') {
           array[index].index += -1
           array[index - 1].index += 1
@@ -210,8 +208,12 @@ export default {
         }
         if (this.product === 'Mods') {
           this.modSpecs = array
-        } else {
+        } else if (this.product === 'ِAtomizer') {
           this.atomizerSpecs = array
+        } else if (this.product === 'Pod system') {
+          this.podSpecs = array
+        } else {
+          this.liquidSpecs = array
         }
       }
     },
@@ -226,6 +228,8 @@ export default {
       Swal.fire('Updated !', '', 'success')
     },
     async deleteSpec(specID) {
+      if (this.currentCollection == null) return
+
       const res = await Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -236,11 +240,7 @@ export default {
         confirmButtonText: 'Yes, delete it!',
       })
       if (res.value) {
-        if (this.product === 'Mods') {
-          await fb.db.collection('ModSpecs').doc(specID).delete()
-        } else {
-          await fb.db.collection('AtomizerSpecs').doc(specID).delete()
-        }
+        fb.db.collection(this.currentCollection).doc(specID).delete()
       }
     },
   },

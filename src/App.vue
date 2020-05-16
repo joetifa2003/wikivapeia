@@ -32,6 +32,9 @@ export default {
   components: {
     Nav,
   },
+  data() {
+    return {}
+  },
   watch: {
     '$route.fullPath': {
       immediate: true,
@@ -54,7 +57,7 @@ export default {
 .warn {
   height: 50px;
   width: 100%;
-  border: 5px solid black;
+  border: 3px solid darkgrey;
   position: fixed;
   top: 48px;
   background: white;

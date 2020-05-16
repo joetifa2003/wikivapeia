@@ -14,24 +14,56 @@
           </div>
         </div>
       </v-toolbar-title>
-
-      <v-spacer></v-spacer>
+      <div v-if="$vuetify.breakpoint.mdAndUp" class="d-flex flex-row ml-3">
+        <v-btn
+          text
+          @click.stop="homeClick"
+          :class="activePage === 'Home' ? 'accent--text' : ''"
+        >
+          <v-icon class="mr-2">home</v-icon> Home</v-btn
+        >
+        <v-btn
+          text
+          @click.stop="ranksClick"
+          :class="activePage === 'Ranks' ? 'accent--text' : ''"
+        >
+          <v-icon class="mr-2">sort</v-icon>All products</v-btn
+        >
+        <v-btn
+          text
+          @click.stop="$router.push(`/stores`)"
+          :class="activePage === 'Stores' ? 'accent--text' : ''"
+        >
+          <v-icon class="mr-2">public</v-icon>Stores</v-btn
+        >
+        <v-btn
+          v-if="userInfo && userInfo.type === 'store'"
+          text
+          :disabled="
+            $router.currentRoute.path === `/store/${userInfo.username}`
+          "
+          @click.stop="$router.push(`/store/${userInfo.username}`)"
+          class="grey darken-2 white--text"
+        >
+          <v-icon class="mr-2">storefront</v-icon>My store</v-btn
+        >
+      </div>
+      <v-spacer />
       <div
         v-if="$vuetify.breakpoint.mdAndUp"
         :style="{
-          height: '1px',
-          width: $vuetify.breakpoint.lgAndUp ? '400px' : '300px',
+          width: $vuetify.breakpoint.lgAndUp ? '300px' : '300px',
         }"
         class="d-flex align-center"
       >
         <v-autocomplete
           v-model="searchSelected"
-          append-outer-icon="search"
           append-icon=""
+          height="36px"
           hide-details
-          filled
           rounded
           dense
+          prepend-inner-icon="search"
           clearable
           :items="products"
           placeholder="Search"
@@ -39,6 +71,7 @@
           item-value="model"
           background-color="#616161"
           return-object
+          class="mr-2"
         >
           <template v-slot:item="{ parent, item }">
             <v-list-item-avatar tile size="80">
@@ -46,7 +79,7 @@
                 :src="item.images.filter((v) => v.type === 'product')[0].image"
               />
             </v-list-item-avatar>
-            <v-list-item-content>
+            <v-list-item-content style="width: 100px;">
               <v-list-item-title
                 style="font-size: 15px;"
                 v-html="parent.genFilteredText(item.titleBuilder(false))"
@@ -62,64 +95,52 @@
       <v-icon size="30" v-else @click.stop="searchExpand = !searchExpand"
         >search</v-icon
       >
-      <div
-        v-if="$vuetify.breakpoint.mdAndUp && activePage != ''"
-        class="d-flex flex-row"
-      >
+      <div v-if="!user && $vuetify.breakpoint.mdAndUp">
         <v-btn
-          text
-          @click.stop="homeClick"
-          :class="activePage === 'Home' ? 'accent--text' : ''"
-        >
-          <v-icon class="mr-2">home</v-icon> Home</v-btn
+          @click.stop="$router.push('/login')"
+          :class="[
+            activePage === 'Login' ? 'accent--text' : '',
+            'white black--text',
+          ]"
+          >Login</v-btn
         >
         <v-btn
-          text
-          @click.stop="ranksClick"
-          :class="activePage === 'Ranks' ? 'accent--text' : ''"
+          @click.stop="$router.push('/signUp')"
+          :class="activePage === 'SignUp' ? 'accent--text' : ''"
+          >Sign up</v-btn
         >
-          <v-icon class="mr-2">sort</v-icon>Products</v-btn
-        >
-        <div v-if="!user">
-          <v-btn
-            @click.stop="$router.push('/login')"
-            :class="[
-              activePage === 'Login' ? 'accent--text' : '',
-              'white black--text',
-            ]"
-            >Login</v-btn
-          >
-          <v-btn
-            @click.stop="$router.push('/signUp')"
-            :class="activePage === 'SignUp' ? 'accent--text' : ''"
-            >Sign up</v-btn
-          >
-        </div>
-        <v-menu v-if="user" open-on-hover bottom offset-y>
-          <template v-slot:activator="{ on }">
-            <v-btn v-if="userInfo" color="" v-on="on">
-              <v-icon class="mr-2">account_circle</v-icon> {{ userInfo.name }}
-            </v-btn>
-            <v-btn v-else color="primary" v-on="on">
-              <v-icon class="mr-2">account_circle</v-icon> {{ 'Guest' }}
-            </v-btn>
-          </template>
-
-          <v-list color="primary">
-            <v-list-item>
-              <v-btn text class="white--text">Account settings</v-btn>
-            </v-list-item>
-            <v-list-item>
-              <v-btn @click="logout" text class="white--text">Logout</v-btn>
-            </v-list-item>
-          </v-list>
-        </v-menu>
       </div>
+      <v-menu
+        v-if="user && $vuetify.breakpoint.mdAndUp"
+        open-on-hover
+        bottom
+        offset-y
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn v-if="userInfo" color="" v-on="on">
+            <v-icon class="mr-2">account_circle</v-icon>
+            {{ userInfo.name.split(' ')[0] }}
+          </v-btn>
+          <v-btn v-else color="primary" v-on="on">
+            <v-icon class="mr-2">account_circle</v-icon> {{ 'Guest' }}
+          </v-btn>
+        </template>
+
+        <v-list color="primary">
+          <v-list-item>
+            <v-btn text class="white--text">Settings</v-btn>
+          </v-list-item>
+          <v-list-item>
+            <v-btn @click="logout" text class="white--text">Logout</v-btn>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-expand-transition>
-        <div v-show="searchExpand" class="primary searchBar ml-n4">
+        <div v-show="searchExpand" class="primary searchBar ml-n4 px-5">
           <v-autocomplete
             v-model="searchSelected"
             append-icon=""
+            prepend-inner-icon="search"
             hide-details
             filled
             rounded
@@ -134,7 +155,7 @@
           >
             <template v-slot:item="{ parent, item }">
               <v-list-item-avatar tile size="80">
-                <v-img :src="product.productImages[0].image" />
+                <v-img :src="item.productImages[0].image" />
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title
@@ -164,7 +185,8 @@
           <v-menu open-on-hover bottom offset-y>
             <template v-slot:activator="{ on }">
               <v-btn v-if="userInfo" color="" v-on="on">
-                <v-icon class="mr-2">account_circle</v-icon> {{ userInfo.name }}
+                <v-icon class="mr-2">account_circle</v-icon>
+                {{ userInfo.name.split(' ')[0] }}
               </v-btn>
               <v-btn v-else color="primary" v-on="on">
                 <v-icon class="mr-2">account_circle</v-icon> {{ 'Guest' }}
@@ -197,6 +219,18 @@
             :class="activePage === 'Ranks' ? 'accent--text' : ''"
           >
             <v-icon class="mr-2">sort</v-icon>Products</v-btn
+          >
+        </v-list-item>
+        <v-list-item v-if="userInfo && userInfo.type === 'store'">
+          <v-btn
+            text
+            :disabled="
+              $router.currentRoute.path === `/store/${userInfo.username}`
+            "
+            @click.stop="$router.push(`/store/${userInfo.username}`)"
+            class="grey darken-2 white--text"
+          >
+            <v-icon class="mr-2">storefront</v-icon>My store</v-btn
           >
         </v-list-item>
         <v-list-item v-if="!user">
@@ -272,11 +306,22 @@ export default {
         this.$router.push(`/product/${searchSelected.id}`)
       },
     },
+    $route: {
+      handler() {
+        this.$forceUpdate()
+      },
+    },
   },
   computed: {
     ...mapState(['activePage', 'user']),
     products() {
-      return plainToClass(Product, this.productsQ)
+      return plainToClass(
+        Product,
+        this.productsQ.map((v) => ({
+          id: v.id,
+          ...v,
+        })),
+      )
     },
   },
   methods: {
@@ -304,7 +349,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 /* .onTop {
   z-index: 500;
 } */
@@ -318,5 +363,13 @@ export default {
   position: fixed;
   top: 48px;
   z-index: 3;
+}
+.v-input__prepend-inner {
+  height: 100% !important;
+  display: flex;
+  align-items: center;
+  .v-icon {
+    margin-top: 0 !important;
+  }
 }
 </style>

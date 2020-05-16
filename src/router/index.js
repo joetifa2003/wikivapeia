@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import SecureLS from 'secure-ls'
@@ -10,34 +11,9 @@ var ls = new SecureLS({ encodingType: 'aes' })
 
 const routes = [
   {
-    path: '/splash',
-    name: 'Splash',
-    component: () =>
-      import(/* webpackChunkName: "Splash" */ '../views/Splash.vue'),
-    meta: {},
-  },
-  {
     path: '/',
     name: 'Home',
     component: () => import(/* webpackChunkName: "Home" */ '../views/Home.vue'),
-    meta: {},
-  },
-  {
-    path: '/completeInfo',
-    name: 'Complete Info',
-    component: () =>
-      import(
-        /* webpackChunkName: "CompleteInfo" */ '../views/auth/CompleteInfo.vue'
-      ),
-    meta: {},
-  },
-  {
-    path: '/storeInfo',
-    name: 'Store Info',
-    component: () =>
-      import(
-        /* webpackChunkName: "CompleteInfo" */ '../views/auth/StoreInfo.vue'
-      ),
     meta: {},
   },
   {
@@ -122,11 +98,24 @@ const routes = [
       import(/* webpackChunkName: "Ranks" */ '../views/Ranks.vue'),
   },
   {
+    path: '/stores',
+    name: 'Ranks',
+    component: () =>
+      import(/* webpackChunkName: "Stores" */ '../views/Stores.vue'),
+  },
+  {
     path: '/product/:id',
     props: true,
     name: 'Product',
     component: () =>
       import(/* webpackChunkName: "Product" */ '../views/Product.vue'),
+  },
+  {
+    path: '/store/:username',
+    props: true,
+    name: 'Store',
+    component: () =>
+      import(/* webpackChunkName: "Product" */ '../views/Store.vue'),
   },
   {
     path: '/privacy',

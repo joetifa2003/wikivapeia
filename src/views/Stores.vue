@@ -1,7 +1,7 @@
 <template>
   <v-container fill-height fluid class="pa-0">
     <PageHeader
-      title="Products"
+      title="Stores"
       subtitle="Ranking for mods and automizers, From people for people"
       height="70vh"
     />
@@ -54,10 +54,10 @@
                   <v-col
                     cols="12"
                     sm="6"
-                    v-for="product in visiblePages"
-                    :key="product.id"
+                    v-for="store in visiblePages"
+                    :key="store.id"
                   >
-                    <ProductItem :product="product" page="Ranks" />
+                    <StoreItem :store="store" />
                   </v-col>
                 </v-row>
               </v-col>
@@ -79,24 +79,23 @@ import { sortBy } from 'lodash'
 const fb = require('../firebaseConfig')
 import Fuse from 'fuse.js'
 import { plainToClass } from 'class-transformer'
-import Product from '../classes/Product'
+import Store from '../classes/Product'
 
 export default {
-  name: 'Ranks',
+  name: 'Stores',
   components: {
     PageHeader: () => import('../components/PageHeader.vue'),
-    ProductItem: () => import('../components/Items/ProductItem'),
+    StoreItem: () => import('../components/Items/StoreItem'),
     ProductRequest: () => import('../components/ProductRequest'),
   },
   data() {
     return {
-      productListQ: [],
+      storesQ: [],
       /**
-       * @type {Product[]} productList
+       * @type {Store[]}
        */
-      productList: [],
-      /**
-       * @type {string}
+      stores: [],
+      /**       * @type {string}
        */
       txtSearch: '',
       /**
@@ -123,22 +122,19 @@ export default {
     }
   },
   created() {
-    this.$store.commit('activePage', 'Ranks')
+    this.$store.commit('activePage', 'Stores')
   },
   firestore() {
     return {
-      productListQ: fb.db
-        .collection('Products')
-        .where('approved', '==', true)
-        .orderBy('date', 'desc'),
+      storesQ: fb.db.collection('Users').where('type', '==', 'store'),
     }
   },
   watch: {
-    productListQ: {
+    storesQ: {
       immediate: true,
       handler() {
-        this.productList = plainToClass(Product, this.productListQWithID)
-        this.buildIndex(this.productList)
+        this.stores = plainToClass(Store, this.storesQWithID)
+        this.buildIndex(this.stores)
         this.search()
       },
     },
@@ -161,29 +157,29 @@ export default {
   },
   methods: {
     search() {
-      this.productList = this.searchedList
+      this.stores = this.searchedList
       this.searchFilter(this.filterProduct)
       this.searchSort(this.sortBy)
     },
     async searchSort(sortByy) {
       switch (sortByy) {
         case 0:
-          this.productList =
+          this.stores =
             this.direction === 0
-              ? sortBy(this.productList, 'lastScore').reverse()
-              : sortBy(this.productList, 'lastScore')
+              ? sortBy(this.stores, 'lastScore').reverse()
+              : sortBy(this.stores, 'lastScore')
           break
         case 1:
-          this.productList =
+          this.stores =
             this.direction === 0
-              ? sortBy(this.productList, 'model').reverse()
-              : sortBy(this.productList, 'model')
+              ? sortBy(this.stores, 'model').reverse()
+              : sortBy(this.stores, 'model')
           break
         case 2:
-          this.productList =
+          this.stores =
             this.direction === 0
-              ? sortBy(this.productList, 'company').reverse()
-              : sortBy(this.productList, 'company')
+              ? sortBy(this.stores, 'company').reverse()
+              : sortBy(this.stores, 'company')
           break
         case undefined:
           break
@@ -192,22 +188,20 @@ export default {
     searchFilter(filterProduct) {
       switch (filterProduct) {
         case 0:
-          this.productList = this.searchedList.filter(
-            (v) => v.type === 'Atomizer',
-          )
+          this.stores = this.searchedList.filter((v) => v.type === 'Atomizer')
           break
         case 1:
-          this.productList = this.searchedList.filter((v) => v.type === 'Mod')
+          this.stores = this.searchedList.filter((v) => v.type === 'Mod')
           break
         case undefined:
-          this.productList = this.searchedList
+          this.stores = this.searchedList
       }
     },
     buildIndex(docs) {
       this.searchIndex = new Fuse(docs, {
         caseSensitive: false,
         includeScore: true,
-        keys: ['model', 'company'],
+        keys: ['name'],
         shouldSort: false,
         threshold: 0.3,
       })
@@ -215,23 +209,23 @@ export default {
   },
   computed: {
     visiblePages() {
-      return this.productList.slice(
+      return this.stores.slice(
         (this.page - 1) * this.perPage,
         this.page * this.perPage,
       )
     },
     totalPages() {
-      return Math.ceil(this.productList.length / this.perPage)
+      return Math.ceil(this.stores.length / this.perPage)
     },
     searchedList() {
       if (this.txtSearch === '') {
-        return plainToClass(Product, this.productListQWithID)
+        return plainToClass(Store, this.storesQWithID)
       } else {
         return this.searchIndex.search(this.txtSearch).map((v) => v.item)
       }
     },
-    productListQWithID() {
-      return this.productListQ.map((v) => ({
+    storesQWithID() {
+      return this.storesQ.map((v) => ({
         ...v,
         id: v.id,
       }))

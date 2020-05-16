@@ -14,15 +14,13 @@
 </template>
 
 <script>
-import Landing from '../components/Landing.vue'
-
 export default {
   name: 'Home',
   data() {
     return {}
   },
   components: {
-    Landing,
+    Landing: () => import('../components/Landing.vue'),
   },
   created() {
     this.$store.commit('activePage', 'Home')

@@ -80,7 +80,7 @@
                     </v-col>
                   </v-row>
                   <v-combobox
-                    :items="['Mod', 'Atomizer']"
+                    :items="['Mod', 'Atomizer', 'Pod system', 'E-Liquid']"
                     :rules="[(v) => !!v || 'Product type is required']"
                     clearable
                     label="Select product type"
@@ -135,58 +135,28 @@
                     </template>
                   </v-combobox>
                   <!--- specs -->
-                  <div v-if="selectedProduct === 'Atomizer'">
-                    <v-row>
-                      <v-col
-                        v-for="spec in atomizerSpecs"
-                        :key="spec.id"
-                        cols="6"
-                      >
-                        <v-combobox
-                          v-if="spec.isCombo && spec.multi"
-                          :items="spec.values"
-                          :label="spec.name"
-                          v-model="spec.value"
-                          multiple
-                        />
-                        <v-combobox
-                          v-else-if="spec.isCombo"
-                          :items="spec.values"
-                          :label="spec.name"
-                          v-model="spec.value"
-                        />
-                        <v-text-field
-                          v-else
-                          :label="spec.name"
-                          v-model="spec.value"
-                        />
-                      </v-col>
-                    </v-row>
-                  </div>
-                  <div v-if="selectedProduct === 'Mod'">
-                    <v-row>
-                      <v-col v-for="spec in modSpecs" :key="spec.id" cols="6">
-                        <v-combobox
-                          v-if="spec.isCombo && spec.multi"
-                          :items="spec.values"
-                          :label="spec.name"
-                          v-model="spec.value"
-                          multiple
-                        />
-                        <v-combobox
-                          v-else-if="spec.isCombo"
-                          :items="spec.values"
-                          :label="spec.name"
-                          v-model="spec.value"
-                        />
-                        <v-text-field
-                          v-else
-                          :label="spec.name"
-                          v-model="spec.value"
-                        />
-                      </v-col>
-                    </v-row>
-                  </div>
+                  <v-row>
+                    <v-col v-for="spec in specs" :key="spec.id" cols="6">
+                      <v-combobox
+                        v-if="spec.isCombo && spec.multi"
+                        :items="spec.values"
+                        :label="spec.name"
+                        v-model="spec.value"
+                        multiple
+                      />
+                      <v-combobox
+                        v-else-if="spec.isCombo"
+                        :items="spec.values"
+                        :label="spec.name"
+                        v-model="spec.value"
+                      />
+                      <v-text-field
+                        v-else
+                        :label="spec.name"
+                        v-model="spec.value"
+                      />
+                    </v-col>
+                  </v-row>
                 </v-col>
                 <v-col cols="12">
                   <quill-editor v-model="txtDesc" :options="editorOption" />
@@ -213,7 +183,6 @@ import Swal from 'sweetalert2'
 import { orderBy } from 'lodash'
 import imageCompression from 'browser-image-compression'
 import { v1 as uuid } from 'uuid'
-import { quillEditor } from 'vue-quill-editor'
 import Product from '../../classes/Product'
 import { classToPlain } from 'class-transformer'
 const fb = require('../../firebaseConfig.js')
@@ -222,7 +191,10 @@ export default {
   name: 'Admin_add',
   components: {
     Progress: () => import('../../components/Progress'),
-    quillEditor,
+    quillEditor: async () => {
+      let editor = await import('vue-quill-editor')
+      return editor.quillEditor
+    },
   },
   data() {
     return {
@@ -253,11 +225,13 @@ export default {
       facebookBanner: [],
       modSpecs: [],
       atomizerSpecs: [],
+      podSpecs: [],
       productImagesPreview: [],
       facebookImagesPreview: [],
       products: [],
       companiesQ: [],
       selectedFeatures: [],
+      liquidSpecs: [],
     }
   },
   async created() {
@@ -267,6 +241,8 @@ export default {
     return {
       modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
       atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
+      podSpecs: fb.db.collection('PodSpecs').orderBy('index'),
+      liquidSpecs: fb.db.collection('LiquidSpecs').orderBy('index'),
       products: fb.db.collection('Products'),
       companiesQ: fb.db.collection('Companies'),
     }
@@ -277,6 +253,19 @@ export default {
       get: function () {
         return sortBy(this.companiesQ.map((v) => v.name))
       },
+    },
+    specs() {
+      if (this.selectedProduct === 'Mod') {
+        return this.modSpecs
+      } else if (this.selectedProduct === 'Atomizer') {
+        return this.atomizerSpecs
+      } else if (this.selectedProduct === 'Pod system') {
+        return this.podSpecs
+      } else if (this.selectedProduct === 'E-Liquid') {
+        return this.liquidSpecs
+      } else {
+        return []
+      }
     },
   },
   watch: {
@@ -302,7 +291,7 @@ export default {
         this.productPhotos.push({ image: file, type: 'product' })
       }
     },
-    facebookBannerChange() {
+    facebookBannerChange(event) {
       this.facebookBanner = []
       let files = event.target.files
       for (let file of files) {
@@ -310,6 +299,11 @@ export default {
       }
     },
     async addProduct() {
+      if (!this.companies.includes(this.txtCompany)) {
+        fb.db.collection('Companies').add({
+          name: this.txtCompany,
+        })
+      }
       if (this.productPhotos.length === 0) {
         await Swal.fire('Image is required', '', 'warning')
         return
@@ -317,79 +311,74 @@ export default {
       this.progressDialog = true
       this.selectedFeatures = []
       let imageUrls = []
-      let specs =
-        this.selectedProduct === 'Mod' ? this.modSpecs : this.atomizerSpecs
-      specs
-        .filter((v) => v.isFeature === true)
-        .forEach((feature) => {
-          if (typeof feature.value === 'string') {
-            if (feature.value === 'Yes') {
-              this.selectedFeatures.push(feature.name)
-            } else if (feature.value !== 'No' && feature.value === '') {
-              if (feature.unit) {
-                this.selectedFeatures.push(feature.value + feature.unit)
-              } else {
-                this.selectedFeatures.push(feature.value)
-              }
-            }
-          } else {
-            if (feature.value.length !== 0) {
-              Array.prototype.push.apply(this.selectedFeatures, feature.value)
-            }
-          }
-        })
+      this.selectedFeatures = Product.getFeatures(this.specs)
       this.selectedFeatures = this.selectedFeatures.filter(function (el) {
         return el != null
       })
-      try {
-        let files = [...this.facebookBanner, ...this.productPhotos]
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i]
-          var fileCompressed = await imageCompression(file.image, {
-            maxSizeMB: 1,
-            useWebWorker: true,
-            onProgress: () => {},
-          })
-          const filename = uuid() + '.' + file.image.name.split('.').pop()
-          const snapshot = await fb.st
-            .ref()
-            .child('Products')
-            .child(this.selectedProduct + 's')
-            .child('images')
-            .child(filename)
-            .put(fileCompressed)
-          const downloadURL = await snapshot.ref.getDownloadURL()
-          imageUrls.push({
-            index: i,
-            image: downloadURL,
-            imageName: filename,
-            type: file.type,
-          })
-        }
-        fb.db.collection('Products').add(
-          classToPlain(
-            new Product(
-              this.selectedProduct,
-              this.txtCompany,
-              this.txtModel,
-              this.txtDesc,
-              imageUrls,
-              this.selectedFeatures,
-              specs
-                .filter((v) => v.value.length !== 0)
-                .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
-              0,
-              true,
-              [],
-              new Date(),
-            ),
-          ),
-        )
-        this.$refs.formRef.reset()
-      } catch (error) {
-        console.log(error)
-        this.progressDialog = false
+      let files = [...this.facebookBanner, ...this.productPhotos]
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        var fileCompressed = await imageCompression(file.image, {
+          maxSizeMB: 1,
+          useWebWorker: true,
+          onProgress: () => {},
+        })
+        const filename = uuid() + '.' + file.image.name.split('.').pop()
+        const snapshot = await fb.st
+          .ref()
+          .child('Products')
+          .child(this.selectedProduct + 's')
+          .child('images')
+          .child(filename)
+          .put(fileCompressed)
+        const downloadURL = await snapshot.ref.getDownloadURL()
+        imageUrls.push({
+          index: i,
+          image: downloadURL,
+          imageName: filename,
+          type: file.type,
+        })
       }
+      console.log(
+        classToPlain(
+          new Product(
+            this.selectedProduct,
+            this.txtCompany,
+            this.txtModel,
+            this.txtDesc,
+            imageUrls,
+            this.selectedFeatures,
+            this.specs
+              .filter((v) => v.value.length !== 0)
+              .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
+            0,
+            true,
+            [],
+            new Date(),
+          ),
+        ),
+      )
+      await fb.db.collection('Products').add(
+        classToPlain(
+          new Product(
+            this.selectedProduct,
+            this.txtCompany,
+            this.txtModel,
+            this.txtDesc,
+            imageUrls,
+            this.selectedFeatures,
+            this.specs
+              .filter((v) => v.value.length !== 0)
+              .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
+            0,
+            true,
+            [],
+            new Date(),
+          ),
+        ),
+      )
+      this.$refs.formRef.reset()
+
       this.progressDialog = false
       this.productImagesPreview = []
       this.facebookImagesPreview = []

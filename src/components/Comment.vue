@@ -23,6 +23,7 @@
         rows="1"
         auto-grow
         id="input"
+        dense
       >
         <template slot="append">
           <font-awesome-icon
@@ -45,6 +46,7 @@
         rows="1"
         auto-grow
         @keydown.enter.exact="sendComment"
+        dense
       >
         <template slot="append">
           <font-awesome-icon

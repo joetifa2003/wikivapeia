@@ -40,8 +40,8 @@ export default class Product {
       let query = this.specs.filter((v) => v.name === name)[0]
       return query ? query.value : ''
     }
-    let specType = getSpecByName('Type')
     if (this.type === 'Mod') {
+      let specType = getSpecByName('Type')
       let powerOutput = getSpecByName('Power output') + 'W'
       let tc = getSpecByName('TC') === 'Yes' ? ' TC ' : ''
       let squonk = getSpecByName('Squonk') === 'Yes' ? ' Squonk ' : ''
@@ -53,7 +53,8 @@ export default class Product {
       }${mechanical ? mechanical : ''} ${specType ? specType : ''} ${
         this.type ? this.type : ''
       }`.toUpperCase()
-    } else {
+    } else if (this.type === 'Atomizer') {
+      let specType = getSpecByName('Type')
       let category = getSpecByName('Category')
       let coil = getSpecByName('Coil building')
       return `${hasCompany ? this.company + ' ' : ''}${
@@ -61,6 +62,23 @@ export default class Product {
       } ${category ? category : ''} ${specType ? specType : ''} ${
         coil ? coil : ''
       }`.toUpperCase()
+    } else if (this.type === 'Pod system') {
+      let watOut = getSpecByName('Wattage output')
+      if (watOut !== '') {
+        watOut = watOut + 'W'
+      }
+      let cartType = getSpecByName('Cartridge type').includes('Rebuildable')
+        ? 'Rebuildable'
+        : ''
+      return `${hasCompany ? this.company + ' ' : ''}${
+        this.model
+      } ${watOut} ${cartType} Pod system`.toUpperCase()
+    } else {
+      let DLMTL = getSpecByName('DL/MTL')
+      let flavors = getSpecByName('Flavors')
+      return `${hasCompany ? this.company + ' ' : ''}${
+        this.model
+      } ${flavors} ${DLMTL} E-Liquid`.toUpperCase()
     }
   }
 
@@ -90,5 +108,29 @@ export default class Product {
    */
   get getLastScore() {
     return this.lastScore.toFixed(2)
+  }
+
+  static getFeatures(specs) {
+    let features = []
+    specs
+      .filter((v) => v.isFeature === true)
+      .forEach((feature) => {
+        if (typeof feature.value === 'string') {
+          if (feature.value === 'Yes') {
+            features.push(feature.name)
+          } else if (feature.value !== 'No' && feature.value !== '') {
+            if (feature.unit) {
+              features.push(feature.value + feature.unit)
+            } else {
+              features.push(feature.value)
+            }
+          }
+        } else {
+          if (feature.value.length !== 0) {
+            Array.prototype.push.apply(features, feature.value)
+          }
+        }
+      })
+    return features
   }
 }

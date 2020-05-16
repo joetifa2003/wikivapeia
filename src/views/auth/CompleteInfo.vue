@@ -1,100 +1,136 @@
 <template>
-  <v-container fluid>
-    <v-row justify="center">
-      <v-col cols="12" md="6" lg="4">
-        <v-card class="pa-5 d-flex justify-center flex-column">
-          <v-form v-model="valid">
-            <v-card-title class="text-center justify-center mb-4"
-              >Complete your registeration</v-card-title
-            >
-            <v-row v-if="user.providerId !== 'facebook.com'">
-              <v-col>
-                <v-text-field
-                  :rules="[
-                    (v) => !!v || 'Frist name is required',
-                    (v) =>
-                      v.length >= 3 || 'Name cannot be lese than 3 characters',
-                  ]"
-                  v-model="txtFname"
-                  outlined
-                  label="First name"
-                  type="text"
-                />
-              </v-col>
-              <v-col>
-                <v-text-field
-                  :rules="[
-                    (v) => !!v || 'Last name is required',
-                    (v) =>
-                      v.length >= 3 || 'Name cannot be lese than 3 characters',
-                  ]"
-                  v-model="txtLname"
-                  outlined
-                  label="Last name"
-                  type="text"
-                />
-              </v-col>
-            </v-row>
-            <v-subheader class="font-weight-medium" style="font-size: 18px;"
-              >Birthday</v-subheader
-            >
-            <v-divider class="mb-5" />
-            <v-date-picker full-width class="mb-5" v-model="picker" />
+  <div>
+    <v-card class="pa-5 d-flex justify-center flex-column">
+      <v-form v-model="valid">
+        <v-card-title class="text-center justify-center mb-4"
+          >Complete your info</v-card-title
+        >
+        <v-row v-if="user && user.providerId !== 'facebook.com'">
+          <v-col>
+            <v-text-field
+              :rules="[
+                (v) => !!v || 'Frist name is required',
+                (v) => v.length >= 3 || 'Name cannot be lese than 3 characters',
+              ]"
+              v-model="txtFname"
+              outlined
+              label="First name"
+              type="text"
+              dense
+            />
+          </v-col>
+          <v-col>
+            <v-text-field
+              :rules="[
+                (v) => !!v || 'Last name is required',
+                (v) => v.length >= 3 || 'Name cannot be lese than 3 characters',
+              ]"
+              v-model="txtLname"
+              outlined
+              label="Last name"
+              type="text"
+              dense
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col class="py-0">
+            <v-combobox
+              label="Country"
+              outlined
+              :items="countries"
+              v-model="selectedCountry"
+              :rules="[
+                (v) => countries.includes(v) || 'This country is not available',
+              ]"
+              dense
+            />
+          </v-col>
+          <v-col class="py-0">
+            <v-combobox
+              label="Region"
+              outlined
+              :items="regions"
+              v-model="selectedRegion"
+              :rules="[
+                (v) => regions.includes(v) || 'This region is not available',
+              ]"
+              dense
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
             <v-combobox
               v-model="gender"
               :rules="[(v) => !!v || 'Gender is requierd']"
               label="Gender"
               :items="['Male', 'Female']"
+              dense
+              outlined
             />
-            <v-row>
-              <v-col>
-                <v-combobox :items="codes" v-model="selectedCode" />
-              </v-col>
-              <v-col>
+          </v-col>
+          <v-col>
+            <v-dialog
+              ref="dialog"
+              v-model="modal"
+              :return-value.sync="picker"
+              persistent
+              width="290px"
+            >
+              <template v-slot:activator="{ on }">
                 <v-text-field
-                  class="mb-5"
-                  label="Phone number (optional)"
-                  v-model.number="number"
+                  v-model="picker"
+                  label="Birthdate"
+                  prepend-inner-icon="event"
+                  readonly
+                  v-on="on"
+                  outlined
+                  dense
+                  append-icon=""
                 ></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row class="justify-space-around">
-              <v-btn class="primary white--text" @click.stop="cancle"
-                >Cancle</v-btn
-              >
-              <v-btn class="primary white--text" @click.stop="uploadUserData"
-                >Confirm</v-btn
-              >
-            </v-row>
-          </v-form>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-dialog width="700px" v-model="vertifyEmailDialog" persistent>
-      <v-card width="100%" height="100%">
-        <div class="d-flex justify-center align-center">
-          <div style="width: 80px; height: 80px;">
-            <v-img
-              src="~@/assets/WikivapeiaLogoBlackNoBg.svg"
-              aspect-ratio="1"
-            ></v-img>
-          </div>
-        </div>
-        <h2 class="text-center">Please vertify your email to continue</h2>
-        <p class="text-center ma-0 mt-5">
-          We have sent an email to {{ email }}, Please check your mail !
-        </p>
-      </v-card>
-    </v-dialog>
-  </v-container>
+              </template>
+              <v-date-picker v-model="picker" scrollable>
+                <v-spacer></v-spacer>
+                <v-btn text color="primary" @click="modal = false"
+                  >Cancel</v-btn
+                >
+                <v-btn text color="primary" @click="$refs.dialog.save(picker)"
+                  >OK</v-btn
+                >
+              </v-date-picker>
+            </v-dialog>
+          </v-col>
+        </v-row>
+        <v-text-field
+          class="mb-5"
+          label="Phone number (optional)"
+          v-model.number="number"
+          dense
+          outlined
+        ></v-text-field>
+        <v-row class="justify-space-around">
+          <v-btn class="primary white--text" @click.stop="cancle">Cancle</v-btn>
+          <v-btn
+            :disabled="!valid"
+            class="primary white--text"
+            @click.stop="uploadUserData"
+            >Confirm</v-btn
+          >
+        </v-row>
+      </v-form>
+    </v-card>
+  </div>
 </template>
 
 <script>
 import differenceInYears from 'date-fns/differenceInYears'
 import Swal from 'sweetalert2'
 const fb = require('../../firebaseConfig')
-import { codesFull, codes } from '../../utils/codes'
+import { codesFull } from '../../utils/codes'
 import { mapState } from 'vuex'
+import Personal from '../../classes/Personal'
+import { classToPlain } from 'class-transformer'
 
 export default {
   name: 'CompleteInfo',
@@ -105,17 +141,26 @@ export default {
       gender: '',
       location: {},
       selectedCode: '',
-      codes: codes,
+      codes: codesFull.map((v) => v.code),
       txtFname: '',
       txtLname: '',
       valid: false,
       email: '',
       vertifyEmailDialog: false,
+      selectedCountry: '',
+      selectedRegion: '',
+      allRegions: [],
+      menu: false,
+      modal: false,
     }
   },
   async created() {
+    let regions = await fetch(`${process.env.BASE_URL}regions.json`)
+    this.allRegions = await regions.json()
+
     let data = await fetch('https://freegeoip.app/json/')
     this.location = await data.json()
+    this.selectedCountry = location.country_name
   },
   methods: {
     async uploadUserData() {
@@ -136,18 +181,22 @@ export default {
           await fb.db
             .collection('Users')
             .doc(this.user.uid)
-            .set({
-              name:
-                this.user.providerId === 'facebook.com'
-                  ? this.user.displayName
-                  : `${this.txtFname} ${this.txtLname}`,
-              email: this.user.email,
-              country: this.location.country_name,
-              city: this.location.city,
-              number: `${this.selectedCode}${this.number}`,
-              gender: this.gender,
-              birthday: this.picker,
-            })
+            .set(
+              classToPlain(
+                new Personal(
+                  'personal',
+                  this.user.providerId === 'facebook.com'
+                    ? this.user.displayName
+                    : `${this.txtFname} ${this.txtLname}`,
+                  this.user.email,
+                  this.selectedCountry,
+                  this.selectedRegion,
+                  `${this.selectedCode}${this.number}`,
+                  this.gender,
+                  this.picker,
+                ),
+              ),
+            )
           await Swal.fire(
             'Signed Up !',
             `Welcome ${this.gender ? 'Mr.' : 'Mrs.'} ${this.txtFname} ${
@@ -168,7 +217,7 @@ export default {
                 },
               )
             this.email = this.user.email
-            this.vertifyEmailDialog = true
+            this.$emit('vertify', this.email)
           } else {
             this.$router.push('/')
           }
@@ -186,14 +235,32 @@ export default {
   watch: {
     location: {
       handler(location) {
+        this.selectedCountry = location.country_name
+      },
+    },
+    selectedCountry: {
+      handler() {
         this.selectedCode = codesFull.filter(
-          (v) => v.name === location.country_name,
+          (v) => v.name === this.selectedCountry,
         )[0].code
       },
     },
   },
   computed: {
     ...mapState(['user']),
+    regions() {
+      var regionsForCountry = this.allRegions.filter(
+        (v) => v.countryName === this.selectedCountry,
+      )[0]
+      if (regionsForCountry) {
+        return regionsForCountry.regions.map((v) => v.name)
+      } else {
+        return []
+      }
+    },
+    countries() {
+      return codesFull.map((v) => v.name)
+    },
   },
 }
 </script>

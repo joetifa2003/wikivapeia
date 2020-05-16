@@ -105,7 +105,12 @@
         </v-col>
       </v-card>
     </v-dialog>
-    <v-dialog width="85%" v-model="updateImageDialog" indeterminate>
+    <v-dialog
+      v-if="product"
+      width="85%"
+      v-model="updateImageDialog"
+      indeterminate
+    >
       <v-card width="100%" class="pa-5">
         <v-form ref="formRef">
           <v-col>
@@ -113,7 +118,7 @@
               <v-col cols="12">
                 <v-combobox
                   @input="productChange"
-                  :items="['Mod', 'Atomizer']"
+                  :items="['Mod', 'Atomizer', 'Pod system', 'E-Liquid']"
                   :rules="[(v) => !!v || 'Product type is required']"
                   clearable
                   label="Select product type"
@@ -168,13 +173,22 @@
                 </v-combobox>
                 <div>
                   <v-row>
-                    <v-col v-for="spec in productSpecs" :key="spec.id" cols="6">
-                      <v-combobox
-                        v-if="spec.isCombo"
-                        :items="spec.values"
-                        :label="spec.name"
-                        v-model="spec.value"
-                      />
+                    <v-col v-for="spec in specs" :key="spec.id" cols="6">
+                      <div v-if="spec.isCombo">
+                        <v-combobox
+                          v-if="spec.multi"
+                          :items="spec.values"
+                          :label="spec.name"
+                          v-model="spec.value"
+                          multiple
+                        />
+                        <v-combobox
+                          v-else
+                          :items="spec.values"
+                          :label="spec.name"
+                          v-model="spec.value"
+                        />
+                      </div>
                       <v-text-field
                         v-else
                         :label="spec.name"
@@ -207,7 +221,6 @@ import { orderBy } from 'lodash'
 import { v1 as uuid } from 'uuid'
 import Swal from 'sweetalert2'
 import Fuse from 'fuse.js'
-import { quillEditor } from 'vue-quill-editor'
 import Product from '../../classes/Product'
 import { plainToClass } from 'class-transformer'
 const fb = require('../../firebaseConfig')
@@ -217,7 +230,10 @@ export default {
   components: {
     Progress: () => import('../../components/Progress'),
     ProductItem: () => import('../../components/Items/ProductItem'),
-    quillEditor,
+    quillEditor: async () => {
+      let editor = await import('vue-quill-editor')
+      return editor.quillEditor
+    },
   },
   data() {
     return {
@@ -233,7 +249,7 @@ export default {
       images: [],
       progressDialog: false,
       progressMsg: '',
-      product: {},
+      product: null,
       productQ: {},
       currentImages: [],
       featureList: [],
@@ -241,6 +257,7 @@ export default {
       searchIndex: [],
       modSpecs: [],
       atomizerSpecs: [],
+      podSpecs: [],
       companiesQ: [],
       editorOption: {
         modules: {
@@ -260,6 +277,7 @@ export default {
         },
       },
       reqOnly: false,
+      liquidSpecs: [],
     }
   },
   created() {
@@ -269,6 +287,8 @@ export default {
     productListQ: fb.db.collection('Products').orderBy('date', 'desc'),
     modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
     atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
+    liquidSpecs: fb.db.collection('LiquidSpecs').orderBy('index'),
+    podSpecs: fb.db.collection('PodSpecs').orderBy('index'),
     companiesQ: fb.db.collection('Companies'),
   },
   watch: {
@@ -277,6 +297,22 @@ export default {
         this.productList = plainToClass(Product, this.productListQWithID)
         this.productList.map((v) => Object.assign(v, { checked: false }))
         this.buildIndex(this.productList)
+      },
+    },
+    product: {
+      deep: true,
+      handler() {
+        for (let name of this.specs.map((v) => v.name)) {
+          if (this.product.specs.filter((v) => v.name === name)[0]) {
+            this.specs.filter(
+              (v) => v.name === name,
+            )[0].value = this.product.specs.filter(
+              (v) => v.name === name,
+            )[0].value
+          } else {
+            this.specs.filter((v) => v.name === name)[0].value = ''
+          }
+        }
       },
     },
   },
@@ -297,36 +333,24 @@ export default {
     searchedList() {
       return this.searchIndex.search(this.txtSearch).map((v) => v.item)
     },
-    productSpecs() {
-      if (this.product.type === 'Mod') {
-        for (let name of this.modSpecs.map((v) => v.name)) {
-          if (this.product.specs.filter((v) => v.name === name)[0]) {
-            this.modSpecs.filter(
-              (v) => v.name === name,
-            )[0].value = this.product.specs.filter(
-              (v) => v.name === name,
-            )[0].value
-          }
-        }
-        return this.modSpecs
-      } else {
-        for (let name of this.atomizerSpecs.map((v) => v.name)) {
-          if (this.product.specs.filter((v) => v.name === name)[0]) {
-            this.atomizerSpecs.filter(
-              (v) => v.name === name,
-            )[0].value = this.product.specs.filter(
-              (v) => v.name === name,
-            )[0].value
-          }
-        }
-        return this.atomizerSpecs
-      }
-    },
     productListQWithID() {
       return this.productListQ.map((v) => ({
         ...v,
         id: v.id,
       }))
+    },
+    specs() {
+      if (this.product.type === 'Mod') {
+        return this.modSpecs
+      } else if (this.product.type === 'Atomizer') {
+        return this.atomizerSpecs
+      } else if (this.product.type === 'Pod system') {
+        return this.podSpecs
+      } else if (this.product.type === 'E-Liquid') {
+        return this.liquidSpecs
+      } else {
+        return []
+      }
     },
   },
   methods: {
@@ -465,14 +489,19 @@ export default {
       }
     },
     async updateProduct() {
-      await fb.db.collection('Products').doc(this.currentID).update({
-        type: this.product.type,
-        company: this.product.company,
-        model: this.product.model,
-        features: this.product.features,
-        specs: this.product.specs,
-        desc: this.product.desc,
-      })
+      await fb.db
+        .collection('Products')
+        .doc(this.currentID)
+        .update({
+          type: this.product.type,
+          company: this.product.company,
+          model: this.product.model,
+          features: Product.getFeatures(this.specs),
+          specs: this.specs
+            .filter((v) => v.value.length !== 0)
+            .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
+          desc: this.product.desc,
+        })
       this.updateImageDialog = false
       Swal.fire('Updated!', 'Product has been updated.', 'success')
     },
