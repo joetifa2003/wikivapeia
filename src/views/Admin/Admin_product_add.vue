@@ -138,7 +138,15 @@
                   <v-row>
                     <v-col v-for="spec in specs" :key="spec.id" cols="6">
                       <v-combobox
-                        v-if="spec.isCombo && spec.multi"
+                        v-if="spec.isCombo && spec.multi && spec.chips"
+                        :label="spec.name"
+                        v-model="spec.value"
+                        multiple
+                        chips
+                        deletable-chips
+                      />
+                      <v-combobox
+                        v-else-if="spec.isCombo && spec.multi"
                         :items="spec.values"
                         :label="spec.name"
                         v-model="spec.value"

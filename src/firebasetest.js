@@ -1,10 +1,5 @@
-import * as firebase from 'firebase/app'
+const firebase = require('firebase')
 
-import 'firebase/storage'
-import 'firebase/firestore/memory'
-import 'firebase/auth'
-
-// firebase init goes here
 const firebaseConfig = {
   apiKey: 'AIzaSyB1sq1qtIxIdJhFPBY0pzik_9EUWV6uQ4s',
   authDomain: 'wikivapia.firebaseapp.com',
@@ -17,10 +12,16 @@ const firebaseConfig = {
 }
 firebase.initializeApp(firebaseConfig)
 
-// firebase utils
-const db = firebase.firestore()
-const st = firebase.storage()
-const auth = firebase.auth()
-const fb = firebase
-
-export { db, auth, st, fb }
+firebase
+  .firestore()
+  .collection('Products')
+  .get()
+  .then((query) => {
+    query.forEach((doc) => {
+      doc.ref
+        .update({
+          sellers: [],
+        })
+        .then((v) => console.log(v))
+    })
+  })

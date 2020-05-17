@@ -28,6 +28,11 @@ Vue.use(require('vue-script2'))
 let app
 fb.auth.onAuthStateChanged((user) => {
   store.commit('user', user)
+  if (user) {
+    fb.db.collection('Users').doc(user.uid).get().then((doc) => {
+      store.commit('userInfo', doc.data())
+    })
+  }
   if (!app) {
     app = new Vue({
       router,

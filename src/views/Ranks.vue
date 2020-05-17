@@ -57,7 +57,11 @@
                     v-for="product in visiblePages"
                     :key="product.id"
                   >
-                    <ProductItem :product="product" page="Ranks" />
+                    <ProductItem
+                      :product="product"
+                      page="Ranks"
+                      :seller="sellers.get(product.id)"
+                    />
                   </v-col>
                 </v-row>
               </v-col>
@@ -80,6 +84,7 @@ const fb = require('../firebaseConfig')
 import Fuse from 'fuse.js'
 import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Ranks',
@@ -120,6 +125,7 @@ export default {
        */
       perPage: 10,
       searchIndex: null,
+      sellersQ: [],
     }
   },
   created() {
@@ -134,6 +140,19 @@ export default {
     }
   },
   watch: {
+    userInfo: {
+      immediate: true,
+      handler(userInfo) {
+        if (userInfo) {
+          this.$bind(
+            'sellersQ',
+            fb.db
+              .collection('Sellers')
+              .where('storeID', '==', this.userInfo.username),
+          )
+        }
+      },
+    },
     productListQ: {
       immediate: true,
       handler() {
@@ -214,6 +233,7 @@ export default {
     },
   },
   computed: {
+    ...mapState(['user', 'userInfo']),
     visiblePages() {
       return this.productList.slice(
         (this.page - 1) * this.perPage,
@@ -235,6 +255,9 @@ export default {
         ...v,
         id: v.id,
       }))
+    },
+    sellers() {
+      return new Map(this.sellersQ.map((v) => [v.productID, v]))
     },
   },
 }

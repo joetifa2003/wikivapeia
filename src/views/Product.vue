@@ -496,6 +496,7 @@ export default {
       commentsPerPage: 5,
       commentsVis: 5,
       storesQ: [],
+      sellers: [],
     }
   },
   created() {
@@ -560,12 +561,15 @@ export default {
       productQ: fb.db.collection('Products').doc(this.productID),
       voteSum: fb.db.collection('VoteSum').doc(this.productID),
       replies: fb.db.collection('Replies').orderBy('date', 'asc'),
+      sellers: fb.db
+        .collection('Sellers')
+        .where('productID', '==', this.productID),
     }
   },
   watch: {
-    product: {
-      async handler(product) {
-        if (product.sellers.length !== 0) {
+    sellers: {
+      async handler() {
+        if (this.sellers.length !== 0) {
           let country
           if (this.userInfo) {
             country = this.userInfo.country
@@ -579,13 +583,18 @@ export default {
             fb.db
               .collection('Users')
               .where(
-                'id',
+                'username',
                 'in',
-                this.product.sellers.map((v) => v.id),
+                this.sellers.map((v) => v.storeID),
               )
               .where('country', '==', country),
+            { reset: false },
           )
         }
+      },
+    },
+    product: {
+      async handler() {
         if (!this.voteSum) {
           this.avgVotes = cloneDeep(this.votes)
         }

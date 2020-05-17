@@ -33,8 +33,11 @@ export default {
     Nav,
   },
   data() {
-    return {}
+    return {
+      userInfo: null,
+    }
   },
+  computed: {},
   watch: {
     '$route.fullPath': {
       immediate: true,

@@ -19,26 +19,17 @@
           class="d-flex index justify-space-between"
         >
           <template v-if="page !== 'store'">
-            <v-btn
-              v-if="product.sellers.some((v) => v.id === user.uid)"
-              class="ml-2 mt-2"
-              color="green"
-              small
-              fab
-            >
+            <v-btn v-if="seller" class="ml-2 mt-2" color="green" small fab>
               <font-awesome-icon icon="check" size="lg" />
             </v-btn>
           </template>
-          <template v-else>
+          <template v-else-if="seller ? seller.hasDiscount : false">
             <v-img
               max-width="60px"
               src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/sale-icon-01.svg?alt=media&token=d38bb097-40fb-4017-b2be-dbe405cb99b6"
             />
           </template>
-          <v-tooltip
-            bottom
-            v-if="!product.sellers.some((v) => v.id === user.uid)"
-          >
+          <v-tooltip bottom v-if="!seller">
             <template v-slot:activator="{ on }">
               <v-btn
                 class="mr-2 mt-2 ml-auto"
@@ -84,7 +75,7 @@
           style="width: 100%; margin-top: -15px;"
         >
           <v-btn icon>
-            <v-avatar size="34" style="border: 2px solid #134563;">
+            <v-avatar size="33" style="border: 1.5px solid #134563;">
               <v-icon style="font-size: 24px; color: #134563;">edit</v-icon>
             </v-avatar>
           </v-btn>
@@ -224,6 +215,7 @@ export default {
       default: true,
     },
     storeID: String,
+    seller: Object,
   },
   computed: {
     ...mapState(['user', 'userInfo']),
@@ -237,35 +229,17 @@ export default {
     addToSellers(addRemove) {
       if (addRemove === 'add') {
         fb.db
-          .collection('Products')
-          .doc(this.product.id)
-          .get()
-          .then((doc) => {
-            let data = doc.data()
-            doc.ref.update({
-              sellers: [
-                ...data.sellers,
-                {
-                  id: this.user.uid,
-                },
-              ],
-            })
+          .collection('Sellers')
+          .doc(`${this.userInfo.username}-${this.product.id}`)
+          .set({
+            productID: this.product.id,
+            storeID: this.userInfo.username,
           })
       } else {
         fb.db
-          .collection('Products')
-          .doc(this.product.id)
-          .get()
-          .then((doc) => {
-            let data = doc.data()
-            data.sellers.splice(
-              data.sellers.map((v) => v.id).indexOf(this.user.uid),
-              1,
-            )
-            doc.ref.update({
-              sellers: data.sellers,
-            })
-          })
+          .collection('Sellers')
+          .doc(`${this.userInfo.username}-${this.product.id}`)
+          .delete()
       }
     },
   },

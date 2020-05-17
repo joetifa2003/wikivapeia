@@ -259,7 +259,6 @@
 import Swal from 'sweetalert2'
 const fb = require('../firebaseConfig')
 import { mapState } from 'vuex'
-import store from '../store'
 import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
 
@@ -269,7 +268,6 @@ export default {
     return {
       sideBar: false,
       login: false,
-      userInfo: null,
       vertifyEmailDialog: false,
       productsQ: null,
       searchSelected: {},
@@ -282,21 +280,6 @@ export default {
     }
   },
   watch: {
-    user: {
-      immediate: true,
-      handler(user) {
-        if (user) {
-          this.$bind('userInfo', fb.db.collection('Users').doc(user.uid))
-        } else {
-          this.userInfo = false
-        }
-      },
-    },
-    userInfo: {
-      handler(userInfo) {
-        store.commit('userInfo', userInfo)
-      },
-    },
     searchSelected: {
       handler(searchSelected) {
         this.$gtag.event('search', {
@@ -313,7 +296,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(['activePage', 'user']),
+    ...mapState(['activePage', 'user', 'userInfo']),
     products() {
       return plainToClass(
         Product,

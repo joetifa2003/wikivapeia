@@ -76,9 +76,9 @@ export default class Product {
     } else {
       let DLMTL = getSpecByName('DL/MTL')
       let flavors = getSpecByName('Flavors')
-      return `${hasCompany ? this.company + ' ' : ''}${
-        this.model
-      } ${flavors} ${DLMTL} E-Liquid`.toUpperCase()
+      return `${hasCompany ? this.company + ' ' : ''}${this.model} ${
+        typeof flavors !== 'string' ? flavors.join(' ') : flavors
+      } ${DLMTL} E-Liquid`.toUpperCase()
     }
   }
 

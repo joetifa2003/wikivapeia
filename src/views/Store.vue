@@ -5,7 +5,7 @@
     class="align-start pa-2 justify-center pt-10 full grey lighten-3"
   >
     <v-row justify="center" v-if="store">
-      <v-col cols="12" md="7" lg="6">
+      <v-col cols="12" md="7" lg="7">
         <v-card>
           <vue-headful
             :title="`WIKIVAPEIA - ${store.name}`"
@@ -116,7 +116,7 @@
                     style="height: 20px !important;"
                   >
                     <div
-                      class="d-flex flex-row align-center font-weight-bold blue--text"
+                      class="d-flex flex-row align-center font-weight-bold black--text"
                     >
                       <v-icon size="30" class="d-inline mr-3 black--text"
                         >contact_phone</v-icon
@@ -287,6 +287,7 @@
                 :storeID="store.id"
                 page="store"
                 :score="false"
+                :seller="sellers.get(product.id)"
               />
             </v-col>
           </v-row>
@@ -333,6 +334,7 @@ export default {
        */
       perPage: 6,
       searchIndex: {},
+      sellersQ: [],
     }
   },
   firestore() {
@@ -390,6 +392,9 @@ export default {
         })),
       )
     },
+    sellers() {
+      return new Map(this.sellersQ.map((v) => [v.productID, v]))
+    },
   },
   methods: {
     search() {
@@ -443,15 +448,29 @@ export default {
         this.buildIndex(this.products)
       },
     },
-    store: {
+    username: {
+      immediate: true,
       handler() {
-        if (this.store) {
+        this.$bind(
+          'sellersQ',
+          fb.db.collection('Sellers').where('storeID', '==', this.username),
+        )
+      },
+    },
+    sellersQ: {
+      handler() {
+        if (this.sellers.size !== 0) {
           this.$bind(
             'productsQ',
-            fb.db
-              .collection('Products')
-              .where('sellers', 'array-contains', { id: this.store.id }),
+            fb.db.collection('Products').where(
+              fb.fb.firestore.FieldPath.documentId(),
+              'in',
+              this.sellersQ.map((v) => v.productID),
+            ),
+            { wait: true },
           )
+        } else {
+          this.productsQ = []
         }
       },
     },
