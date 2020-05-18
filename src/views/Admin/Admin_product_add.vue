@@ -347,25 +347,6 @@ export default {
           type: file.type,
         })
       }
-      console.log(
-        classToPlain(
-          new Product(
-            this.selectedProduct,
-            this.txtCompany,
-            this.txtModel,
-            this.txtDesc,
-            imageUrls,
-            this.selectedFeatures,
-            this.specs
-              .filter((v) => v.value.length !== 0)
-              .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
-            0,
-            true,
-            [],
-            new Date(),
-          ),
-        ),
-      )
       await fb.db.collection('Products').add(
         classToPlain(
           new Product(
@@ -380,7 +361,6 @@ export default {
               .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
             0,
             true,
-            [],
             new Date(),
           ),
         ),

@@ -48,9 +48,6 @@ export default {
   overflow-wrap: break-word;
   word-break: keep-all; /*this stops the word breaking*/
 }
-.v-overlay {
-  z-index: 1 !important;
-}
 .v-overlay__content {
   width: 100%;
   height: 100%;

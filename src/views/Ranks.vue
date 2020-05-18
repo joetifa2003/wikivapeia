@@ -16,7 +16,7 @@
                   filled
                   v-model="txtSearch"
                   single-line
-                  @input="search"
+                  @keydown.enter="search"
                 ></v-text-field>
                 <v-subheader>Product</v-subheader>
                 <v-divider />
@@ -54,7 +54,7 @@
                   <v-col
                     cols="12"
                     sm="6"
-                    v-for="product in visiblePages"
+                    v-for="product in productList"
                     :key="product.id"
                   >
                     <ProductItem
@@ -63,14 +63,12 @@
                       :seller="sellers.get(product.id)"
                     />
                   </v-col>
+                  <infinite-loading
+                    @infinite="infiniteHandler"
+                  ></infinite-loading>
                 </v-row>
               </v-col>
             </v-row>
-            <v-pagination
-              v-model="page"
-              total-visible="10"
-              :length="totalPages"
-            ></v-pagination>
           </v-col>
         </v-row>
       </div>
@@ -79,12 +77,12 @@
 </template>
 
 <script>
-import { sortBy } from 'lodash'
 const fb = require('../firebaseConfig')
-import Fuse from 'fuse.js'
 import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
 import { mapState } from 'vuex'
+import infiniteScroll from 'vue-infinite-scroll'
+import InfiniteLoading from 'vue-infinite-loading'
 
 export default {
   name: 'Ranks',
@@ -92,6 +90,10 @@ export default {
     PageHeader: () => import('../components/PageHeader.vue'),
     ProductItem: () => import('../components/Items/ProductItem'),
     ProductRequest: () => import('../components/ProductRequest'),
+    InfiniteLoading,
+  },
+  directives: {
+    infiniteScroll,
   },
   data() {
     return {
@@ -126,18 +128,28 @@ export default {
       perPage: 10,
       searchIndex: null,
       sellersQ: [],
+      lastDoc: null,
+      busy: false,
     }
   },
   created() {
     this.$store.commit('activePage', 'Ranks')
-  },
-  firestore() {
-    return {
-      productListQ: fb.db
-        .collection('Products')
-        .where('approved', '==', true)
-        .orderBy('date', 'desc'),
-    }
+    this.busy = true
+    fb.db
+      .collection('Products')
+      .where('approved', '==', true)
+      .orderBy('date', 'desc')
+      .orderBy('model')
+      .limit(this.perPage)
+      .get()
+      .then((snapshot) => {
+        this.lastDoc = snapshot.docs[snapshot.docs.length - 1]
+        this.productListQ = snapshot.docs.map((v) => ({
+          id: v.id,
+          ...v.data(),
+        }))
+        this.busy = false
+      })
   },
   watch: {
     userInfo: {
@@ -156,106 +168,78 @@ export default {
     productListQ: {
       immediate: true,
       handler() {
-        this.productList = plainToClass(Product, this.productListQWithID)
-        this.buildIndex(this.productList)
-        this.search()
+        this.productList = plainToClass(
+          Product,
+          this.productListQ.map((v) => ({ id: v.id, ...v })),
+        )
       },
     },
     sortBy: {
-      handler(sortBy) {
-        this.searchSort(sortBy)
-      },
+      handler() {},
     },
     direction: {
-      handler() {
-        this.searchSort(this.sortBy)
-      },
+      handler() {},
     },
     filterProduct: {
-      handler(filterProduct) {
-        this.searchFilter(filterProduct)
-        this.searchSort(this.sortBy)
-      },
+      handler() {},
     },
   },
   methods: {
+    infiniteHandler($state) {
+      if (this.lastDoc) {
+        fb.db
+          .collection('Products')
+          .where('approved', '==', true)
+          .orderBy('date', 'desc')
+          .orderBy('model')
+          .startAfter(this.lastDoc)
+          .limit(this.perPage)
+          .get()
+          .then((snapshot) => {
+            this.lastDoc = snapshot.docs[snapshot.docs.length - 1]
+            this.productListQ = [
+              ...this.productListQ,
+              ...snapshot.docs.map((v) => ({ id: v.id, ...v.data() })),
+            ]
+            $state.loaded()
+          })
+      } else {
+        $state.complete()
+      }
+    },
     search() {
-      this.productList = this.searchedList
-      this.searchFilter(this.filterProduct)
-      this.searchSort(this.sortBy)
-    },
-    async searchSort(sortByy) {
-      switch (sortByy) {
-        case 0:
-          this.productList =
-            this.direction === 0
-              ? sortBy(this.productList, 'lastScore').reverse()
-              : sortBy(this.productList, 'lastScore')
-          break
-        case 1:
-          this.productList =
-            this.direction === 0
-              ? sortBy(this.productList, 'model').reverse()
-              : sortBy(this.productList, 'model')
-          break
-        case 2:
-          this.productList =
-            this.direction === 0
-              ? sortBy(this.productList, 'company').reverse()
-              : sortBy(this.productList, 'company')
-          break
-        case undefined:
-          break
+      if (this.txtSearch === '') {
+        this.$bind(
+          'productListQ',
+          fb.db
+            .collection('Products')
+            .where('approved', '==', true)
+            .orderBy('date', 'desc')
+            .orderBy('model')
+            .limit(this.perPage),
+          { reset: true },
+        ).then((documents) => {
+          this.lastDoc = documents[documents.length - 1]
+        })
+      } else {
+        this.$bind(
+          'productListQ',
+          fb.db
+            .collection('Products')
+            .where('approved', '==', true)
+            .orderBy('model')
+            .startAt(this.txtSearch)
+            .endAt(this.txtSearch + '\uf8ff')
+            .limit(this.perPage),
+          { reset: true },
+        ).then((documents) => {
+          this.lastDoc = documents[documents.length - 1]
+        })
       }
-    },
-    searchFilter(filterProduct) {
-      switch (filterProduct) {
-        case 0:
-          this.productList = this.searchedList.filter(
-            (v) => v.type === 'Atomizer',
-          )
-          break
-        case 1:
-          this.productList = this.searchedList.filter((v) => v.type === 'Mod')
-          break
-        case undefined:
-          this.productList = this.searchedList
-      }
-    },
-    buildIndex(docs) {
-      this.searchIndex = new Fuse(docs, {
-        caseSensitive: false,
-        includeScore: true,
-        keys: ['model', 'company'],
-        shouldSort: false,
-        threshold: 0.3,
-      })
     },
   },
   computed: {
     ...mapState(['user', 'userInfo']),
-    visiblePages() {
-      return this.productList.slice(
-        (this.page - 1) * this.perPage,
-        this.page * this.perPage,
-      )
-    },
-    totalPages() {
-      return Math.ceil(this.productList.length / this.perPage)
-    },
-    searchedList() {
-      if (this.txtSearch === '') {
-        return plainToClass(Product, this.productListQWithID)
-      } else {
-        return this.searchIndex.search(this.txtSearch).map((v) => v.item)
-      }
-    },
-    productListQWithID() {
-      return this.productListQ.map((v) => ({
-        ...v,
-        id: v.id,
-      }))
-    },
     sellers() {
       return new Map(this.sellersQ.map((v) => [v.productID, v]))
     },

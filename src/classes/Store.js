@@ -7,6 +7,7 @@ export default class Store extends User {
     about,
     email,
     country,
+    currency,
     region,
     countryCode,
     branches,
@@ -19,6 +20,7 @@ export default class Store extends User {
     facebookPageID,
   ) {
     super(type, name, email, country, region)
+    this.currency = currency
     this.about = about
     this.countryCode = countryCode
     this.branches = branches

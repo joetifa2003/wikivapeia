@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-app-bar app dark dense flat color="primary">
+    <v-app-bar app dark dense flat color="primary" style="z-index: 6;">
       <v-app-bar-nav-icon
         @click.stop="sideBar = !sideBar"
         v-if="$vuetify.breakpoint.smAndDown"
@@ -221,6 +221,15 @@
             <v-icon class="mr-2">sort</v-icon>Products</v-btn
           >
         </v-list-item>
+        <v-list-item>
+          <v-btn
+            text
+            @click.stop="$router.push(`/stores`)"
+            :class="activePage === 'Stores' ? 'accent--text' : ''"
+          >
+            <v-icon class="mr-2">public</v-icon>Stores</v-btn
+          >
+        </v-list-item>
         <v-list-item v-if="userInfo && userInfo.type === 'store'">
           <v-btn
             text
@@ -333,10 +342,6 @@ export default {
 </script>
 
 <style lang="scss">
-/* .onTop {
-  z-index: 500;
-} */
-
 .homee {
   cursor: pointer;
 }
@@ -345,7 +350,6 @@ export default {
   width: 100%;
   position: fixed;
   top: 48px;
-  z-index: 3;
 }
 .v-input__prepend-inner {
   height: 100% !important;
@@ -354,5 +358,8 @@ export default {
   .v-icon {
     margin-top: 0 !important;
   }
+}
+.v-navigation-drawer {
+  z-index: 7 !important;
 }
 </style>

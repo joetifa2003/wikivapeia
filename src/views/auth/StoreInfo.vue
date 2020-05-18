@@ -68,16 +68,35 @@
           type="text"
           dense
         />
-        <v-combobox
-          label="Country"
-          outlined
-          :items="countries"
-          v-model="selectedCountry"
-          :rules="[
-            (v) => countries.includes(v) || 'This country is not available',
-          ]"
-          dense
-        />
+        <v-row>
+          <v-col>
+            <v-combobox
+              prepend-inner-icon="public"
+              label="Country"
+              outlined
+              :items="countries"
+              v-model="selectedCountry"
+              :rules="[
+                (v) => countries.includes(v) || 'This country is not available',
+              ]"
+              dense
+            />
+          </v-col>
+          <v-col>
+            <v-combobox
+              prepend-inner-icon="monetization_on"
+              label="Currency"
+              outlined
+              :items="currencies"
+              v-model="selectedCurrency"
+              :rules="[
+                (v) =>
+                  currencies.includes(v) || 'This currency is not available',
+              ]"
+              dense
+            />
+          </v-col>
+        </v-row>
         <div class="font-weight-bold">Chose your store url address</div>
         <div
           :class="[
@@ -311,16 +330,21 @@ export default {
       storeUsername: '',
       busType: '',
       allRegions: [],
+      allCurrencies: [],
       selectedRegion: '',
       /** @type {File} */
       imgFile: null,
       webUrl: '',
       about: '',
+      selectedCurrency: '',
     }
   },
   async created() {
     let regions = await fetch(`${process.env.BASE_URL}regions.json`)
     this.allRegions = await regions.json()
+    let currencies = await fetch(`${process.env.BASE_URL}currencies.json`)
+    this.allCurrencies = await currencies.json()
+
     let data = await fetch('https://freegeoip.app/json/')
     this.location = await data.json()
   },
@@ -357,6 +381,7 @@ export default {
                 this.about,
                 this.user.email,
                 this.selectedCountry,
+                this.selectedCurrency,
                 this.location.city,
                 this.selectedCode,
                 orderBy(this.branches, ['region'], ['asc']),
@@ -408,6 +433,9 @@ export default {
         this.selectedCode = codesFull.filter(
           (v) => v.name === this.selectedCountry,
         )[0].code
+        this.selectedCurrency = this.allCurrencies.find(
+          (v) => v.country === this.selectedCountry,
+        ).currency_code
       },
     },
   },
@@ -415,6 +443,9 @@ export default {
     ...mapState(['user']),
     countries() {
       return codesFull.map((v) => v.name)
+    },
+    currencies() {
+      return this.allCurrencies.map((v) => v.currency_code)
     },
     regions() {
       var regionsForCountry = this.allRegions.filter(

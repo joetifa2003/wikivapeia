@@ -45,6 +45,8 @@
     "vue-gtag": "^1.6.2",
     "vue-headful": "^2.1.0",
     "vue-horizontal-list": "^1.0.7",
+    "vue-infinite-loading": "^2.4.5",
+    "vue-infinite-scroll": "^2.0.2",
     "vue-marquee-text-component": "^1.1.1",
     "vue-owl-carousel": "^2.0.3",
     "vue-quill-editor": "^3.0.6",

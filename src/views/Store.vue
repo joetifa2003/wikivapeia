@@ -38,6 +38,32 @@
             </v-carousel-item>
           </v-carousel>
           <v-carousel
+            v-else-if="$vuetify.breakpoint.sm"
+            cycle
+            hide-delimiters
+            interval="3000"
+            height="auto"
+            show-arrows-on-hover
+            style="max-height: 360px;"
+          >
+            <v-carousel-item v-if="store.banners.length === 0">
+              <v-img
+                height="300px"
+                width="100%"
+                aspect-ratio="16/9"
+                src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
+              />
+            </v-carousel-item>
+            <v-carousel-item v-for="banner in store.banners" :key="banner">
+              <v-img
+                height="300px"
+                width="100%"
+                aspect-ratio="16/9"
+                :src="banner"
+              />
+            </v-carousel-item>
+          </v-carousel>
+          <v-carousel
             v-else
             cycle
             hide-delimiters
@@ -277,14 +303,15 @@
           <v-row class="px-5">
             <v-col
               cols="12"
-              md="6"
+              sm="6"
               lg="4"
               v-for="product in visiblePages"
               :key="product.id"
             >
               <ProductItem
                 :product="product"
-                :storeID="store.id"
+                :storeUsername="store.username"
+                :storeCurrency="store.currency"
                 page="store"
                 :score="false"
                 :seller="sellers.get(product.id)"
@@ -306,6 +333,7 @@
 <script>
 // eslint-disable-next-line no-unused-vars
 import Store from '../classes/Store'
+import Helper from '../classes/Helper'
 import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
 import CommentSection from '../components/CommentSection'
@@ -458,16 +486,11 @@ export default {
       },
     },
     sellersQ: {
-      handler() {
+      async handler() {
         if (this.sellers.size !== 0) {
-          this.$bind(
-            'productsQ',
-            fb.db.collection('Products').where(
-              fb.fb.firestore.FieldPath.documentId(),
-              'in',
-              this.sellersQ.map((v) => v.productID),
-            ),
-            { wait: true },
+          this.productsQ = await Helper.getDocumentsByID(
+            'Products',
+            this.sellersQ.map((v) => v.productID),
           )
         } else {
           this.productsQ = []

@@ -64,7 +64,7 @@ export default {
   position: fixed;
   top: 48px;
   background: white;
-  z-index: 2;
+  z-index: 6;
 }
 .swal2-container {
   font-family: 'Roboto', sans-serif;

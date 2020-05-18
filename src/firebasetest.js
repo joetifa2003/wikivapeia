@@ -12,16 +12,26 @@ const firebaseConfig = {
 }
 firebase.initializeApp(firebaseConfig)
 
-firebase
-  .firestore()
-  .collection('Products')
-  .get()
-  .then((query) => {
-    query.forEach((doc) => {
-      doc.ref
-        .update({
-          sellers: [],
-        })
-        .then((v) => console.log(v))
-    })
+async function main() {
+  let search = ''
+  let query = await firebase
+    .firestore()
+    .collection('Products')
+    .orderBy('model')
+    .startAt(search)
+    .endAt(search + '\uf8ff')
+
+  let snapshot1 = await query.limit(5).get()
+  let snapshot2 = await query
+    .startAfter(snapshot1.docs[snapshot1.docs.length - 1])
+    .limit(5)
+    .get()
+  snapshot1.docs.forEach((v) => {
+    console.log(v.data().model)
   })
+  snapshot2.docs.forEach((v) => {
+    console.log(v.data().model)
+  })
+}
+
+main()

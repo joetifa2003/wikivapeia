@@ -15,7 +15,6 @@ export default class Product {
     specs,
     lastScore,
     approved,
-    sellers,
     date,
   ) {
     this.type = type
@@ -27,7 +26,6 @@ export default class Product {
     this.specs = specs
     this.lastScore = lastScore
     this.approved = approved
-    this.sellers = sellers
     this.date = date
   }
 
@@ -75,10 +73,9 @@ export default class Product {
       } ${watOut} ${cartType} Pod system`.toUpperCase()
     } else {
       let DLMTL = getSpecByName('DL/MTL')
-      let flavors = getSpecByName('Flavors')
-      return `${hasCompany ? this.company + ' ' : ''}${this.model} ${
-        typeof flavors !== 'string' ? flavors.join(' ') : flavors
-      } ${DLMTL} E-Liquid`.toUpperCase()
+      return `${hasCompany ? this.company + ' ' : ''}${
+        this.model
+      }  ${DLMTL} E-Liquid`.toUpperCase()
     }
   }
 
