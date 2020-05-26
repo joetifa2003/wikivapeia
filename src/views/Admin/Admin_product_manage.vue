@@ -79,30 +79,55 @@
         </v-col>
       </v-card>
     </v-dialog>
-    <v-dialog width="85%" v-model="arrangeImageDialog" indeterminate>
-      <v-card width="100%" class="pa-5">
-        <v-row v-for="(image, i) in currentImages" :key="i">
-          <v-col class="d-flex align-center">
-            <div>
-              <v-img width="200px" contain :src="image.image" />
-              <v-btn
-                v-if="currentImages.length > 1"
-                width="100%"
-                class="red white--text"
-                @click="deleteImage(i)"
-                >Delete</v-btn
-              >
+    <v-dialog
+      v-if="product"
+      :width="$vuetify.breakpoint.mdAndUp ? '20%' : '100%'"
+      v-model="arrangeImageDialog"
+      persistent
+    >
+      <v-card class="pa-5">
+        <v-card v-for="(image, i) in product.images" :key="i" class="my-2">
+          <v-img contain :src="image.image" width="auto" height="144px">
+            <div
+              v-if="image.type === 'facebook'"
+              class="white pa-0"
+              style="max-width: 30px; max-height: 30px;"
+            >
+              <font-awesome-icon
+                style="width: 30px; height: 30px;"
+                class="indigo--text"
+                :icon="['fab', 'facebook-square']"
+              />
             </div>
-          </v-col>
-          <v-col cols="3">
-            <v-text-field v-model.number="image.index" label="index" />
-          </v-col>
-        </v-row>
-        <v-col>
-          <v-btn class="primary white--text" @click="arrangeImages"
-            >Arrange</v-btn
-          >
-        </v-col>
+          </v-img>
+          <div class="d-flex flex-row justify-space-between align-center">
+            <v-btn
+              style="text-transform: none !important;"
+              text
+              :disabled="image.type === 'facebook'"
+              color="indigo"
+              @click="makeFBImage(i)"
+              ><v-icon>share</v-icon> Sharing image</v-btn
+            >
+            <v-btn @click="product.images.splice(i, 1)" text color="grey" icon
+              ><v-icon>delete</v-icon></v-btn
+            >
+            <div class="d-flex flex-row">
+              <v-btn small icon @click.stop="reIndex(i, 'down')">
+                <v-icon>arrow_downward</v-icon>
+              </v-btn>
+              <v-btn small icon @click.stop="reIndex(i, 'up')">
+                <v-icon>arrow_upward</v-icon>
+              </v-btn>
+            </div>
+          </div>
+        </v-card>
+        <v-btn
+          @click="exitEditImage"
+          class="black white--text mt-3"
+          style="width: 100%;"
+          ><v-icon>exit_to_app</v-icon>Exit</v-btn
+        >
       </v-card>
     </v-dialog>
     <v-dialog
@@ -116,61 +141,55 @@
           <v-col>
             <v-row>
               <v-col cols="12">
-                <v-combobox
-                  @input="productChange"
-                  :items="['Mod', 'Atomizer', 'Pod system', 'E-Liquid']"
-                  :rules="[(v) => !!v || 'Product type is required']"
-                  clearable
-                  label="Select product type"
-                  v-model="product.type"
-                />
+                <v-row>
+                  <v-col>
+                    <v-combobox
+                      :items="[
+                        'Mod',
+                        'Starter kit',
+                        'Atomizer',
+                        'Pod system',
+                        'E-Liquid',
+                        'Coils & Cartridges',
+                        'Batteries & Chargers',
+                        'Vape accessories',
+                      ]"
+                      :rules="[(v) => !!v || 'Product type is required']"
+                      clearable
+                      label="Select product type"
+                      v-model="product.type"
+                    />
+                  </v-col>
+                  <v-col>
+                    <v-combobox
+                      :disabled="
+                        !(
+                          typeSubTypes[product.type] &&
+                          typeSubTypes[product.type].length > 0
+                        )
+                      "
+                      :items="typeSubTypes[product.type]"
+                      :rules="[(v) => !!v || 'Product type is required']"
+                      clearable
+                      label="Select product sub type"
+                      v-model="product.subType"
+                    />
+                  </v-col>
+                </v-row>
                 <v-combobox
                   :items="companies"
                   :rules="[(v) => !!v || 'Company is required']"
                   label="Company"
                   v-model="product.company"
                 />
-                <v-combobox
+                <v-text-field
                   :rules="[(v) => !!v || 'Model is required']"
                   v-model="product.model"
-                  append-icon=""
-                  hide-detailsf
                   clearable
-                  :items="products"
                   label="Model"
                   item-text="model"
                   item-value="model"
-                >
-                  <template v-slot:item="{ parent, item }">
-                    <v-list-item-avatar tile size="70">
-                      <v-img
-                        :src="
-                          item.images.filter((v) => v.type === 'product')[0]
-                            .image
-                        "
-                      />
-                    </v-list-item-avatar>
-                    <v-list-item-content>
-                      <v-list-item-title
-                        v-html="
-                          parent.genFilteredText(item.model.toUpperCase())
-                        "
-                      ></v-list-item-title>
-                      <v-list-item-subtitle
-                        v-html="item.company.toUpperCase()"
-                      ></v-list-item-subtitle>
-                      <v-list-item-subtitle>
-                        <v-chip
-                          v-for="(feature, i) in item.features"
-                          :key="i"
-                          class="mr-2 mt-2 font-weight-medium"
-                          style="font-size: 10px;"
-                          >{{ feature }}</v-chip
-                        >
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </template>
-                </v-combobox>
+                />
                 <div>
                   <v-row>
                     <v-col v-for="spec in specs" :key="spec.id" cols="6">
@@ -278,6 +297,31 @@ export default {
       },
       reqOnly: false,
       liquidSpecs: [],
+      typeSubTypes: {
+        Mod: [],
+        'Starter kit': [],
+        Atomizer: [],
+        'Pod system': [],
+        'E-Liquid': [],
+        'Coils & Cartridges': [
+          'Wires',
+          'Prebuilt coils',
+          'Replacement coils',
+          'RBA coils',
+          'Cartridges',
+        ],
+        'Batteries & Chargers': ['Batteries', 'Chargers'],
+        'Vape accessories': [
+          'Cotton',
+          'Drip tips',
+          'Glass tube',
+          'Silicon cases',
+          'Bottles',
+          'Adaptors',
+          'Tools',
+          'Other',
+        ],
+      },
     }
   },
   created() {
@@ -354,6 +398,33 @@ export default {
     },
   },
   methods: {
+    makeFBImage(index) {
+      for (let i = 0; i < this.product.images.length; i++) {
+        this.product.images[i].type = 'product'
+      }
+      this.product.images[index].type = 'facebook'
+    },
+    reIndex(index, upDown) {
+      if (this.product.images.length === 0 && upDown === 'up') return
+      if (this.product.images.length === index + 1 && upDown === 'down') return
+      if (index === 0 && upDown === 'up') return
+      if (upDown === 'up') {
+        let tmp = this.product.images[index - 1]
+        this.product.images[index - 1] = this.product.images[index]
+        this.product.images[index] = tmp
+      } else {
+        let tmp = this.product.images[index + 1]
+        this.product.images[index + 1] = this.product.images[index]
+        this.product.images[index] = tmp
+      }
+      this.$forceUpdate()
+    },
+    exitEditImage() {
+      fb.db.collection('Products').doc(this.currentID).update({
+        images: this.product.images,
+      })
+      this.arrangeImageDialog = false
+    },
     async search() {
       this.productList = this.searchedList
     },
@@ -454,46 +525,13 @@ export default {
       this.addImageDialog = false
       Swal.fire('Added!', 'Images has been added!.', 'success')
     },
-    async arrangeImages() {
-      await fb.db
-        .collection('Products')
-        .doc(this.currentID)
-        .update({
-          images: sortBy(this.currentImages, 'index'),
-        })
-      await this.$bind(
-        'product',
-        fb.db.collection('Products').doc(this.currentID),
-      )
-      await this.$unbind('product', false)
-      this.currentImages = this.product.images
-      this.arrangeImageDialog = false
-      Swal.fire('Edited!', 'Images has been edited.', 'success')
-    },
-    async deleteImage(index) {
-      const res = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
-      })
-      if (res.value) {
-        this.currentImages.splice(index, 1)
-        await fb.db.collection('Products').doc(this.product.id).update({
-          images: this.currentImages,
-        })
-        Swal.fire('Deleted!', 'Image has been deleted.', 'success')
-      }
-    },
     async updateProduct() {
       await fb.db
         .collection('Products')
         .doc(this.currentID)
         .update({
           type: this.product.type,
+          subType: this.product.subType,
           company: this.product.company,
           model: this.product.model,
           features: Product.getFeatures(this.specs),
@@ -501,6 +539,7 @@ export default {
             .filter((v) => v.value.length !== 0)
             .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
           desc: this.product.desc,
+          modelSRC: this.product.model.toLowerCase(),
         })
       this.updateImageDialog = false
       Swal.fire('Updated!', 'Product has been updated.', 'success')

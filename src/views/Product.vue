@@ -35,7 +35,7 @@
                   {{ product.company.toUpperCase() }}
                 </div>
               </div>
-              <div>
+              <div v-if="pType">
                 <div
                   class="d-flex justify-end align-end ml-1"
                   style="height: 100%;"
@@ -66,8 +66,12 @@
                 >{{ feature }}</v-chip
               >
             </div>
-            <v-row>
-              <v-col cols="12" md="6" class="d-flex flex-column align-start">
+            <v-row justify="center">
+              <v-col
+                cols="12"
+                md="6"
+                class="d-flex flex-column align-start justify-center"
+              >
                 <v-carousel
                   interval="4000"
                   height="350px"
@@ -87,8 +91,27 @@
                     />
                   </v-carousel-item>
                 </v-carousel>
+                <v-btn
+                  v-if="
+                    ['Atomizer', 'Mod', 'Pod system'].includes(product.type)
+                  "
+                  @click="
+                    $router.push({
+                      path: '/compare',
+                      query: {
+                        type: product.type.replace(/\s/g, '+'),
+                        product0: productID,
+                      },
+                    })
+                  "
+                  class="grey darken-2 white--text mt-2"
+                  rounded
+                  small
+                  ><v-icon class="mr-2">compare_arrows</v-icon> Compare
+                  with</v-btn
+                >
               </v-col>
-              <v-col cols="12" md="6" class="d-flex flex-column">
+              <v-col v-if="pType" cols="12" md="6" class="d-flex flex-column">
                 <div class="pa-2 mb-1" v-for="(avg, i) in avgVotes" :key="i">
                   <div class="d-flex flex-row justify-center align-center">
                     <div
@@ -106,35 +129,66 @@
                     {{ avg.value.toFixed(1) }}
                   </div>
                 </div>
-                <v-row align="end">
-                  <v-col
-                    :class="[
-                      'pa-0 px-3',
-                      $vuetify.breakpoint.smAndDown ? 'mb-3' : '',
-                    ]"
-                    cols="12"
-                    md="6"
-                  >
-                    <div style="width: 100%;">
-                      <v-btn
-                        :width="$vuetify.breakpoint.smAndDown ? '100%' : ''"
-                        v-if="voted !== null"
-                        @click.stop="voteClick"
-                        :class="[
-                          'white--text',
-                          voted ? 'grey darken-2' : 'red darken-4',
-                        ]"
-                        >{{ voted ? 'Undo' : 'Share your experience' }}</v-btn
-                      >
-                    </div>
-                  </v-col>
-                  <v-col class="d-flex justify-end pa-0 pr-3">
-                    <v-icon color="black" class="mr-2">person</v-icon>
-                    <v-chip class="font-weight-medium red darken-4 white--text">
-                      {{ voteSum ? voteSum.votersCount : 0 }} Voted</v-chip
+                <div class="d-flex justify-space-between">
+                  <div class="d-flex flex-column">
+                    <v-btn
+                      v-if="voted !== null"
+                      @click.stop="voteClick"
+                      :class="[
+                        'white--text',
+                        voted ? 'grey darken-2' : 'black',
+                      ]"
+                      >{{ voted ? 'Unvote' : 'Vote' }}</v-btn
                     >
-                  </v-col>
-                </v-row>
+                  </div>
+                  <div
+                    class="font-weight-medium black--text align-self-end"
+                    style="font-size: 14px;"
+                  >
+                    <v-icon color="black" class="mr-2">person</v-icon>
+                    {{ voteSum ? voteSum.votersCount : 0 }} Voted
+                  </div>
+                </div>
+              </v-col>
+              <v-col v-else cols="12" md="12" class="d-flex flex-column">
+                <v-subheader
+                  class="font-weight-bold pa-0"
+                  style="font-size: 18px;"
+                  >Description</v-subheader
+                >
+                <div
+                  style="width: 100%; height: 2px;"
+                  class="grey lighten-1 mb-3"
+                />
+                <div
+                  class="content ql-editor text-justify"
+                  style="padding: 0 !important;"
+                >
+                  <div v-if="descReadMore" v-html="product.desc"></div>
+                  <div
+                    v-else
+                    v-html="
+                      product.desc.split(' ').slice(0, 25).join(' ') + '....'
+                    "
+                  ></div>
+                  <div class="d-flex justify-end">
+                    <v-btn
+                      v-if="product.desc.split(' ').length > 25"
+                      text
+                      @click.stop="descReadMore = !descReadMore"
+                      class="blue--text"
+                    >
+                      {{ descReadMore ? 'Read less' : 'Read more' }}
+                      <v-icon>
+                        {{
+                          descReadMore
+                            ? 'keyboard_arrow_up'
+                            : 'keyboard_arrow_down'
+                        }}
+                      </v-icon>
+                    </v-btn>
+                  </div>
+                </div>
               </v-col>
             </v-row>
             <div
@@ -251,7 +305,7 @@
                 </v-col>
               </v-row>
             </div>
-            <v-row>
+            <v-row v-if="pType">
               <v-col>
                 <v-subheader
                   class="font-weight-bold pa-0"
@@ -515,6 +569,11 @@ export default {
   },
   computed: {
     ...mapState(['user', 'userInfo']),
+    pType() {
+      return ['Atomizer', 'Mod', 'Pod system', 'E-Liquid'].includes(
+        this.product.type,
+      )
+    },
     /**
      * @returns {Array}
      */

@@ -22,60 +22,61 @@
           @change="productPhotoChange"
         />
         <v-form ref="form">
-          <v-combobox
-            :items="['Mod', 'Atomizer']"
-            :rules="[(v) => !!v || 'Product type is required']"
-            clearable
-            label="Select product type"
-            v-model="selectedProduct"
-          />
+          <v-row>
+            <v-col>
+              <v-combobox
+                :items="[
+                  'Mod',
+                  'Starter kit',
+                  'Atomizer',
+                  'Pod system',
+                  'E-Liquid',
+                  'Coils & Cartridges',
+                  'Batteries & Chargers',
+                  'Vape accessories',
+                ]"
+                :rules="[(v) => !!v || 'Product type is required']"
+                clearable
+                label="Select product type"
+                v-model="selectedProduct"
+              />
+            </v-col>
+            <v-col>
+              <v-combobox
+                :disabled="
+                  !(
+                    typeSubTypes[selectedProduct] &&
+                    typeSubTypes[selectedProduct].length > 0
+                  ) || !selectedProduct
+                "
+                :items="typeSubTypes[selectedProduct]"
+                :rules="[(v) => !!v || 'Product type is required']"
+                clearable
+                label="Select product sub type"
+                v-model="selectedSubType"
+              />
+            </v-col>
+          </v-row>
           <v-combobox
             :disabled="!selectedProduct"
             :items="companies"
-            :rules="[(v) => !!v || 'Company is required']"
+            :rules="getRules()"
             label="Company"
             v-model="txtCompany"
           />
-          <v-combobox
+          <v-text-field
             :disabled="!txtCompany"
             :rules="[(v) => !!v || 'Product name is required']"
             v-model="txtModel"
             append-icon=""
             hide-details
             clearable
-            :items="products"
             label="Product name"
             item-text="model"
             item-value="model"
             class="mb-7"
           >
-            <template v-slot:item="{ parent, item }">
-              <v-list-item-avatar tile size="70">
-                <v-img
-                  :src="
-                    item.images.filter((v) => v.type === 'product')[0].image
-                  "
-                />
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title
-                  v-html="parent.genFilteredText(item.model.toUpperCase())"
-                ></v-list-item-title>
-                <v-list-item-subtitle
-                  v-html="item.company.toUpperCase()"
-                ></v-list-item-subtitle>
-                <v-list-item-subtitle>
-                  <v-chip
-                    v-for="(feature, i) in item.features"
-                    :key="i"
-                    class="mr-2 mt-2 font-weight-medium"
-                    style="font-size: 10px;"
-                    >{{ feature }}</v-chip
-                  >
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </template>
-          </v-combobox>
+          </v-text-field>
           <!--- specs -->
           <div v-if="selectedProduct === 'Atomizer'">
             <v-row>
@@ -179,6 +180,7 @@ export default {
       modSpecs: [],
       atomizerSpecs: [],
       selectedProduct: '',
+      selectedSubType: '',
       productPhotos: [],
       txtCompany: '',
       txtModel: '',
@@ -188,13 +190,37 @@ export default {
       products: [],
       progressDialog: false,
       selectedFeatures: [],
+      typeSubTypes: {
+        Mod: [],
+        'Starter kit': [],
+        Atomizer: [],
+        'Pod system': [],
+        'E-Liquid': [],
+        'Coils & Cartridges': [
+          'Wires',
+          'Prebuilt coils',
+          'Replacement coils',
+          'RBA coils',
+          'Cartridges',
+        ],
+        'Batteries & Chargers': ['Batteries', 'Chargers'],
+        'Vape accessories': [
+          'Cotton',
+          'Drip tips',
+          'Glass tube',
+          'Silicon cases',
+          'Bottles',
+          'Adaptors',
+          'Tools',
+          'Other',
+        ],
+      },
     }
   },
   firestore() {
     return {
       modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
       atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
-      products: fb.db.collection('Products'),
       companiesQ: fb.db.collection('Companies'),
     }
   },
@@ -207,6 +233,22 @@ export default {
     },
   },
   methods: {
+    getRules() {
+      if (
+        [
+          'Atomizer',
+          'Mod',
+          'Pod system',
+          'E-Liquid',
+          'Coils & Cartridges',
+          'Batteries & Chargers',
+        ].includes(this.selectedProduct)
+      ) {
+        return [(v) => !!v || 'Company is required']
+      } else {
+        return []
+      }
+    },
     productPhotoChange(event) {
       let files = event.target.files
       for (let file of files) {
@@ -264,6 +306,7 @@ export default {
       })
       fb.db.collection('Products').add({
         type: this.selectedProduct,
+        subType: this.selectedSubType,
         company: this.txtCompany,
         model: this.txtModel,
         desc: this.txtDesc,
@@ -287,6 +330,11 @@ export default {
         this.productImagesPreview = [
           ...this.productPhotos.map((v) => URL.createObjectURL(v.image)),
         ]
+      },
+    },
+    selectedProduct: {
+      handler() {
+        this.selectedSubType = ''
       },
     },
   },

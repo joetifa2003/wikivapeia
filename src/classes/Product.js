@@ -7,6 +7,7 @@
 export default class Product {
   constructor(
     type,
+    subType,
     company,
     model,
     desc,
@@ -18,6 +19,7 @@ export default class Product {
     date,
   ) {
     this.type = type
+    this.subType = subType
     this.company = company
     this.model = model
     this.desc = desc
@@ -71,11 +73,13 @@ export default class Product {
       return `${hasCompany ? this.company + ' ' : ''}${
         this.model
       } ${watOut} ${cartType} Pod system`.toUpperCase()
-    } else {
+    } else if (this.type === 'E-Liquid') {
       let DLMTL = getSpecByName('DL/MTL')
       return `${hasCompany ? this.company + ' ' : ''}${
         this.model
       }  ${DLMTL} E-Liquid`.toUpperCase()
+    } else {
+      return this.model
     }
   }
 

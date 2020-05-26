@@ -1,5 +1,6 @@
 <template>
   <v-container
+    v-if="store"
     fluid
     fill-height
     class="align-start pa-2 justify-center pt-10 full grey lighten-3"
@@ -9,43 +10,75 @@
         <v-card>
           <vue-headful
             :title="`WIKIVAPEIA - ${store.name}`"
-            :image="store.banners[0]"
+            :image="getFBBanner"
           />
           <v-carousel
             v-if="$vuetify.breakpoint.mdAndUp"
-            cycle
+            :cycle="store.slideshow"
             hide-delimiters
             interval="3000"
-            height="auto"
+            height="420px"
             show-arrows-on-hover
-            style="max-height: 360px;"
+            style="max-height: 420px;"
           >
-            <v-carousel-item v-if="store.banners.length === 0">
+            <v-overlay
+              v-if="user.uid === store.id"
+              z-index="1"
+              absolute
+              color=""
+            >
+              <div
+                style="width: 100%; height: 100%;"
+                class="d-flex justify-end"
+              >
+                <v-btn
+                  color="red darken-4 ma-2"
+                  small
+                  @click="editBanners = true"
+                  ><v-icon class="mr-1">settings</v-icon>Settings</v-btn
+                >
+              </div>
+            </v-overlay>
+            <v-carousel-item
+              v-if="!store.banners || store.banners.length === 0"
+            >
               <v-img
-                height="360px"
+                height="420px"
                 width="100%"
-                aspect-ratio="16/9"
                 src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
               />
             </v-carousel-item>
-            <v-carousel-item v-for="banner in store.banners" :key="banner">
-              <v-img
-                height="360px"
-                width="100%"
-                aspect-ratio="16/9"
-                :src="banner"
-              />
+            <v-carousel-item
+              v-for="banner in store.banners.map((v) => v.image)"
+              :key="banner"
+            >
+              <v-img height="420px" width="100%" :src="banner" />
             </v-carousel-item>
           </v-carousel>
           <v-carousel
             v-else-if="$vuetify.breakpoint.sm"
-            cycle
+            :cycle="store.slideshow"
             hide-delimiters
             interval="3000"
             height="auto"
             show-arrows-on-hover
             style="max-height: 360px;"
           >
+            <v-overlay
+              v-if="user.uid === store.id"
+              z-index="1"
+              absolute
+              color=""
+            >
+              <div
+                style="width: 100%; height: 100%;"
+                class="d-flex justify-end"
+              >
+                <v-btn color="red darken-4" small @click="editBanners = true"
+                  >Settings</v-btn
+                >
+              </div>
+            </v-overlay>
             <v-carousel-item v-if="store.banners.length === 0">
               <v-img
                 height="300px"
@@ -54,7 +87,10 @@
                 src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
               />
             </v-carousel-item>
-            <v-carousel-item v-for="banner in store.banners" :key="banner">
+            <v-carousel-item
+              v-for="banner in store.banners.map((v) => v.image)"
+              :key="banner"
+            >
               <v-img
                 height="300px"
                 width="100%"
@@ -65,14 +101,31 @@
           </v-carousel>
           <v-carousel
             v-else
-            cycle
+            :cycle="store.slideshow"
             hide-delimiters
             interval="3000"
             height="auto"
             show-arrows-on-hover
             style="max-height: 360px;"
           >
-            <v-carousel-item v-if="store.banners.length === 0">
+            <v-overlay
+              v-if="user.uid === store.id"
+              z-index="1"
+              absolute
+              color=""
+            >
+              <div
+                style="width: 100%; height: 100%;"
+                class="d-flex justify-end"
+              >
+                <v-btn color="red darken-4" small @click="editBanners = true"
+                  >Settings</v-btn
+                >
+              </div>
+            </v-overlay>
+            <v-carousel-item
+              v-if="!store.banners || store.banners.length === 0"
+            >
               <v-img
                 height="144px"
                 width="100%"
@@ -80,7 +133,10 @@
                 src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
               />
             </v-carousel-item>
-            <v-carousel-item v-for="banner in store.banners" :key="banner">
+            <v-carousel-item
+              v-for="banner in store.banners.map((v) => v.image)"
+              :key="banner"
+            >
               <v-img
                 height="144px"
                 width="100%"
@@ -94,8 +150,8 @@
               <div class="d-flex flex-row align-center">
                 <v-img
                   class="mr-4 rounded-img"
-                  :max-width="$vuetify.breakpoint.mdAndUp ? '100px' : '80'"
-                  :max-height="$vuetify.breakpoint.mdAndUp ? '100px' : '80'"
+                  :max-width="$vuetify.breakpoint.mdAndUp ? '100px' : '70'"
+                  :max-height="$vuetify.breakpoint.mdAndUp ? '100px' : '70'"
                   aspect-ratio="1"
                   :src="store.img"
                 />
@@ -106,15 +162,16 @@
                     </h2>
                     <h3 class="white--text" v-else>{{ store.name }}</h3>
                     <v-rating
-                      class="mb-2"
+                      class="mb-2 mt-n2"
                       color="amber lighten-1"
                       background-color="grey"
                       :value="3"
                       dense
+                      size="18"
                       readonly
                     />
                   </div>
-                  <div style="height: 100%;" class="d-flex align-end">
+                  <div style="height: 100%;" class="d-flex align-end mt-n1">
                     <v-btn
                       class="grey white--text"
                       text
@@ -327,6 +384,72 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-dialog
+      :width="$vuetify.breakpoint.mdAndUp ? '20%' : '100%'"
+      v-model="editBanners"
+      persistent
+    >
+      <v-card class="pa-5">
+        <v-btn
+          @click="addBanner"
+          class="black white--text mb-3"
+          style="width: 100%;"
+          :disabled="store.banners.length >= 3"
+          ><v-icon>add</v-icon>Add banner</v-btn
+        >
+        <v-switch v-model="slideshow" label="sildeshow" />
+        <input
+          style="display: none;"
+          ref="bannerInput"
+          type="file"
+          accept="image/jpeg"
+          @change="bannerInputChange"
+        />
+        <v-card v-for="(banner, i) in store.banners" :key="i" class="my-2">
+          <v-img contain :src="banner.image" width="auto" height="144px">
+            <div
+              v-if="banner.type === 'facebook'"
+              class="white pa-0"
+              style="max-width: 30px; max-height: 30px;"
+            >
+              <font-awesome-icon
+                style="width: 30px; height: 30px;"
+                class="indigo--text"
+                :icon="['fab', 'facebook-square']"
+              />
+            </div>
+          </v-img>
+          <div class="d-flex flex-row justify-space-between align-center">
+            <v-btn
+              style="text-transform: none !important;"
+              text
+              :disabled="banner.type === 'facebook'"
+              color="indigo"
+              @click="makeFBBanner(i)"
+              ><v-icon>share</v-icon> Sharing banner</v-btn
+            >
+            <v-btn text color="grey" @click="deleteBanner(i)" icon
+              ><v-icon>delete</v-icon></v-btn
+            >
+            <div class="d-flex flex-row">
+              <v-btn small icon @click.stop="reIndex(i, 'down')">
+                <v-icon>arrow_downward</v-icon>
+              </v-btn>
+              <v-btn small icon @click.stop="reIndex(i, 'up')">
+                <v-icon>arrow_upward</v-icon>
+              </v-btn>
+            </div>
+          </div>
+        </v-card>
+        <v-btn
+          @click="exitBanner"
+          class="black white--text mt-3"
+          style="width: 100%;"
+          ><v-icon>exit_to_app</v-icon>Exit</v-btn
+        >
+      </v-card>
+    </v-dialog>
+    <Progress :progressDialog="progressDialog" msg="Adding banner" />
   </v-container>
 </template>
 
@@ -338,12 +461,17 @@ import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
 import CommentSection from '../components/CommentSection'
 import Fuse from 'fuse.js'
+import imageCompression from 'browser-image-compression'
+import { v1 as uuid } from 'uuid'
+import Swal from 'sweetalert2'
+import { mapState } from 'vuex'
 const fb = require('../firebaseConfig')
 
 export default {
   name: 'Store',
   props: ['username'],
   components: {
+    Progress: () => import('../components/Progress'),
     ProductItem: () => import('../components/Items/ProductItem'),
     CommentSection,
   },
@@ -363,6 +491,9 @@ export default {
       perPage: 6,
       searchIndex: {},
       sellersQ: [],
+      editBanners: false,
+      progressDialog: false,
+      slideshow: false,
     }
   },
   firestore() {
@@ -371,6 +502,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['user']),
     /** @returns */
     visiblePages() {
       return this.searchedFull.slice(
@@ -423,6 +555,14 @@ export default {
     sellers() {
       return new Map(this.sellersQ.map((v) => [v.productID, v]))
     },
+    getFBBanner() {
+      let fb = this.store.banners.find((v) => v.type === 'facebook')
+      if (fb) {
+        return fb.image
+      } else {
+        return ''
+      }
+    },
   },
   methods: {
     search() {
@@ -469,8 +609,87 @@ export default {
         threshold: 0.3,
       })
     },
+    async bannerInputChange(event) {
+      this.progressDialog = true
+      let files = event.target.files
+      let images = this.store.banners
+      for (let file of files) {
+        try {
+          const filename = uuid() + '.' + file.name.split('.').pop()
+          let compressedFile = await imageCompression(file, {
+            maxSizeMB: 1,
+            useWebWorker: true,
+            onProgress: () => {},
+          })
+          let snapshot = await fb.st
+            .ref('/Store/banners')
+            .child(filename)
+            .put(compressedFile)
+          let downloadUrl = await snapshot.ref.getDownloadURL()
+          images.push({
+            image: downloadUrl,
+            imageName: filename,
+            type: 'normal',
+          })
+          await fb.db.collection('Users').doc(this.store.id).update({
+            banners: images,
+          })
+          this.progressDialog = false
+        } catch (e) {
+          this.progressDialog = false
+          Swal.fire('Error', e.message, 'error')
+        }
+      }
+    },
+    async makeFBBanner(index) {
+      let banners = this.store.banners
+      for (let i = 0; i < banners.length; i++) {
+        banners[i].type = 'normal'
+      }
+      banners[index].type = 'facebook'
+      await fb.db.collection('Users').doc(this.store.id).update({
+        banners: banners,
+      })
+    },
+    async deleteBanner(index) {
+      let banners = this.store.banners
+      fb.st.ref('/Store/banners').child(banners[index].imageName).delete()
+      banners.splice(index, 1)
+      await fb.db.collection('Users').doc(this.store.id).update({
+        banners: banners,
+      })
+    },
+    addBanner() {
+      this.$refs.bannerInput.click()
+    },
+    reIndex(index, upDown) {
+      if (this.store.banners.length === 0 && upDown === 'up') return
+      if (upDown === 'up') {
+        let tmp = this.store.banners[index - 1]
+        this.store.banners[index - 1] = this.store.banners[index]
+        this.store.banners[index] = tmp
+      } else {
+        let tmp = this.store.banners[index + 1]
+        this.store.banners[index + 1] = this.store.banners[index]
+        this.store.banners[index] = tmp
+      }
+      this.$forceUpdate()
+    },
+    async exitBanner() {
+      let banners = this.store.banners
+      await fb.db.collection('Users').doc(this.store.id).update({
+        banners: banners,
+        slideshow: this.slideshow,
+      })
+      this.editBanners = false
+    },
   },
   watch: {
+    storeQ: {
+      handler() {
+        if (this.storeQ[0]) this.slideshow = this.storeQ[0].slideshow
+      },
+    },
     products: {
       handler() {
         this.buildIndex(this.products)

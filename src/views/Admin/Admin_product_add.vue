@@ -8,132 +8,59 @@
             <v-col>
               <v-row>
                 <v-col cols="12">
+                  <v-btn class="black white--text" @click="addImages = true"
+                    >Add images</v-btn
+                  >
                   <v-row>
-                    <v-col cols="6">
-                      <v-carousel
-                        style="width: 200px;"
-                        height="100"
-                        cycle
-                        hide-delimiter-background
-                        hide-delimiters
-                        show-arrows-on-hover
-                      >
-                        <v-carousel-item
-                          v-for="(image, i) in productImagesPreview"
-                          :key="i"
-                        >
-                          <v-img
-                            contain
-                            width="100%"
-                            height="100%"
-                            :src="image"
-                          >
-                            <div
-                              style="width: 100%; height: 100%;"
-                              class="d-flex align-end justify-center"
-                            >
-                              <v-btn
-                                text
-                                @click="productPhotos.splice(i, 1)"
-                                class="white--text"
-                                >X</v-btn
-                              >
-                            </div>
-                          </v-img>
-                        </v-carousel-item>
-                      </v-carousel>
-                      <div>Product images</div>
-                      <input
-                        style="width: 108px;"
-                        type="file"
-                        multiple
-                        @change="productPhotoChange"
+                    <v-col>
+                      <v-combobox
+                        :items="[
+                          'Mod',
+                          'Starter kit',
+                          'Atomizer',
+                          'Pod system',
+                          'E-Liquid',
+                          'Coils & Cartridges',
+                          'Batteries & Chargers',
+                          'Vape accessories',
+                        ]"
+                        :rules="[(v) => !!v || 'Product type is required']"
+                        clearable
+                        label="Select product type"
+                        v-model="selectedProduct"
                       />
                     </v-col>
-                    <v-col cols="6">
-                      <v-carousel
-                        style="width: 200px;"
-                        height="100"
-                        cycle
-                        hide-delimiter-background
-                        show-arrows-on-hover
-                      >
-                        <v-carousel-item
-                          v-for="(image, i) in facebookImagesPreview"
-                          :key="i"
-                        >
-                          <v-img
-                            contain
-                            width="100%"
-                            height="100%"
-                            :src="image"
-                          />
-                        </v-carousel-item>
-                      </v-carousel>
-                      <div>Facebook image</div>
-                      <input
-                        style="width: 108px;"
-                        type="file"
-                        multiple
-                        @change="facebookBannerChange"
+                    <v-col>
+                      <v-combobox
+                        :disabled="
+                          !(
+                            typeSubTypes[selectedProduct] &&
+                            typeSubTypes[selectedProduct].length > 0
+                          )
+                        "
+                        :items="typeSubTypes[selectedProduct]"
+                        :rules="[(v) => !!v || 'Product type is required']"
+                        clearable
+                        label="Select product sub type"
+                        v-model="selectedSubType"
                       />
                     </v-col>
                   </v-row>
                   <v-combobox
-                    :items="['Mod', 'Atomizer', 'Pod system', 'E-Liquid']"
-                    :rules="[(v) => !!v || 'Product type is required']"
-                    clearable
-                    label="Select product type"
-                    v-model="selectedProduct"
-                  />
-                  <v-combobox
                     :items="companies"
-                    :rules="[(v) => !!v || 'Company is required']"
+                    :rules="getRules()"
                     label="Company"
                     v-model="txtCompany"
                   />
-                  <v-combobox
+                  <v-text-field
                     :rules="[(v) => !!v || 'Model is required']"
                     v-model="txtModel"
-                    append-icon=""
-                    hide-details
                     clearable
-                    :items="products"
                     label="Model"
                     item-text="model"
                     item-value="model"
                     class="mb-7"
-                  >
-                    <template v-slot:item="{ parent, item }">
-                      <v-list-item-avatar tile size="70">
-                        <v-img
-                          :src="
-                            item.images.filter((v) => v.type === 'product')[0]
-                              .image
-                          "
-                        />
-                      </v-list-item-avatar>
-                      <v-list-item-content>
-                        <v-list-item-title
-                          v-html="
-                            parent.genFilteredText(item.model.toUpperCase())
-                          "
-                        ></v-list-item-title>
-                        <v-list-item-subtitle
-                          v-html="item.company.toUpperCase()"
-                        ></v-list-item-subtitle>
-                        <v-list-item-subtitle>
-                          <v-chip
-                            v-for="(feature, i) in item.features"
-                            :key="i"
-                            class="mr-2 mt-2 font-weight-medium"
-                            style="font-size: 10px;"
-                            >{{ feature }}</v-chip
-                          >
-                        </v-list-item-subtitle>
-                      </v-list-item-content>
-                    </template>
-                  </v-combobox>
+                  />
                   <!--- specs -->
                   <v-row>
                     <v-col v-for="spec in specs" :key="spec.id" cols="6">
@@ -182,6 +109,75 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-dialog
+      :width="$vuetify.breakpoint.mdAndUp ? '20%' : '100%'"
+      v-model="addImages"
+      persistent
+    >
+      <v-card class="pa-5">
+        <v-btn
+          @click="$refs.bannerInput.click()"
+          class="black white--text mb-3"
+          style="width: 100%;"
+          ><v-icon>add</v-icon>Add product photo</v-btn
+        >
+        <input
+          style="display: none;"
+          ref="bannerInput"
+          type="file"
+          accept="image/jpeg"
+          @change="productPhotoChange"
+          multiple
+        />
+        <v-card v-for="(product, i) in productPhotos" :key="i" class="my-2">
+          <v-img
+            contain
+            :src="getImageUrl(product.image)"
+            width="auto"
+            height="144px"
+          >
+            <div
+              v-if="product.type === 'facebook'"
+              class="white pa-0"
+              style="max-width: 30px; max-height: 30px;"
+            >
+              <font-awesome-icon
+                style="width: 30px; height: 30px;"
+                class="indigo--text"
+                :icon="['fab', 'facebook-square']"
+              />
+            </div>
+          </v-img>
+          <div class="d-flex flex-row justify-space-between align-center">
+            <v-btn
+              style="text-transform: none !important;"
+              text
+              :disabled="product.type === 'facebook'"
+              color="indigo"
+              @click="makeFBImage(i)"
+              ><v-icon>share</v-icon> Sharing image</v-btn
+            >
+            <v-btn @click="productPhotos.splice(i, 1)" text color="grey" icon
+              ><v-icon>delete</v-icon></v-btn
+            >
+            <div class="d-flex flex-row">
+              <v-btn small icon @click.stop="reIndex(i, 'down')">
+                <v-icon>arrow_downward</v-icon>
+              </v-btn>
+              <v-btn small icon @click.stop="reIndex(i, 'up')">
+                <v-icon>arrow_upward</v-icon>
+              </v-btn>
+            </div>
+          </div>
+        </v-card>
+        <v-btn
+          @click="addImages = false"
+          class="black white--text mt-3"
+          style="width: 100%;"
+          ><v-icon>exit_to_app</v-icon>Exit</v-btn
+        >
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -224,6 +220,7 @@ export default {
         },
       },
       selectedProduct: '',
+      selectedSubType: '',
       progressDialog: false,
       txtCompany: '',
       txtModel: '',
@@ -240,10 +237,43 @@ export default {
       companiesQ: [],
       selectedFeatures: [],
       liquidSpecs: [],
+      typeSubTypes: {
+        Mod: [],
+        'Starter kit': [],
+        Atomizer: [],
+        'Pod system': [],
+        'E-Liquid': [],
+        'Coils & Cartridges': [
+          'Wires',
+          'Prebuilt coils',
+          'Replacement coils',
+          'RBA coils',
+          'Cartridges',
+        ],
+        'Batteries & Chargers': ['Batteries', 'Chargers'],
+        'Vape accessories': [
+          'Cotton',
+          'Drip tips',
+          'Glass tube',
+          'Silicon cases',
+          'Bottles',
+          'Adaptors',
+          'Tools',
+          'Other',
+        ],
+      },
+      addImages: false,
     }
   },
   async created() {
     this.companies = orderBy(this.companies)
+  },
+  watch: {
+    selectedProduct: {
+      handler() {
+        this.selectedSubType = ''
+      },
+    },
   },
   firestore() {
     return {
@@ -251,7 +281,6 @@ export default {
       atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
       podSpecs: fb.db.collection('PodSpecs').orderBy('index'),
       liquidSpecs: fb.db.collection('LiquidSpecs').orderBy('index'),
-      products: fb.db.collection('Products'),
       companiesQ: fb.db.collection('Companies'),
     }
   },
@@ -276,34 +305,51 @@ export default {
       }
     },
   },
-  watch: {
-    productPhotos: {
-      handler() {
-        this.productImagesPreview = this.productPhotos.map((v) =>
-          URL.createObjectURL(v.image),
-        )
-      },
-    },
-    facebookBanner: {
-      handler() {
-        this.facebookImagesPreview = this.facebookBanner.map((v) =>
-          URL.createObjectURL(v.image),
-        )
-      },
-    },
-  },
   methods: {
+    makeFBImage(index) {
+      for (let i = 0; i < this.productPhotos.length; i++) {
+        this.productPhotos[i].type = 'product'
+      }
+      this.productPhotos[index].type = 'facebook'
+    },
+    getImageUrl(image) {
+      return URL.createObjectURL(image)
+    },
+    getRules() {
+      if (
+        [
+          'Atomizer',
+          'Mod',
+          'Pod system',
+          'E-Liquid',
+          'Coils & Cartridges',
+          'Batteries & Chargers',
+        ].includes(this.selectedProduct)
+      ) {
+        return [(v) => !!v || 'Company is required']
+      } else {
+        return []
+      }
+    },
+    reIndex(index, upDown) {
+      if (this.productPhotos.length === 0 && upDown === 'up') return
+      if (this.productPhotos.length === index + 1 && upDown === 'down') return
+      if (index === 0 && upDown === 'up') return
+      if (upDown === 'up') {
+        let tmp = this.productPhotos[index - 1]
+        this.productPhotos[index - 1] = this.productPhotos[index]
+        this.productPhotos[index] = tmp
+      } else {
+        let tmp = this.productPhotos[index + 1]
+        this.productPhotos[index + 1] = this.productPhotos[index]
+        this.productPhotos[index] = tmp
+      }
+      this.$forceUpdate()
+    },
     productPhotoChange(event) {
       let files = event.target.files
       for (let file of files) {
         this.productPhotos.push({ image: file, type: 'product' })
-      }
-    },
-    facebookBannerChange(event) {
-      this.facebookBanner = []
-      let files = event.target.files
-      for (let file of files) {
-        this.facebookBanner.push({ image: file, type: 'facebook' })
       }
     },
     async addProduct() {
@@ -323,7 +369,7 @@ export default {
       this.selectedFeatures = this.selectedFeatures.filter(function (el) {
         return el != null
       })
-      let files = [...this.facebookBanner, ...this.productPhotos]
+      let files = this.productPhotos
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
         var fileCompressed = await imageCompression(file.image, {
@@ -348,21 +394,25 @@ export default {
         })
       }
       await fb.db.collection('Products').add(
-        classToPlain(
-          new Product(
-            this.selectedProduct,
-            this.txtCompany,
-            this.txtModel,
-            this.txtDesc,
-            imageUrls,
-            this.selectedFeatures,
-            this.specs
-              .filter((v) => v.value.length !== 0)
-              .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
-            0,
-            true,
-            new Date(),
+        Object.assign(
+          classToPlain(
+            new Product(
+              this.selectedProduct,
+              this.selectedSubType,
+              this.txtCompany,
+              this.txtModel,
+              this.txtDesc,
+              imageUrls,
+              this.selectedFeatures,
+              this.specs
+                .filter((v) => v.value.length !== 0)
+                .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
+              0,
+              true,
+              new Date(),
+            ),
           ),
+          { modelSRC: this.txtModel.toLowerCase() },
         ),
       )
       this.$refs.formRef.reset()

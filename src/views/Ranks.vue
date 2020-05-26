@@ -61,6 +61,11 @@
                       :product="product"
                       page="Ranks"
                       :seller="sellers.get(product.id)"
+                      :score="
+                        ['Mod', 'Atomizer', 'Pod system', 'E-Liquid'].includes(
+                          product.type,
+                        )
+                      "
                     />
                   </v-col>
                   <infinite-loading

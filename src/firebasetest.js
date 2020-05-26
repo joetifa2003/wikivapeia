@@ -13,25 +13,17 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig)
 
 async function main() {
-  let search = ''
-  let query = await firebase
+  firebase
     .firestore()
     .collection('Products')
-    .orderBy('model')
-    .startAt(search)
-    .endAt(search + '\uf8ff')
-
-  let snapshot1 = await query.limit(5).get()
-  let snapshot2 = await query
-    .startAfter(snapshot1.docs[snapshot1.docs.length - 1])
-    .limit(5)
     .get()
-  snapshot1.docs.forEach((v) => {
-    console.log(v.data().model)
-  })
-  snapshot2.docs.forEach((v) => {
-    console.log(v.data().model)
-  })
+    .then((snapshot) => {
+      snapshot.docs.forEach((doc) => {
+        if (doc.data().subType === undefined) {
+          doc.ref.update({ subType: '' })
+        }
+      })
+    })
 }
 
 main()

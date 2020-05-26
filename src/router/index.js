@@ -104,6 +104,12 @@ const routes = [
       import(/* webpackChunkName: "Stores" */ '../views/Stores.vue'),
   },
   {
+    path: '/compare',
+    name: 'Compare',
+    component: () =>
+      import(/* webpackChunkName: "Stores" */ '../views/Compare.vue'),
+  },
+  {
     path: '/product/:id',
     props: true,
     name: 'Product',

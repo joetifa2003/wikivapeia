@@ -24,6 +24,13 @@
         >
         <v-btn
           text
+          @click.stop="$router.push(`/stores`)"
+          :class="activePage === 'Stores' ? 'accent--text' : ''"
+        >
+          <v-icon class="mr-2">public</v-icon>Stores</v-btn
+        >
+        <v-btn
+          text
           @click.stop="ranksClick"
           :class="activePage === 'Ranks' ? 'accent--text' : ''"
         >
@@ -31,10 +38,10 @@
         >
         <v-btn
           text
-          @click.stop="$router.push(`/stores`)"
-          :class="activePage === 'Stores' ? 'accent--text' : ''"
+          @click.stop="$router.push(`/compare`)"
+          :class="activePage === 'Compare' ? 'accent--text' : ''"
         >
-          <v-icon class="mr-2">public</v-icon>Stores</v-btn
+          <v-icon class="mr-2">compare_arrows</v-icon>Compare</v-btn
         >
         <v-btn
           v-if="userInfo && userInfo.type === 'store'"
@@ -58,9 +65,12 @@
       >
         <v-autocomplete
           v-model="searchSelected"
+          :search-input.sync="txtSearch"
+          :loading="searchLoading"
           append-icon=""
           height="36px"
           hide-details
+          hide-no-data
           rounded
           dense
           prepend-inner-icon="search"
@@ -136,9 +146,12 @@
         </v-list>
       </v-menu>
       <v-expand-transition>
-        <div v-show="searchExpand" class="primary searchBar ml-n4 px-5">
+        <div v-if="searchExpand" class="primary searchBar ml-n4 px-5">
           <v-autocomplete
             v-model="searchSelected"
+            :search-input.sync="txtSearch"
+            :loading="searchLoading"
+            hide-no-data
             append-icon=""
             prepend-inner-icon="search"
             hide-details
@@ -266,6 +279,7 @@
 
 <script>
 import Swal from 'sweetalert2'
+import { debounce } from 'lodash'
 const fb = require('../firebaseConfig')
 import { mapState } from 'vuex'
 import { plainToClass } from 'class-transformer'
@@ -281,11 +295,9 @@ export default {
       productsQ: null,
       searchSelected: {},
       searchExpand: false,
-    }
-  },
-  firestore() {
-    return {
-      productsQ: fb.db.collection('Products'),
+      products: [],
+      txtSearch: '',
+      searchLoading: false,
     }
   },
   watch: {
@@ -298,6 +310,33 @@ export default {
         this.$router.push(`/product/${searchSelected.id}`)
       },
     },
+    txtSearch: {
+      handler: debounce(function () {
+        if (this.txtSearch) {
+          this.searchLoading = true
+          fb.db
+            .collection('Products')
+            .where('modelSRC', '>=', this.txtSearch.toLowerCase())
+            .where('modelSRC', '<=', this.txtSearch.toLowerCase() + '\uf8ff')
+            .where('approved', '==', true)
+            .limit(3)
+            .get()
+            .then((docSnapshots) => {
+              // console.log(docSnapshots.docs.map((doc) => doc.data()))
+              this.products.splice(0, this.products.length)
+              this.products.push(
+                ...plainToClass(
+                  Product,
+                  docSnapshots.docs.map((doc) =>
+                    Object.assign(doc.data(), { id: doc.id }),
+                  ),
+                ),
+              )
+              this.searchLoading = false
+            })
+        }
+      }, 500),
+    },
     $route: {
       handler() {
         this.$forceUpdate()
@@ -306,15 +345,6 @@ export default {
   },
   computed: {
     ...mapState(['activePage', 'user', 'userInfo']),
-    products() {
-      return plainToClass(
-        Product,
-        this.productsQ.map((v) => ({
-          id: v.id,
-          ...v,
-        })),
-      )
-    },
   },
   methods: {
     homeClick() {

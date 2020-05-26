@@ -52,6 +52,12 @@ export default {
 </script>
 
 <style lang="scss">
+.pre {
+  white-space: initial;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: keep-all; /*this stops the word breaking*/
+}
 #app {
   color: #000000;
   overflow-x: hidden;

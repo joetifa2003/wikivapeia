@@ -389,18 +389,20 @@ export default {
     }
   },
   created() {
-    this.price['outOfStock'] = this.seller['outOfStock']
-      ? this.seller['outOfStock']
-      : this.price['outOfStock']
-    this.price['hasDiscount'] = this.seller['hasDiscount']
-      ? this.seller['hasDiscount']
-      : this.price['hasDiscount']
-    this.price['price'] = this.seller['price']
-      ? this.seller['price']
-      : this.price['price']
-    this.price['priceDis'] = this.seller['priceDis']
-      ? this.seller['priceDis']
-      : this.price['priceDis']
+    if (this.seller) {
+      this.price['outOfStock'] = this.seller['outOfStock']
+        ? this.seller['outOfStock']
+        : this.price['outOfStock']
+      this.price['hasDiscount'] = this.seller['hasDiscount']
+        ? this.seller['hasDiscount']
+        : this.price['hasDiscount']
+      this.price['price'] = this.seller['price']
+        ? this.seller['price']
+        : this.price['price']
+      this.price['priceDis'] = this.seller['priceDis']
+        ? this.seller['priceDis']
+        : this.price['priceDis']
+    }
   },
   computed: {
     ...mapState(['user', 'userInfo']),
@@ -430,6 +432,10 @@ export default {
           .set({
             productID: this.product.id,
             storeID: this.userInfo.username,
+            modelSRC: this.product.modelSRC,
+            type: this.product.type,
+            subType: this.product.subType,
+            date: new Date(),
           })
       } else {
         fb.db
