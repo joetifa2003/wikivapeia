@@ -39,7 +39,6 @@
                           )
                         "
                         :items="typeSubTypes[selectedProduct]"
-                        :rules="[(v) => !!v || 'Product type is required']"
                         clearable
                         label="Select product sub type"
                         v-model="selectedSubType"
