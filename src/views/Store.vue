@@ -22,7 +22,7 @@
             style="max-height: 420px;"
           >
             <v-overlay
-              v-if="user.uid === store.id"
+              v-if="user && user.uid === store.id"
               z-index="1"
               absolute
               color=""
@@ -65,7 +65,7 @@
             style="max-height: 360px;"
           >
             <v-overlay
-              v-if="user.uid === store.id"
+              v-if="user && user.uid === store.id"
               z-index="1"
               absolute
               color=""
@@ -109,7 +109,7 @@
             style="max-height: 360px;"
           >
             <v-overlay
-              v-if="user.uid === store.id"
+              v-if="user && user.uid === store.id"
               z-index="1"
               absolute
               color=""
