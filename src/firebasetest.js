@@ -19,9 +19,16 @@ async function main() {
     .get()
     .then((snapshot) => {
       snapshot.docs.forEach((doc) => {
-        if (doc.data().subType === undefined) {
-          doc.ref.update({ subType: '' })
+        let modelSRCList = []
+        for (let i = 0; i < doc.data().model.length; i++) {
+          modelSRCList.push(
+            doc
+              .data()
+              .model.toLowerCase()
+              .substr(0, i + 1),
+          )
         }
+        doc.ref.update({ modelSRC: modelSRCList })
       })
     })
 }

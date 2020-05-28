@@ -351,6 +351,13 @@ export default {
         this.productPhotos.push({ image: file, type: 'product' })
       }
     },
+    getModelSRC(model) {
+      let modelSRCList = []
+      for (let i = 0; i < model.length; i++) {
+        modelSRCList.push(model.toLowerCase().substr(0, i + 1))
+      }
+      return modelSRCList
+    },
     async addProduct() {
       if (!this.companies.includes(this.txtCompany)) {
         fb.db.collection('Companies').add({
@@ -411,7 +418,7 @@ export default {
               new Date(),
             ),
           ),
-          { modelSRC: this.txtModel.toLowerCase() },
+          { modelSRC: this.getModelSRC(this.txtModel) },
         ),
       )
       this.$refs.formRef.reset()

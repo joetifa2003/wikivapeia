@@ -275,6 +275,7 @@
                   hide-details
                   outlined
                   clearable
+                  :loading="searchLoading"
                   :label="`Search in ${store.name}`"
                   v-model="txtSearch"
                   dense
@@ -289,13 +290,18 @@
                 dense
                 outlined
                 hide-details
+                :loading="filterLoading"
                 label="Product type"
                 :items="[
                   'All products',
-                  'Atomizer',
                   'Mod',
+                  'Starter kit',
+                  'Atomizer',
                   'Pod system',
                   'E-Liquid',
+                  'Coils & Cartridges',
+                  'Batteries & Chargers',
+                  'Vape accessories',
                 ]"
               />
             </v-col>
@@ -305,7 +311,15 @@
                 outlined
                 hide-details
                 label="Sort by"
-                :items="['Model A-Z', 'Company A-Z', 'Newest', 'Oldest']"
+                :loading="sortProductByLoading"
+                v-model="sortProductBy"
+                :items="[
+                  'None',
+                  'Model A-Z',
+                  'Model Z-A',
+                  'Price High-Low',
+                  'Price Low-High',
+                ]"
               />
             </v-col>
             <v-col cols="12" md="">
@@ -362,7 +376,7 @@
               cols="12"
               sm="6"
               lg="4"
-              v-for="product in visiblePages"
+              v-for="product in products"
               :key="product.id"
             >
               <ProductItem
@@ -375,11 +389,14 @@
               />
             </v-col>
           </v-row>
-          <v-pagination
-            v-model="page"
-            total-visible="10"
-            :length="totalPages"
-          ></v-pagination>
+          <v-row class="mt-4" justify="center">
+            <v-btn
+              @click="loadMoreProducts"
+              v-if="products.length !== 0 && lastSeller"
+              class="black white--text"
+              >Load more products</v-btn
+            >
+          </v-row>
           <CommentSection :productIDD="store.id" />
         </v-card>
       </v-col>
@@ -460,11 +477,11 @@ import Helper from '../classes/Helper'
 import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
 import CommentSection from '../components/CommentSection'
-import Fuse from 'fuse.js'
 import imageCompression from 'browser-image-compression'
 import { v1 as uuid } from 'uuid'
 import Swal from 'sweetalert2'
 import { mapState } from 'vuex'
+import { debounce } from 'lodash'
 const fb = require('../firebaseConfig')
 
 export default {
@@ -478,22 +495,18 @@ export default {
   data() {
     return {
       txtSearch: '',
+      searchLoading: false,
       filterProduct: 'All products',
+      filterLoading: false,
       storeQ: null,
-      productsQ: [],
-      /**
-       * @type {number}
-       */
-      page: 1,
-      /**
-       * @type {number}
-       */
-      perPage: 6,
-      searchIndex: {},
-      sellersQ: [],
+      products: [],
+      sellersQ: {},
       editBanners: false,
       progressDialog: false,
       slideshow: false,
+      lastSeller: {},
+      sortProductBy: '',
+      sortProductByLoading: false,
     }
   },
   firestore() {
@@ -501,33 +514,21 @@ export default {
       storeQ: fb.db.collection('Users').where('username', '==', this.username),
     }
   },
+  created() {
+    this.searchQuery.onSnapshot((query) => {
+      this.lastSeller = query.docs[query.docs.length - 1]
+      for (let i = 0; i < query.docs.length; i++) {
+        let doc = query.docs[i]
+        this.$set(this.sellersQ, doc.id, doc.data())
+      }
+      this.updateProducts()
+      this.searchLoading = false
+      this.filterLoading = false
+      this.sortProductByLoading = false
+    })
+  },
   computed: {
     ...mapState(['user']),
-    /** @returns */
-    visiblePages() {
-      return this.searchedFull.slice(
-        (this.page - 1) * this.perPage,
-        this.page * this.perPage,
-      )
-    },
-    searchedList() {
-      if (this.txtSearch === '') {
-        return plainToClass(Product, this.products)
-      } else {
-        return this.searchIndex.search(this.txtSearch).map((v) => v.item)
-      }
-    },
-    searchedFull() {
-      let search = []
-
-      search = this.searchedList
-      search = this.searchFilter(search, this.filterProduct)
-      return search
-    },
-    /** @returns {number} */
-    totalPages() {
-      return Math.ceil(this.searchedFull.length / this.perPage)
-    },
     /** @returns {Store} */
     store() {
       if (this.storeQ) {
@@ -542,18 +543,8 @@ export default {
         return null
       }
     },
-    /** @returns {Product[]} */
-    products() {
-      return plainToClass(
-        Product,
-        this.productsQ.map((v) => ({
-          id: v.id,
-          ...v,
-        })),
-      )
-    },
     sellers() {
-      return new Map(this.sellersQ.map((v) => [v.productID, v]))
+      return new Map(Object.values(this.sellersQ).map((v) => [v.productID, v]))
     },
     getFBBanner() {
       let fb = this.store.banners.find((v) => v.type === 'facebook')
@@ -563,25 +554,66 @@ export default {
         return ''
       }
     },
+    searchQuery() {
+      let query = fb.db
+        .collection('Sellers')
+        .where('storeID', '==', this.username)
+        .limit(9)
+      if (this.txtSearch) {
+        query = query.where(
+          'modelSRC',
+          'array-contains',
+          this.txtSearch.toLowerCase(),
+        )
+      }
+      if (this.filterProduct && this.filterProduct !== 'All products') {
+        query = query.where('type', '==', this.filterProduct)
+      }
+      if (this.sortProductBy && this.sortProductBy !== 'None') {
+        if (this.sortProductBy === 'Model A-Z')
+          query = query.orderBy('model', 'asc')
+        if (this.sortProductBy === 'Model Z-A')
+          query = query.orderBy('model', 'desc')
+        if (this.sortProductBy === 'Price High-Low')
+          query = query.where('price', '>', 0).orderBy('price', 'desc')
+        if (this.sortProductBy === 'Price Low-High')
+          query = query.where('price', '>', 0).orderBy('price', 'asc')
+      }
+      if (
+        !(
+          this.txtSearch ||
+          (this.filterProduct && this.filterProduct !== 'All products') ||
+          (this.sortProductBy && this.sortProductBy !== 'None')
+        )
+      ) {
+        query = query.orderBy('type', 'asc')
+      }
+      return query
+    },
   },
   methods: {
-    search() {
-      this.productList = this.searchedList
-      this.searchFilter(this.filterProduct)
-    },
-    searchFilter(list, filterProduct) {
-      switch (filterProduct) {
-        case 'Atomizer':
-          return this.searchedList.filter((v) => v.type === 'Atomizer')
-        case 'Mod':
-          return this.searchedList.filter((v) => v.type === 'Mod')
-        case 'Pod system':
-          return this.searchedList.filter((v) => v.type === 'Pod system')
-        case 'E-Liquid':
-          return this.searchedList.filter((v) => v.type === 'E-Liquid')
-        default:
-          return this.searchedList
+    async updateProducts() {
+      if (this.sellers.size !== 0) {
+        this.products = plainToClass(
+          Product,
+          await Helper.getDocumentsByID(
+            'Products',
+            Object.values(this.sellersQ).map((v) => v.productID),
+          ),
+        )
+      } else {
+        this.products = []
       }
+    },
+    loadMoreProducts() {
+      this.searchQuery.startAfter(this.lastSeller).onSnapshot((query) => {
+        this.lastSeller = query.docs[query.docs.length - 1]
+        for (let i = 0; i < query.docs.length; i++) {
+          let doc = query.docs[i]
+          this.$set(this.sellersQ, doc.id, doc.data())
+        }
+        this.updateProducts()
+      })
     },
     openFacebookPage() {
       let url = this.store.facebookUrl
@@ -599,15 +631,6 @@ export default {
         url = 'http://' + url
       }
       window.open(url, '_blank')
-    },
-    buildIndex(docs) {
-      this.searchIndex = new Fuse(docs, {
-        caseSensitive: false,
-        includeScore: true,
-        keys: ['model', 'company'],
-        shouldSort: false,
-        threshold: 0.3,
-      })
     },
     async bannerInputChange(event) {
       this.progressDialog = true
@@ -683,37 +706,39 @@ export default {
       })
       this.editBanners = false
     },
+    updateSellerItems: debounce(function () {
+      this.searchQuery.get().then((query) => {
+        this.lastSeller = query.docs[query.docs.length - 1]
+        this.sellersQ = query.docs.map((doc) => doc.data())
+        this.updateProducts()
+        this.searchLoading = false
+        this.filterLoading = false
+        this.sortProductByLoading = false
+      })
+    }, 500),
   },
   watch: {
+    txtSearch: {
+      handler() {
+        this.searchLoading = true
+        this.updateSellerItems()
+      },
+    },
+    filterProduct: {
+      handler() {
+        this.filterLoading = true
+        this.updateSellerItems()
+      },
+    },
+    sortProductBy: {
+      handler() {
+        this.sortProductByLoading = true
+        this.updateSellerItems()
+      },
+    },
     storeQ: {
       handler() {
         if (this.storeQ[0]) this.slideshow = this.storeQ[0].slideshow
-      },
-    },
-    products: {
-      handler() {
-        this.buildIndex(this.products)
-      },
-    },
-    username: {
-      immediate: true,
-      handler() {
-        this.$bind(
-          'sellersQ',
-          fb.db.collection('Sellers').where('storeID', '==', this.username),
-        )
-      },
-    },
-    sellersQ: {
-      async handler() {
-        if (this.sellers.size !== 0) {
-          this.productsQ = await Helper.getDocumentsByID(
-            'Products',
-            this.sellersQ.map((v) => v.productID),
-          )
-        } else {
-          this.productsQ = []
-        }
       },
     },
   },

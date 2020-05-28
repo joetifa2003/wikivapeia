@@ -316,8 +316,7 @@ export default {
           this.searchLoading = true
           fb.db
             .collection('Products')
-            .where('modelSRC', '>=', this.txtSearch.toLowerCase())
-            .where('modelSRC', '<=', this.txtSearch.toLowerCase() + '\uf8ff')
+            .where('modelSRC', 'array-contains', this.txtSearch.toLowerCase())
             .where('approved', '==', true)
             .limit(3)
             .get()

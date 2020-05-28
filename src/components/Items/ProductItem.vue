@@ -339,13 +339,13 @@
           outlined
           dense
           label="Price"
-          v-model="price.price"
+          v-model.number="price.price"
         />
         <v-text-field
           outlined
           dense
           label="Price after discount"
-          v-model="price.priceDis"
+          v-model.number="price.priceDis"
           :disabled="price.outOfStock || !price.hasDiscount"
         />
         <div class="d-flex flex-row justify-space-between">
@@ -391,17 +391,9 @@ export default {
   created() {
     if (this.seller) {
       this.price['outOfStock'] = this.seller['outOfStock']
-        ? this.seller['outOfStock']
-        : this.price['outOfStock']
       this.price['hasDiscount'] = this.seller['hasDiscount']
-        ? this.seller['hasDiscount']
-        : this.price['hasDiscount']
       this.price['price'] = this.seller['price']
-        ? this.seller['price']
-        : this.price['price']
       this.price['priceDis'] = this.seller['priceDis']
-        ? this.seller['priceDis']
-        : this.price['priceDis']
     }
   },
   computed: {
@@ -435,6 +427,10 @@ export default {
             modelSRC: this.product.modelSRC,
             type: this.product.type,
             subType: this.product.subType,
+            price: '',
+            priceDis: '',
+            hasDiscount: false,
+            outOfStock: false,
             date: new Date(),
           })
       } else {
