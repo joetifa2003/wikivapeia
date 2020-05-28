@@ -1,10 +1,5 @@
 <template>
   <v-app>
-    <vue-headful
-      image="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/all.jpg?alt=media&token=82e06252-e6f3-4a00-b215-fadcb1fbb652"
-      :title="`Wikivapeia - Worldwide vape ranking service`"
-      description="Wikivapeia offers ranking for vape components like Atomizers, Mods and E-liquid by voting from users around the world to guide them to their needs."
-    />
     <Nav />
     <v-content>
       <v-container fill-height fluid class="pa-0 align-start">
