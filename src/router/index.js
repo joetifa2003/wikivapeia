@@ -1,13 +1,9 @@
 // @ts-nocheck
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import SecureLS from 'secure-ls'
 import store from '../store'
-const fb = require('../firebaseConfig')
 
 Vue.use(VueRouter)
-
-var ls = new SecureLS({ encodingType: 'aes' })
 
 const routes = [
   {
@@ -141,6 +137,12 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "SignUp" */ '../views/auth/SignUp.vue'),
   },
+  {
+    path: '/createStoreAccount',
+    name: 'CreatStoreAccount',
+    component: () =>
+      import(/* webpackChunkName: "StoreInfo" */ '../views/auth/StoreInfo'),
+  },
 ]
 
 const router = new VueRouter({
@@ -166,34 +168,19 @@ function checkAdmin(next) {
 router.beforeEach((to, from, next) => {
   const requireAdmin = to.matched.some((x) => x.meta.requireAdmin)
 
-  if (ls.get('times') === '') {
-    ls.set('times', 0)
-  }
-  ls.set('times', ls.get('times') + 1)
-
   if (requireAdmin) {
     checkAdmin(next)
-  } else if (to.path === '/completeInfo') {
-    if (store.state.user) {
-      fb.db
-        .collection('Users')
-        .doc(store.state.user.uid)
-        .get()
-        .then((doc) => {
-          if (doc.exists) {
-            next(from.path)
-          } else {
-            next()
-          }
-        })
-    } else {
-      next(from.path)
-    }
   } else if (to.path === '/login' || to.path === '/signUp') {
     if (store.state.user) {
-      next(from.path)
+      next('/')
     } else {
       next()
+    }
+  } else if (to.path === '/createStoreAccount') {
+    if (store.state.user && store.state.userInfo.type === 'personal') {
+      next()
+    } else {
+      next(from.path)
     }
   } else {
     next()

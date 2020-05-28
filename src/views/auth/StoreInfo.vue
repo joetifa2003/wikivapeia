@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="width: 100%;" class="d-flex justify-center">
     <v-card class="pa-3 d-flex justify-center flex-column">
       <v-form v-model="valid">
         <h2 class="text-center justify-center mb-4">
@@ -397,19 +397,23 @@ export default {
           })
         await Swal.fire('Signed Up !', `Welcome ${this.txtName}`, 'success')
         if (this.user.providerId != 'facebook.com') {
-          this.user
-            .sendEmailVerification({
-              url: process.env.VUE_APP_SIGNUP_REDIRECT,
-            })
-            .then(
-              async () => {},
-              async (err) => {
-                console.log(err)
-                await this.user.delete()
-              },
-            )
-          this.email = this.user.email
-          this.$emit('vertify', this.email)
+          if (this.$route.path === '/createStoreAccount') {
+            this.$router.push(`/store/${this.userInfo.username}`)
+          } else {
+            this.user
+              .sendEmailVerification({
+                url: process.env.VUE_APP_SIGNUP_REDIRECT,
+              })
+              .then(
+                async () => {},
+                async (err) => {
+                  console.log(err)
+                  await this.user.delete()
+                },
+              )
+            this.email = this.user.email
+            this.$emit('vertify', this.email)
+          }
         } else {
           this.$router.push('/')
         }
@@ -440,7 +444,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(['user']),
+    ...mapState(['user', 'userInfo']),
     countries() {
       return codesFull.map((v) => v.name)
     },

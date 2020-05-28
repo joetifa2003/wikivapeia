@@ -1,5 +1,5 @@
 <template>
-  <v-container fill-height class="" fluid>
+  <v-container fill-height class="pt-12" fluid>
     <v-row justify="center">
       <v-col cols="12" md="10" lg="8">
         <v-card width="100%" elevation="20">
@@ -9,8 +9,14 @@
               filled
               label="Search"
               @input="search"
+              :loading="searchLoading"
             />
-            <v-switch color="black" label="Requests only" v-model="reqOnly" />
+            <v-switch
+              :loading="reqOnlyLoading"
+              color="black"
+              label="Requests only"
+              v-model="reqOnly"
+            />
             <v-row>
               <v-col
                 cols="12"
@@ -28,6 +34,7 @@
                   @deleteProduct="deleteProductClick(product)"
                 />
               </v-col>
+              <infinite-loading @infinite="infiniteHandler"></infinite-loading>
             </v-row>
             <v-btn @click.stop="deletedSelected" class="red white--text mt-5"
               >Delete selected</v-btn
@@ -192,7 +199,11 @@
                 />
                 <div>
                   <v-row>
-                    <v-col v-for="spec in specs" :key="spec.id" cols="6">
+                    <v-col
+                      v-for="spec in product.specs"
+                      :key="spec.id"
+                      cols="6"
+                    >
                       <div v-if="spec.isCombo">
                         <v-combobox
                           v-if="spec.multi"
@@ -234,14 +245,14 @@
 </template>
 
 <script>
-import { sortBy } from 'lodash'
+import { debounce, sortBy } from 'lodash'
 import imageCompression from 'browser-image-compression'
 import { orderBy } from 'lodash'
 import { v1 as uuid } from 'uuid'
 import Swal from 'sweetalert2'
-import Fuse from 'fuse.js'
 import Product from '../../classes/Product'
 import { plainToClass } from 'class-transformer'
+import InfiniteLoading from 'vue-infinite-loading'
 const fb = require('../../firebaseConfig')
 
 export default {
@@ -253,6 +264,7 @@ export default {
       let editor = await import('vue-quill-editor')
       return editor.quillEditor
     },
+    InfiniteLoading,
   },
   data() {
     return {
@@ -274,10 +286,10 @@ export default {
       featureList: [],
       deleteList: [],
       searchIndex: [],
-      modSpecs: [],
-      atomizerSpecs: [],
-      podSpecs: [],
       companiesQ: [],
+      lastProduct: {},
+      products: {},
+      productsQ: {},
       editorOption: {
         modules: {
           toolbar: [
@@ -296,7 +308,6 @@ export default {
         },
       },
       reqOnly: false,
-      liquidSpecs: [],
       typeSubTypes: {
         Mod: [],
         'Starter kit': [],
@@ -322,51 +333,56 @@ export default {
           'Other',
         ],
       },
+      searchLoading: false,
+      reqOnlyLoading: false,
     }
   },
   created() {
     this.companies = orderBy(this.companies)
+    this.searchQuery.onSnapshot((query) => {
+      this.lastProduct = query.docs[query.docs.length - 1]
+      for (let i = 0; i < query.docs.length; i++) {
+        let doc = query.docs[i]
+        this.$set(this.productsQ, doc.id, doc.data())
+      }
+      this.updateProducts()
+    })
   },
   firestore: {
     productListQ: fb.db.collection('Products').orderBy('date', 'desc'),
-    modSpecs: fb.db.collection('ModSpecs').orderBy('index'),
-    atomizerSpecs: fb.db.collection('AtomizerSpecs').orderBy('index'),
-    liquidSpecs: fb.db.collection('LiquidSpecs').orderBy('index'),
-    podSpecs: fb.db.collection('PodSpecs').orderBy('index'),
     companiesQ: fb.db.collection('Companies'),
   },
   watch: {
-    productListQ: {
+    txtSearch: {
       handler() {
-        this.productList = plainToClass(Product, this.productListQWithID)
-        this.productList.map((v) => Object.assign(v, { checked: false }))
-        this.buildIndex(this.productList)
+        this.searchLoading = true
+        this.updateProductItems()
       },
     },
-    product: {
-      deep: true,
+    reqOnly: {
       handler() {
-        for (let name of this.specs.map((v) => v.name)) {
-          if (this.product.specs.filter((v) => v.name === name)[0]) {
-            this.specs.filter(
-              (v) => v.name === name,
-            )[0].value = this.product.specs.filter(
-              (v) => v.name === name,
-            )[0].value
-          } else {
-            this.specs.filter((v) => v.name === name)[0].value = ''
-          }
-        }
+        this.reqOnlyLoading = true
+        this.updateProductItems()
       },
     },
   },
   computed: {
-    products() {
-      if (this.reqOnly) {
-        return this.productList.filter((v) => v.approved === false)
-      } else {
-        return this.productList
+    searchQuery() {
+      let query = fb.db.collection('Products').limit(9)
+      if (this.txtSearch) {
+        query = query.where(
+          'modelSRC',
+          'array-contains',
+          this.txtSearch.toLowerCase(),
+        )
       }
+      if (this.reqOnly) {
+        query = query.where('approved', '==', false)
+      }
+      if (!(this.txtSearch || this.reqOnly)) {
+        query = query.orderBy('type', 'asc')
+      }
+      return query
     },
     companies: {
       set: function () {},
@@ -374,30 +390,42 @@ export default {
         return sortBy(this.companiesQ.map((v) => v.name))
       },
     },
-    searchedList() {
-      return this.searchIndex.search(this.txtSearch).map((v) => v.item)
-    },
-    productListQWithID() {
-      return this.productListQ.map((v) => ({
-        ...v,
-        id: v.id,
-      }))
-    },
-    specs() {
-      if (this.product.type === 'Mod') {
-        return this.modSpecs
-      } else if (this.product.type === 'Atomizer') {
-        return this.atomizerSpecs
-      } else if (this.product.type === 'Pod system') {
-        return this.podSpecs
-      } else if (this.product.type === 'E-Liquid') {
-        return this.liquidSpecs
-      } else {
-        return []
-      }
-    },
   },
   methods: {
+    updateProductItems: debounce(function () {
+      this.searchQuery.get().then((query) => {
+        this.lastProduct = query.docs[query.docs.length - 1]
+        this.productsQ = {}
+        for (let i = 0; i < query.docs.length; i++) {
+          let doc = query.docs[i]
+          this.$set(this.productsQ, doc.id, doc.data())
+        }
+        this.updateProducts()
+        this.searchLoading = false
+        this.reqOnlyLoading = false
+      })
+    }, 500),
+    infiniteHandler($state) {
+      if (this.lastProduct) {
+        this.searchQuery
+          .startAfter(this.lastProduct)
+          .get()
+          .then((query) => {
+            this.lastProduct = query.docs[query.docs.length - 1]
+            for (let i = 0; i < query.docs.length; i++) {
+              let doc = query.docs[i]
+              this.$set(this.productsQ, doc.id, doc.data())
+            }
+            this.updateProducts()
+            $state.loaded()
+          })
+      } else {
+        $state.complete()
+      }
+    },
+    updateProducts() {
+      this.products = plainToClass(Product, Object.values(this.productsQ))
+    },
     makeFBImage(index) {
       for (let i = 0; i < this.product.images.length; i++) {
         this.product.images[i].type = 'product'
@@ -525,6 +553,13 @@ export default {
       this.addImageDialog = false
       Swal.fire('Added!', 'Images has been added!.', 'success')
     },
+    getModelSRC(model) {
+      let modelSRCList = []
+      for (let i = 0; i < model.length; i++) {
+        modelSRCList.push(model.toLowerCase().substr(0, i + 1))
+      }
+      return modelSRCList
+    },
     async updateProduct() {
       await fb.db
         .collection('Products')
@@ -534,12 +569,12 @@ export default {
           subType: this.product.subType,
           company: this.product.company,
           model: this.product.model,
-          features: Product.getFeatures(this.specs),
-          specs: this.specs
+          features: Product.getFeatures(this.product.specs),
+          specs: this.product.specs
             .filter((v) => v.value.length !== 0)
             .map((v) => ({ name: v.name, value: v.value, unit: v.unit })),
           desc: this.product.desc,
-          modelSRC: this.product.model.toLowerCase(),
+          modelSRC: this.getModelSRC(this.product.model),
         })
       this.updateImageDialog = false
       Swal.fire('Updated!', 'Product has been updated.', 'success')
@@ -594,15 +629,6 @@ export default {
           'Triple',
         ]
       }
-    },
-    buildIndex(docs) {
-      this.searchIndex = new Fuse(docs, {
-        caseSensitive: false,
-        includeScore: true,
-        keys: ['model', 'company'],
-        shouldSort: false,
-        threshold: 0.3,
-      })
     },
   },
 }

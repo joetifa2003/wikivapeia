@@ -8,7 +8,7 @@ exports.updateProductSellersData = functions.firestore
     let before = snap.before.data()
     let after = snap.after.data()
     let updatedData = {}
-    if (after.modelSRC !== before.modelSRC)
+    if (after.modelSRC.sort().toString() !== before.modelSRC.sort().toString())
       updatedData['modelSRC'] = after.modelSRC
     if (after.type !== before.type) updatedData['type'] = after.type
     if (after.subType !== before.type) updatedData['subType'] = after.subType

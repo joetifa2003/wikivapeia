@@ -29,7 +29,7 @@ let app
 fb.auth.onAuthStateChanged((user) => {
   store.commit('user', user)
   if (user) {
-    fb.db.collection('Users').doc(user.uid).get().then((doc) => {
+    fb.db.collection('Users').doc(user.uid).onSnapshot((doc) => {
       store.commit('userInfo', doc.data())
     })
   }

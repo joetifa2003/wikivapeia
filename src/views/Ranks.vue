@@ -8,71 +8,89 @@
     <v-container fluid>
       <div class="page d-flex align-start justify-center">
         <v-row justify="center" style="width: 100%;">
-          <v-col cols="12" lg="8">
+          <v-col cols="12" lg="7">
+            <v-text-field
+              prepend-inner-icon="search"
+              hide-details
+              outlined
+              clearable
+              :loading="searchLoading"
+              label="Search"
+              v-model="txtSearch"
+              dense
+            />
             <v-row>
               <v-col>
-                <v-text-field
-                  label="Search"
-                  filled
-                  v-model="txtSearch"
-                  single-line
-                  @keydown.enter="search"
-                ></v-text-field>
-                <v-subheader>Product</v-subheader>
-                <v-divider />
-                <v-btn-toggle class="mt-5" v-model="filterProduct">
-                  <v-btn>Atomizer</v-btn>
-                  <v-btn>Mod</v-btn>
-                </v-btn-toggle>
-                <v-subheader class="mt-5">Sort by</v-subheader>
-                <v-divider />
-                <v-btn-toggle class="mt-5" v-model="sortBy">
-                  <v-btn>Score</v-btn>
-                  <v-btn>Model</v-btn>
-                  <v-btn>Company</v-btn>
-                </v-btn-toggle>
-                <v-subheader class="mt-5">Sorting direction</v-subheader>
-                <v-divider />
-                <v-btn-toggle class="mt-5" v-model="direction">
-                  <v-btn>
-                    <v-icon>arrow_downward</v-icon>
-                  </v-btn>
-                  <v-btn>
-                    <v-icon>arrow_upward</v-icon>
-                  </v-btn>
-                </v-btn-toggle>
                 <v-combobox
-                  class="mt-5"
-                  v-model.number="perPage"
-                  label="Product per page"
-                  :items="[10, 20, 50, 100]"
+                  v-model="filterProduct"
+                  dense
+                  outlined
+                  hide-details
+                  :loading="filterLoading"
+                  label="Product type"
+                  clearable
+                  :items="[
+                    'All products',
+                    'Mod',
+                    'Starter kit',
+                    'Atomizer',
+                    'Pod system',
+                    'E-Liquid',
+                    'Coils & Cartridges',
+                    'Batteries & Chargers',
+                    'Vape accessories',
+                  ]"
                 />
-                <ProductRequest />
               </v-col>
-              <v-col cols="12" md="8" class="pt-0">
-                <v-row>
-                  <v-col
-                    cols="12"
-                    sm="6"
-                    v-for="product in productList"
-                    :key="product.id"
-                  >
-                    <ProductItem
-                      :product="product"
-                      page="Ranks"
-                      :seller="sellers.get(product.id)"
-                      :score="
-                        ['Mod', 'Atomizer', 'Pod system', 'E-Liquid'].includes(
-                          product.type,
-                        )
-                      "
-                    />
-                  </v-col>
-                  <infinite-loading
-                    @infinite="infiniteHandler"
-                  ></infinite-loading>
-                </v-row>
+              <v-col>
+                <v-combobox
+                  v-model="subFilterProduct"
+                  dense
+                  outlined
+                  hide-details
+                  :loading="subFilterLoading"
+                  label="Product subtype"
+                  clearable
+                  :disabled="
+                    !(
+                      typeSubTypes[filterProduct] &&
+                      typeSubTypes[filterProduct].length > 0
+                    )
+                  "
+                  :items="typeSubTypes[filterProduct]"
+                />
               </v-col>
+            </v-row>
+            <v-combobox
+              dense
+              outlined
+              hide-details
+              label="Sort by"
+              clearable
+              :loading="sortProductByLoading"
+              v-model="sortProductBy"
+              :items="['None', 'Brand', 'Model A-Z', 'Model Z-A', 'Score']"
+            />
+            <ProductRequest class="mt-2" />
+            <v-row>
+              <v-col
+                cols="12"
+                sm="4"
+                v-for="product in productList"
+                :key="product.id"
+              >
+                <ProductItem
+                  :product="product"
+                  page="Ranks"
+                  :seller="sellers.get(product.id)"
+                  :score="
+                    ['Mod', 'Atomizer', 'Pod system', 'E-Liquid'].includes(
+                      product.type,
+                    )
+                  "
+                />
+              </v-col>
+              <infinite-loading @infinite="infiniteHandler"></infinite-loading>
             </v-row>
           </v-col>
         </v-row>
@@ -82,6 +100,8 @@
 </template>
 
 <script>
+import { debounce } from 'lodash'
+
 const fb = require('../firebaseConfig')
 import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
@@ -102,7 +122,7 @@ export default {
   },
   data() {
     return {
-      productListQ: [],
+      productListQ: {},
       /**
        * @type {Product[]} productList
        */
@@ -114,49 +134,80 @@ export default {
       /**
        * @type {number}
        */
-      sortBy: undefined,
-      /**
-       * @type {number}
-       */
-      direction: undefined,
-      /**
-       * @type {number}
-       */
-      filterProduct: undefined,
-      /**
-       * @type {number}
-       */
-      page: 1,
-      /**
-       * @type {number}
-       */
       perPage: 10,
       searchIndex: null,
       sellersQ: [],
-      lastDoc: null,
-      busy: false,
+      filterProduct: '',
+      subFilterProduct: '',
+      sortProductBy: '',
+      lastProduct: null,
+      searchLoading: false,
+      filterLoading: false,
+      subFilterLoading: false,
+      sortProductByLoading: false,
+      typeSubTypes: {
+        Mod: [],
+        'Starter kit': [],
+        Atomizer: [],
+        'Pod system': [],
+        'E-Liquid': [],
+        'Coils & Cartridges': [
+          'Wires',
+          'Prebuilt coils',
+          'Replacement coils',
+          'RBA coils',
+          'Cartridges',
+        ],
+        'Batteries & Chargers': ['Batteries', 'Chargers'],
+        'Vape accessories': [
+          'Cotton',
+          'Drip tips',
+          'Glass tube',
+          'Silicon cases',
+          'Bottles',
+          'Adaptors',
+          'Tools',
+          'Other',
+        ],
+      },
     }
   },
   created() {
     this.$store.commit('activePage', 'Ranks')
-    this.busy = true
-    fb.db
-      .collection('Products')
-      .where('approved', '==', true)
-      .orderBy('date', 'desc')
-      .orderBy('model')
-      .limit(this.perPage)
-      .get()
-      .then((snapshot) => {
-        this.lastDoc = snapshot.docs[snapshot.docs.length - 1]
-        this.productListQ = snapshot.docs.map((v) => ({
-          id: v.id,
-          ...v.data(),
-        }))
-        this.busy = false
-      })
+    this.searchQuery.get().then((query) => {
+      this.lastProduct = query.docs[query.docs.length - 1]
+      for (let i = 0; i < query.docs.length; i++) {
+        let doc = query.docs[i]
+        this.$set(this.productListQ, doc.id, { id: doc.id, ...doc.data() })
+      }
+      this.updateProducts()
+    })
   },
   watch: {
+    txtSearch: {
+      handler() {
+        this.searchLoading = true
+        this.updateProductItems()
+      },
+    },
+    filterProduct: {
+      handler() {
+        this.filterLoading = true
+        this.updateProductItems()
+      },
+    },
+    subFilterProduct: {
+      handler() {
+        this.subFilterLoading = true
+        this.updateProductItems()
+      },
+    },
+    sortProductBy: {
+      handler() {
+        this.sortProductByLoading = true
+        this.updateProductItems()
+      },
+    },
     userInfo: {
       immediate: true,
       handler(userInfo) {
@@ -170,76 +221,45 @@ export default {
         }
       },
     },
-    productListQ: {
-      immediate: true,
-      handler() {
-        this.productList = plainToClass(
-          Product,
-          this.productListQ.map((v) => ({ id: v.id, ...v })),
-        )
-      },
-    },
-    sortBy: {
-      handler() {},
-    },
-    direction: {
-      handler() {},
-    },
-    filterProduct: {
-      handler() {},
-    },
   },
   methods: {
+    updateProductItems: debounce(function () {
+      this.searchQuery.get().then((query) => {
+        this.lastProduct = query.docs[query.docs.length - 1]
+        this.productListQ = {}
+        for (let i = 0; i < query.docs.length; i++) {
+          let doc = query.docs[i]
+          this.$set(this.productListQ, doc.id, { id: doc.id, ...doc.data() })
+        }
+        this.updateProducts()
+        this.searchLoading = false
+        this.filterLoading = false
+        this.subFilterLoading = false
+        this.sortProductByLoading = false
+      })
+    }, 500),
+    updateProducts() {
+      this.productList = plainToClass(Product, Object.values(this.productListQ))
+    },
     infiniteHandler($state) {
-      if (this.lastDoc) {
-        fb.db
-          .collection('Products')
-          .where('approved', '==', true)
-          .orderBy('date', 'desc')
-          .orderBy('model')
-          .startAfter(this.lastDoc)
-          .limit(this.perPage)
+      if (this.lastProduct) {
+        this.searchQuery
+          .startAfter(this.lastProduct)
           .get()
-          .then((snapshot) => {
-            this.lastDoc = snapshot.docs[snapshot.docs.length - 1]
-            this.productListQ = [
-              ...this.productListQ,
-              ...snapshot.docs.map((v) => ({ id: v.id, ...v.data() })),
-            ]
+          .then((query) => {
+            this.lastProduct = query.docs[query.docs.length - 1]
+            for (let i = 0; i < query.docs.length; i++) {
+              let doc = query.docs[i]
+              this.$set(this.productListQ, doc.id, {
+                id: doc.id,
+                ...doc.data(),
+              })
+            }
+            this.updateProducts()
             $state.loaded()
           })
       } else {
         $state.complete()
-      }
-    },
-    search() {
-      if (this.txtSearch === '') {
-        this.$bind(
-          'productListQ',
-          fb.db
-            .collection('Products')
-            .where('approved', '==', true)
-            .orderBy('date', 'desc')
-            .orderBy('model')
-            .limit(this.perPage),
-          { reset: true },
-        ).then((documents) => {
-          this.lastDoc = documents[documents.length - 1]
-        })
-      } else {
-        this.$bind(
-          'productListQ',
-          fb.db
-            .collection('Products')
-            .where('approved', '==', true)
-            .orderBy('model')
-            .startAt(this.txtSearch)
-            .endAt(this.txtSearch + '\uf8ff')
-            .limit(this.perPage),
-          { reset: true },
-        ).then((documents) => {
-          this.lastDoc = documents[documents.length - 1]
-        })
       }
     },
   },
@@ -247,6 +267,46 @@ export default {
     ...mapState(['user', 'userInfo']),
     sellers() {
       return new Map(this.sellersQ.map((v) => [v.productID, v]))
+    },
+    searchQuery() {
+      let query = fb.db
+        .collection('Products')
+        .where('approved', '==', true)
+        .limit(9)
+      if (this.txtSearch) {
+        query = query.where(
+          'modelSRC',
+          'array-contains',
+          this.txtSearch.toLowerCase(),
+        )
+      }
+      if (this.filterProduct && this.filterProduct !== 'All products') {
+        query = query.where('type', '==', this.filterProduct)
+      }
+      if (this.subFilterProduct && this.subFilterProduct !== 'All products') {
+        query = query.where('subType', '==', this.subFilterProduct)
+      }
+      if (this.sortProductBy && this.sortProductBy !== 'None') {
+        if (this.sortProductBy === 'Brand')
+          query = query.where('company', '>', '').orderBy('company', 'asc')
+        if (this.sortProductBy === 'Model A-Z')
+          query = query.orderBy('model', 'asc')
+        if (this.sortProductBy === 'Model Z-A')
+          query = query.orderBy('model', 'desc')
+        if (this.sortProductBy === 'Score')
+          query = query.orderBy('lastScore', 'desc')
+      }
+      if (
+        !(
+          this.txtSearch ||
+          (this.filterProduct && this.filterProduct !== 'All products') ||
+          (this.subFilterProduct && this.subFilterProduct !== 'All products') ||
+          (this.sortProductBy && this.sortProductBy !== 'None')
+        )
+      ) {
+        query = query.orderBy('type', 'asc')
+      }
+      return query
     },
   },
 }

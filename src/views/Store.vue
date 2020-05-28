@@ -74,8 +74,11 @@
                 style="width: 100%; height: 100%;"
                 class="d-flex justify-end"
               >
-                <v-btn color="red darken-4" small @click="editBanners = true"
-                  >Settings</v-btn
+                <v-btn
+                  color="red darken-4 ma-2"
+                  small
+                  @click="editBanners = true"
+                  ><v-icon class="mr-1">settings</v-icon>Settings</v-btn
                 >
               </div>
             </v-overlay>
@@ -118,8 +121,11 @@
                 style="width: 100%; height: 100%;"
                 class="d-flex justify-end"
               >
-                <v-btn color="red darken-4" small @click="editBanners = true"
-                  >Settings</v-btn
+                <v-btn
+                  color="red darken-4 ma-2"
+                  small
+                  @click="editBanners = true"
+                  ><v-icon class="mr-1">settings</v-icon>Settings</v-btn
                 >
               </div>
             </v-overlay>
@@ -185,7 +191,7 @@
             </v-col>
           </v-row>
           <v-row class="px-4">
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="6" class="py-1">
               <v-expansion-panels
                 style="border: 1px solid black;"
                 class="elevation-0"
@@ -268,7 +274,7 @@
                 </v-expansion-panel>
               </v-expansion-panels>
             </v-col>
-            <v-col>
+            <v-col class="py-1">
               <div style="height: 100%;" class="d-flex">
                 <v-text-field
                   prepend-inner-icon="search"
@@ -283,8 +289,8 @@
               </div>
             </v-col>
           </v-row>
-          <v-row class="px-4">
-            <v-col cols="12" md="4">
+          <v-row class="px-6">
+            <v-col cols="6" md="4" class="py-1 px-1">
               <v-combobox
                 v-model="filterProduct"
                 dense
@@ -305,7 +311,7 @@
                 ]"
               />
             </v-col>
-            <v-col cols="12" md="4">
+            <v-col cols="6" md="4" class="py-1 px-1">
               <v-combobox
                 dense
                 outlined
@@ -322,7 +328,7 @@
                 ]"
               />
             </v-col>
-            <v-col cols="12" md="">
+            <v-col cols="12" md="" class="pt-0 pb-1">
               <div class="d-flex justify-end">
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
@@ -365,12 +371,27 @@
               </div>
             </v-col>
           </v-row>
-          <div class="d-flex justify-center">
+          <div class="grey mb-4" style="width: 100%; height: 1px;"></div>
+          <template v-if="!user || userInfo.type === 'personal'">
             <div
-              style="height: 2px; width: 95%;"
-              class="grey lighten-2 mb-2"
-            ></div>
-          </div>
+              v-if="$vuetify.breakpoint.mdAndUp"
+              style="position: fixed; bottom: 15px; right: 15px;"
+            >
+              <v-btn @click="createStore" class="black white--text"
+                ><v-icon class="mr-2">storefront</v-icon>Create your store
+                now!</v-btn
+              >
+            </div>
+            <div v-else class="mb-2 d-flex justify-center">
+              <v-btn
+                @click="createStore"
+                style="width: 80%;"
+                class="black white--text"
+                ><v-icon class="mr-2">storefront</v-icon>Create your store
+                now!</v-btn
+              >
+            </div>
+          </template>
           <v-row class="px-5">
             <v-col
               cols="12"
@@ -528,7 +549,7 @@ export default {
     })
   },
   computed: {
-    ...mapState(['user']),
+    ...mapState(['user', 'userInfo']),
     /** @returns {Store} */
     store() {
       if (this.storeQ) {
@@ -592,6 +613,14 @@ export default {
     },
   },
   methods: {
+    createStore() {
+      if (!this.user) {
+        this.$router.push({ path: '/signUp', query: { accType: 1 } })
+      }
+      if (this.user && this.userInfo.type === 'personal') {
+        this.$router.push('/createStoreAccount')
+      }
+    },
     async updateProducts() {
       if (this.sellers.size !== 0) {
         this.products = plainToClass(
@@ -709,7 +738,11 @@ export default {
     updateSellerItems: debounce(function () {
       this.searchQuery.get().then((query) => {
         this.lastSeller = query.docs[query.docs.length - 1]
-        this.sellersQ = query.docs.map((doc) => doc.data())
+        this.sellersQ = {}
+        for (let i = 0; i < query.docs.length; i++) {
+          let doc = query.docs[i]
+          this.$set(this.sellersQ, doc.id, doc.data())
+        }
         this.updateProducts()
         this.searchLoading = false
         this.filterLoading = false

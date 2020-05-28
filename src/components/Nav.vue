@@ -1,6 +1,13 @@
 <template>
   <div>
-    <v-app-bar app dark dense flat color="primary" style="z-index: 6;">
+    <v-app-bar
+      app
+      dark
+      dense
+      flat
+      color="primary"
+      style="z-index: 7 !important;"
+    >
       <v-app-bar-nav-icon
         @click.stop="sideBar = !sideBar"
         v-if="$vuetify.breakpoint.smAndDown"

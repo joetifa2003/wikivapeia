@@ -46,7 +46,7 @@
                           row
                           class="ma-0 ml-3"
                         >
-                          <v-radio label="Personal" />
+                          <v-radio :disabled="personalDis" label="Personal" />
                           <div class="d-flex align-center">
                             <v-radio class="ma-0" label="Business" />
                             <v-tooltip
@@ -186,10 +186,17 @@ export default {
       accountType: 0,
       e1: 1,
       email: '',
+      personalDis: false,
     }
   },
   computed: {
     ...mapState(['user']),
+  },
+  created() {
+    if (this.$route.query.accType) {
+      this.accountType = this.$route.query.accType
+      this.personalDis = true
+    }
   },
   methods: {
     vertifyEmail(email) {
