@@ -110,18 +110,15 @@ export default {
           .collection('Comments')
           .doc(this.comment.id)
           .update({
-            replies: [
-              ...this.comment.replies,
-              {
-                userID: this.user.uid,
-                commentID: this.comment.id,
-                name: this.userInfo.name,
-                value: this.txt,
-                replyTo: this.commentUtil.replyTo,
-                quote: this.commentUtil.quote,
-                date: new Date(),
-              },
-            ],
+            replies: fb.fb.firestore.FieldValue.arrayUnion({
+              userID: this.user.uid,
+              commentID: this.comment.id,
+              name: this.userInfo.name,
+              value: this.txt,
+              replyTo: this.commentUtil.replyTo,
+              quote: this.commentUtil.quote,
+              date: new Date(),
+            }),
           })
         this.txt = ''
         this.$emit('clear', true)

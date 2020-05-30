@@ -172,8 +172,10 @@ export default {
       },
     }
   },
-  created() {
+  activated() {
     this.$store.commit('activePage', 'Ranks')
+  },
+  created() {
     this.searchQuery.get().then((query) => {
       this.lastProduct = query.docs[query.docs.length - 1]
       for (let i = 0; i < query.docs.length; i++) {

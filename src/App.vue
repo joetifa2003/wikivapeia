@@ -13,7 +13,9 @@
             chemical.
           </p>
         </div>
-        <router-view :key="$route.fullPath"></router-view>
+        <keep-alive>
+          <router-view :key="$route.fullPath"></router-view>
+        </keep-alive>
       </v-container>
     </v-content>
   </v-app>

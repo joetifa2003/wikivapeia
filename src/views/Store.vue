@@ -5,13 +5,11 @@
     fill-height
     class="align-start pa-2 justify-center pt-10 full grey lighten-3"
   >
+    <Share :title="store.name" />
     <v-row justify="center" v-if="store">
       <v-col cols="12" md="7" lg="7">
         <v-card>
-          <vue-headful
-            :title="`WIKIVAPEIA - ${store.name}`"
-            :image="getFBBanner"
-          />
+          <vue-headful :title="`${store.name}`" :image="getFBBanner" />
           <v-carousel
             v-if="$vuetify.breakpoint.mdAndUp"
             :cycle="store.slideshow"
@@ -171,29 +169,43 @@
                       class="mb-2 mt-n2"
                       color="amber lighten-1"
                       background-color="grey"
-                      :value="3"
+                      :value="store.revSum / store.revCount"
                       dense
                       size="18"
                       readonly
+                      half-increments
                     />
                   </div>
                   <div style="height: 100%;" class="d-flex align-end mt-n1">
                     <v-btn
+                      v-if="userInfo && userInfo.type !== 'store'"
+                      @click="rateClick"
                       class="grey white--text"
                       text
                       x-small
                       style="float: right !important;"
-                      >Rate now</v-btn
+                      >{{ userReview ? 'Remove rating' : 'Rate now' }}</v-btn
+                    >
+                    <v-btn
+                      v-else-if="
+                        !user || (userInfo && userInfo.type !== 'store')
+                      "
+                      @click="rateClick"
+                      class="grey white--text"
+                      text
+                      x-small
+                      style="float: right !important;"
+                      >{{ userReview ? 'Remove rating' : 'Rate now' }}</v-btn
                     >
                   </div>
                 </div>
               </div>
             </v-col>
           </v-row>
-          <v-row class="px-4">
-            <v-col cols="12" md="6" class="py-1">
+          <v-row class="px-6">
+            <v-col cols="12" class="pb-0">
               <v-expansion-panels
-                style="border: 1px solid black;"
+                style="border: 1px solid grey;"
                 class="elevation-0"
               >
                 <v-expansion-panel
@@ -215,6 +227,44 @@
                   >
                   <v-expansion-panel-content class="px-0">
                     <v-list>
+                      <v-tooltip top>
+                        <template v-slot:activator="{ on }">
+                          <v-btn v-on="on" icon large>
+                            <v-icon @click="openWebsite" class="black--text"
+                              >public</v-icon
+                            >
+                          </v-btn>
+                        </template>
+                        <span>Goto {{ store.webUrl }}</span>
+                      </v-tooltip>
+                      <v-tooltip top>
+                        <template v-slot:activator="{ on }">
+                          <v-btn v-on="on" icon large>
+                            <font-awesome-icon
+                              @click="openFacebookPage"
+                              style="width: 30px; height: 30px;"
+                              class="black--text"
+                              :icon="['fab', 'facebook-square']"
+                            />
+                          </v-btn>
+                        </template>
+                        <span>Goto {{ store.name }} facebook page</span>
+                      </v-tooltip>
+                      <v-tooltip top>
+                        <template v-slot:activator="{ on }">
+                          <v-btn icon large>
+                            <v-btn v-on="on" icon large class="">
+                              <font-awesome-icon
+                                @click="openMessenger"
+                                class="black--text"
+                                style="width: 30px; height: 30px;"
+                                :icon="['fab', 'facebook-messenger']"
+                              />
+                            </v-btn>
+                          </v-btn>
+                        </template>
+                        <span>Chat with {{ store.name }}</span>
+                      </v-tooltip>
                       <v-subheader class="font-weight-bold"
                         >About {{ store.name }}</v-subheader
                       >
@@ -274,7 +324,9 @@
                 </v-expansion-panel>
               </v-expansion-panels>
             </v-col>
-            <v-col class="py-1">
+          </v-row>
+          <v-row class="px-6">
+            <v-col cols="12" md="4" class="pb-0">
               <div style="height: 100%;" class="d-flex">
                 <v-text-field
                   prepend-inner-icon="search"
@@ -288,9 +340,7 @@
                 />
               </div>
             </v-col>
-          </v-row>
-          <v-row class="px-6">
-            <v-col cols="6" md="4" class="py-1 px-1">
+            <v-col cols="12" md="4" class="pb-0">
               <v-combobox
                 v-model="filterProduct"
                 dense
@@ -311,7 +361,7 @@
                 ]"
               />
             </v-col>
-            <v-col cols="6" md="4" class="py-1 px-1">
+            <v-col cols="12" md="4">
               <v-combobox
                 dense
                 outlined
@@ -328,54 +378,12 @@
                 ]"
               />
             </v-col>
-            <v-col cols="12" md="" class="pt-0 pb-1">
-              <div class="d-flex justify-end">
-                <v-tooltip top>
-                  <template v-slot:activator="{ on }">
-                    <v-btn v-on="on" icon large>
-                      <v-icon @click="openWebsite" class="black--text"
-                        >public</v-icon
-                      >
-                    </v-btn>
-                  </template>
-                  <span>Goto {{ store.webUrl }}</span>
-                </v-tooltip>
-                <v-tooltip top>
-                  <template v-slot:activator="{ on }">
-                    <v-btn v-on="on" icon large>
-                      <font-awesome-icon
-                        @click="openFacebookPage"
-                        style="width: 30px; height: 30px;"
-                        class="black--text"
-                        :icon="['fab', 'facebook-square']"
-                      />
-                    </v-btn>
-                  </template>
-                  <span>Goto {{ store.name }} facebook page</span>
-                </v-tooltip>
-                <v-tooltip top>
-                  <template v-slot:activator="{ on }">
-                    <v-btn icon large>
-                      <v-btn v-on="on" icon large class="">
-                        <font-awesome-icon
-                          @click="openMessenger"
-                          class="black--text"
-                          style="width: 30px; height: 30px;"
-                          :icon="['fab', 'facebook-messenger']"
-                        />
-                      </v-btn>
-                    </v-btn>
-                  </template>
-                  <span>Chat with {{ store.name }}</span>
-                </v-tooltip>
-              </div>
-            </v-col>
           </v-row>
           <div class="grey mb-4" style="width: 100%; height: 1px;"></div>
           <template v-if="!user || userInfo.type === 'personal'">
             <div
               v-if="$vuetify.breakpoint.mdAndUp"
-              style="position: fixed; bottom: 15px; right: 15px;"
+              style="position: fixed; bottom: 15px; left: 15px;"
             >
               <v-btn @click="createStore" class="black white--text"
                 ><v-icon class="mr-2">storefront</v-icon>Create your store
@@ -488,6 +496,33 @@
       </v-card>
     </v-dialog>
     <Progress :progressDialog="progressDialog" msg="Adding banner" />
+    <v-dialog
+      v-model="reviewDialog"
+      :width="$vuetify.breakpoint.mdAndUp ? '20%' : '100%'"
+    >
+      <v-card class="pa-5">
+        <div
+          class="text-center font-weight-bold mb-12"
+          style="font-size: 15px;"
+        >
+          Please rate {{ store.name }}
+        </div>
+        <div class="d-flex flex-column">
+          <div class="d-flex justify-center">
+            <v-slider
+              v-model="ratingValue"
+              thumb-label="always"
+              max="5"
+              min="1"
+              step="0.5"
+            />
+          </div>
+          <div class="d-flex justify-center">
+            <v-btn @click="rate" class="black white--text">Rate</v-btn>
+          </div>
+        </div>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -497,7 +532,6 @@ import Store from '../classes/Store'
 import Helper from '../classes/Helper'
 import { plainToClass } from 'class-transformer'
 import Product from '../classes/Product'
-import CommentSection from '../components/CommentSection'
 import imageCompression from 'browser-image-compression'
 import { v1 as uuid } from 'uuid'
 import Swal from 'sweetalert2'
@@ -511,7 +545,8 @@ export default {
   components: {
     Progress: () => import('../components/Progress'),
     ProductItem: () => import('../components/Items/ProductItem'),
-    CommentSection,
+    CommentSection: () => import('../components/CommentSection'),
+    Share: () => import('../components/Share'),
   },
   data() {
     return {
@@ -528,12 +563,19 @@ export default {
       lastSeller: {},
       sortProductBy: '',
       sortProductByLoading: false,
+      fab: false,
+      ratingValue: 1,
+      reviewDialog: false,
+      userReview: null,
     }
   },
   firestore() {
     return {
       storeQ: fb.db.collection('Users').where('username', '==', this.username),
     }
+  },
+  activated() {
+    this.$store.commit('activePage', 'Store')
   },
   created() {
     this.searchQuery.onSnapshot((query) => {
@@ -613,6 +655,96 @@ export default {
     },
   },
   methods: {
+    rate() {
+      let batch = fb.db.batch()
+      batch.set(
+        fb.db
+          .collection('Users')
+          .doc(this.store.id)
+          .collection('StoreReviews')
+          .doc(this.user.uid),
+        {
+          review: this.ratingValue,
+        },
+      )
+      batch.update(fb.db.collection('Users').doc(this.store.id), {
+        revSum: fb.fb.firestore.FieldValue.increment(this.ratingValue),
+        revCount: fb.fb.firestore.FieldValue.increment(1),
+      })
+      batch.commit().then(() => {
+        Swal.fire(
+          `Thank you`,
+          `Your review for ${this.store.name} done`,
+          'success',
+        )
+        this.reviewDialog = false
+      })
+    },
+    rateClick() {
+      if (!this.user) {
+        Swal.fire('Sign up', 'You must sign up to rate', 'warning').then(() => {
+          this.$router.push('/signUp')
+        })
+        return
+      }
+      if (!this.userReview) {
+        this.reviewDialog = true
+      } else {
+        fb.db.runTransaction((transaction) => {
+          return transaction
+            .get(
+              fb.db
+                .collection('Users')
+                .doc(this.store.id)
+                .collection('StoreReviews')
+                .doc(this.user.uid),
+            )
+            .then((userReview) => {
+              if (!userReview.exists) {
+                throw 'Document does not exist!'
+              }
+              transaction.update(fb.db.collection('Users').doc(this.store.id), {
+                revSum: fb.fb.firestore.FieldValue.increment(
+                  -Math.abs(userReview.data().review),
+                ),
+                revCount: fb.fb.firestore.FieldValue.increment(-Math.abs(1)),
+              })
+              transaction.delete(
+                fb.db
+                  .collection('Users')
+                  .doc(this.store.id)
+                  .collection('StoreReviews')
+                  .doc(this.user.uid),
+              )
+            })
+        })
+        // fb.db
+        //   .collection('Users')
+        //   .doc(this.store.id)
+        //   .collection('StoreReviews')
+        //   .doc(this.user.uid)
+        //   .get()
+        //   .then((userReview) => {
+        //     fb.db
+        //       .collection('Users')
+        //       .doc(this.store.id)
+        //       .update({
+        //         revSum: fb.fb.firestore.FieldValue.increment(
+        //           -Math.abs(userReview.data().review),
+        //         ),
+        //         revCount: fb.fb.firestore.FieldValue.increment(-Math.abs(1)),
+        //       })
+        //       .then(() => {
+        //         fb.db
+        //           .collection('Users')
+        //           .doc(this.store.id)
+        //           .collection('StoreReviews')
+        //           .doc(this.user.uid)
+        //           .delete()
+        //       })
+        //   })
+      }
+    },
     createStore() {
       if (!this.user) {
         this.$router.push({ path: '/signUp', query: { accType: 1 } })
@@ -772,6 +904,19 @@ export default {
     storeQ: {
       handler() {
         if (this.storeQ[0]) this.slideshow = this.storeQ[0].slideshow
+        if (this.storeQ[0]) {
+          if (this.user) {
+            this.$bind(
+              'userReview',
+              fb.db
+                .collection('Users')
+                .doc(this.storeQ[0].id)
+                .collection('StoreReviews')
+                .doc(this.user.uid),
+              { reset: false },
+            )
+          }
+        }
       },
     },
   },

@@ -22,7 +22,7 @@ export default {
   components: {
     Landing: () => import('../components/Landing.vue'),
   },
-  created() {
+  activated() {
     this.$store.commit('activePage', 'Home')
   },
 }

@@ -127,7 +127,6 @@ export default {
       selectedWindow: 'Main',
     }
   },
-  async created() {},
   methods: {
     async fileChange(event) {
       var files = event.target.files

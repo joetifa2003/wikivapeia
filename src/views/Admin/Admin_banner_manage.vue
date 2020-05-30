@@ -87,7 +87,6 @@ export default {
       banners: [],
     }
   },
-  async created() {},
   firestore: {
     banners: fb.db.collection('Banners').orderBy('index'),
   },

@@ -1,9 +1,15 @@
 const ImageminPlugin = require('imagemin-webpack-plugin').default
 const imageminMozjpeg = require('imagemin-mozjpeg')
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
-const CompressionPlugin = require('compression-webpack-plugin')
 
 module.exports = {
+  // devServer: {
+  //   open: process.platform === 'darwin',
+  //   host: '0.0.0.0',
+  //   port: 8080, // CHANGE YOUR PORT HERE!
+  //   https: true,
+  //   hotOnly: false,
+  // },
   transpileDependencies: ['vuetify'],
   productionSourceMap: false,
   configureWebpack: {

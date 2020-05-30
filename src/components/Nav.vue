@@ -25,30 +25,10 @@
         <v-btn
           text
           @click.stop="homeClick"
+          style="font-size: 12px;"
           :class="activePage === 'Home' ? 'accent--text' : ''"
         >
           <v-icon class="mr-2">home</v-icon> Home</v-btn
-        >
-        <v-btn
-          text
-          @click.stop="$router.push(`/stores`)"
-          :class="activePage === 'Stores' ? 'accent--text' : ''"
-        >
-          <v-icon class="mr-2">public</v-icon>Stores</v-btn
-        >
-        <v-btn
-          text
-          @click.stop="ranksClick"
-          :class="activePage === 'Ranks' ? 'accent--text' : ''"
-        >
-          <v-icon class="mr-2">sort</v-icon>All products</v-btn
-        >
-        <v-btn
-          text
-          @click.stop="$router.push(`/compare`)"
-          :class="activePage === 'Compare' ? 'accent--text' : ''"
-        >
-          <v-icon class="mr-2">compare_arrows</v-icon>Compare</v-btn
         >
         <v-btn
           v-if="userInfo && userInfo.type === 'store'"
@@ -57,9 +37,33 @@
             $router.currentRoute.path === `/store/${userInfo.username}`
           "
           @click.stop="$router.push(`/store/${userInfo.username}`)"
-          class="grey darken-2 white--text"
+          style="font-size: 12px;"
         >
           <v-icon class="mr-2">storefront</v-icon>My store</v-btn
+        >
+        <v-btn
+          text
+          @click.stop="$router.push(`/stores`)"
+          style="font-size: 12px;"
+          :class="activePage === 'Stores' ? 'accent--text' : ''"
+        >
+          <v-icon class="mr-2">public</v-icon>Vape stores</v-btn
+        >
+        <v-btn
+          text
+          @click.stop="ranksClick"
+          style="font-size: 12px;"
+          :class="activePage === 'Ranks' ? 'accent--text' : ''"
+        >
+          <v-icon class="mr-2">sort</v-icon>Products</v-btn
+        >
+        <v-btn
+          text
+          @click.stop="$router.push(`/compare`)"
+          style="font-size: 12px;"
+          :class="activePage === 'Compare' ? 'accent--text' : ''"
+        >
+          <v-icon class="mr-2">compare_arrows</v-icon>Compare</v-btn
         >
       </div>
       <v-spacer />
@@ -75,7 +79,7 @@
           :search-input.sync="txtSearch"
           :loading="searchLoading"
           append-icon=""
-          height="36px"
+          height="35px"
           hide-details
           hide-no-data
           rounded
@@ -98,7 +102,7 @@
             </v-list-item-avatar>
             <v-list-item-content style="width: 100px;">
               <v-list-item-title
-                style="font-size: 15px;"
+                style="font-size: 14px;"
                 v-html="parent.genFilteredText(item.titleBuilder(false))"
               >
               </v-list-item-title>
@@ -114,17 +118,18 @@
       >
       <div v-if="!user && $vuetify.breakpoint.mdAndUp">
         <v-btn
-          @click.stop="$router.push('/login')"
-          :class="[
-            activePage === 'Login' ? 'accent--text' : '',
-            'white black--text',
-          ]"
-          >Login</v-btn
-        >
-        <v-btn
           @click.stop="$router.push('/signUp')"
           :class="activePage === 'SignUp' ? 'accent--text' : ''"
-          >Sign up</v-btn
+          style="font-size: 12px;"
+          text
+          ><v-icon class="mr-2">create</v-icon>Sign up</v-btn
+        >
+        <v-btn
+          @click.stop="$router.push('/login')"
+          :class="[activePage === 'Login' ? 'accent--text' : '']"
+          style="font-size: 12px;"
+          text
+          ><v-icon class="mr-2">person</v-icon>Login</v-btn
         >
       </div>
       <v-menu
@@ -134,7 +139,13 @@
         offset-y
       >
         <template v-slot:activator="{ on }">
-          <v-btn v-if="userInfo" color="" v-on="on">
+          <v-btn
+            text
+            style="font-size: 12px;"
+            v-if="userInfo"
+            color=""
+            v-on="on"
+          >
             <v-icon class="mr-2">account_circle</v-icon>
             {{ userInfo.name.split(' ')[0] }}
           </v-btn>
@@ -145,10 +156,18 @@
 
         <v-list color="primary">
           <v-list-item>
-            <v-btn text class="white--text">Settings</v-btn>
+            <v-btn style="font-size: 12px;" text class="white--text"
+              >Settings</v-btn
+            >
           </v-list-item>
           <v-list-item>
-            <v-btn @click="logout" text class="white--text">Logout</v-btn>
+            <v-btn
+              style="font-size: 12px;"
+              @click="logout"
+              text
+              class="white--text"
+              >Logout</v-btn
+            >
           </v-list-item>
         </v-list>
       </v-menu>
@@ -202,9 +221,15 @@
     >
       <v-list dense nav>
         <v-list-item v-if="user">
-          <v-menu open-on-hover bottom offset-y>
+          <v-menu v-if="user" open-on-hover bottom offset-y>
             <template v-slot:activator="{ on }">
-              <v-btn v-if="userInfo" color="" v-on="on">
+              <v-btn
+                text
+                style="font-size: 12px;"
+                v-if="userInfo"
+                color=""
+                v-on="on"
+              >
                 <v-icon class="mr-2">account_circle</v-icon>
                 {{ userInfo.name.split(' ')[0] }}
               </v-btn>
@@ -215,10 +240,18 @@
 
             <v-list color="primary">
               <v-list-item>
-                <v-btn text class="white--text">Account settings</v-btn>
+                <v-btn style="font-size: 12px;" text class="white--text"
+                  >Settings</v-btn
+                >
               </v-list-item>
               <v-list-item>
-                <v-btn @click="logout" text class="white--text">Logout</v-btn>
+                <v-btn
+                  style="font-size: 12px;"
+                  @click="logout"
+                  text
+                  class="white--text"
+                  >Logout</v-btn
+                >
               </v-list-item>
             </v-list>
           </v-menu>
@@ -227,27 +260,10 @@
           <v-btn
             text
             @click.stop="homeClick"
+            style="font-size: 12px;"
             :class="activePage === 'Home' ? 'accent--text' : ''"
           >
             <v-icon class="mr-2">home</v-icon> Home</v-btn
-          >
-        </v-list-item>
-        <v-list-item>
-          <v-btn
-            text
-            @click.stop="ranksClick"
-            :class="activePage === 'Ranks' ? 'accent--text' : ''"
-          >
-            <v-icon class="mr-2">sort</v-icon>Products</v-btn
-          >
-        </v-list-item>
-        <v-list-item>
-          <v-btn
-            text
-            @click.stop="$router.push(`/stores`)"
-            :class="activePage === 'Stores' ? 'accent--text' : ''"
-          >
-            <v-icon class="mr-2">public</v-icon>Stores</v-btn
           >
         </v-list-item>
         <v-list-item v-if="userInfo && userInfo.type === 'store'">
@@ -257,26 +273,57 @@
               $router.currentRoute.path === `/store/${userInfo.username}`
             "
             @click.stop="$router.push(`/store/${userInfo.username}`)"
-            class="grey darken-2 white--text"
+            style="font-size: 12px;"
           >
             <v-icon class="mr-2">storefront</v-icon>My store</v-btn
           >
         </v-list-item>
-        <v-list-item v-if="!user">
+        <v-list-item>
           <v-btn
-            @click.stop="$router.push('/login')"
-            :class="[
-              activePage === 'Login' ? 'accent--text' : '',
-              'white black--text',
-            ]"
-            >Login</v-btn
+            text
+            @click.stop="$router.push(`/stores`)"
+            style="font-size: 12px;"
+            :class="activePage === 'Stores' ? 'accent--text' : ''"
+          >
+            <v-icon class="mr-2">public</v-icon>Vape stores</v-btn
+          >
+        </v-list-item>
+        <v-list-item>
+          <v-btn
+            text
+            @click.stop="ranksClick"
+            style="font-size: 12px;"
+            :class="activePage === 'Ranks' ? 'accent--text' : ''"
+          >
+            <v-icon class="mr-2">sort</v-icon>Products</v-btn
+          >
+        </v-list-item>
+        <v-list-item>
+          <v-btn
+            text
+            @click.stop="$router.push(`/compare`)"
+            style="font-size: 12px;"
+            :class="activePage === 'Compare' ? 'accent--text' : ''"
+          >
+            <v-icon class="mr-2">compare_arrows</v-icon>Compare</v-btn
           >
         </v-list-item>
         <v-list-item v-if="!user">
           <v-btn
             @click.stop="$router.push('/signUp')"
             :class="activePage === 'SignUp' ? 'accent--text' : ''"
-            >Sign up</v-btn
+            style="font-size: 12px;"
+            text
+            ><v-icon class="mr-2">create</v-icon>Sign up</v-btn
+          >
+        </v-list-item>
+        <v-list-item v-if="!user">
+          <v-btn
+            @click.stop="$router.push('/login')"
+            :class="[activePage === 'Login' ? 'accent--text' : '']"
+            style="font-size: 12px;"
+            text
+            ><v-icon class="mr-2">person</v-icon>Login</v-btn
           >
         </v-list-item>
       </v-list>

@@ -32,6 +32,8 @@ fb.auth.onAuthStateChanged((user) => {
     fb.db.collection('Users').doc(user.uid).onSnapshot((doc) => {
       store.commit('userInfo', doc.data())
     })
+  } else {
+    store.commit('userInfo', null)
   }
   if (!app) {
     app = new Vue({

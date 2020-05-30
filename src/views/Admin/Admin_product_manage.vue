@@ -343,7 +343,7 @@ export default {
       this.lastProduct = query.docs[query.docs.length - 1]
       for (let i = 0; i < query.docs.length; i++) {
         let doc = query.docs[i]
-        this.$set(this.productsQ, doc.id, doc.data())
+        this.$set(this.productsQ, doc.id, { id: doc.id, ...doc.data() })
       }
       this.updateProducts()
     })
@@ -398,7 +398,7 @@ export default {
         this.productsQ = {}
         for (let i = 0; i < query.docs.length; i++) {
           let doc = query.docs[i]
-          this.$set(this.productsQ, doc.id, doc.data())
+          this.$set(this.productsQ, doc.id, { id: doc.id, ...doc.data() })
         }
         this.updateProducts()
         this.searchLoading = false
@@ -414,7 +414,7 @@ export default {
             this.lastProduct = query.docs[query.docs.length - 1]
             for (let i = 0; i < query.docs.length; i++) {
               let doc = query.docs[i]
-              this.$set(this.productsQ, doc.id, doc.data())
+              this.$set(this.productsQ, doc.id, { id: doc.id, ...doc.data() })
             }
             this.updateProducts()
             $state.loaded()

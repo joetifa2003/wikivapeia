@@ -196,8 +196,10 @@ export default {
       },
     }
   },
-  created() {
+  activated() {
     this.$store.commit('activePage', 'Compare')
+  },
+  created() {
     if (this.$route.query.type) {
       this.selectedProduct = this.$route.query.type.replace(/\+/g, ' ')
     }
@@ -221,8 +223,7 @@ export default {
     getItems: debounce(function (product) {
       fb.db
         .collection('Products')
-        .where('modelSRC', '>=', product.search.toLowerCase())
-        .where('modelSRC', '<=', product.search.toLowerCase() + '\uf8ff')
+        .where('modelSRC', 'array-contains', product.search.toLowerCase())
         .where('approved', '==', true)
         .where('type', '==', this.selectedProduct)
         .limit(3)

@@ -7,6 +7,7 @@
     <v-row class="justify-center" style="width: 100%;">
       <v-col cols="12" md="8" lg="6">
         <v-card v-if="product" width="100%" elevation="0">
+          <Share :title="product.titleBuilder(true)" />
           <vue-headful
             :title="`WIKIVAPEIA - ${product
               .titleBuilder(true)
@@ -468,6 +469,7 @@ export default {
   props: ['id'],
   components: {
     CommentSection: () => import('../components/CommentSection'),
+    Share: () => import('../components/Share'),
     Hooper,
     Slide,
     HooperNavigation,
@@ -553,6 +555,9 @@ export default {
       sellers: [],
     }
   },
+  activated() {
+    this.$store.commit('activePage', 'Ranks')
+  },
   created() {
     if (this.user) {
       this.$bind(
@@ -565,7 +570,6 @@ export default {
     } else {
       this.voted = false
     }
-    this.$store.commit('activePage', 'Ranks')
   },
   computed: {
     ...mapState(['user', 'userInfo']),
@@ -619,7 +623,6 @@ export default {
     return {
       productQ: fb.db.collection('Products').doc(this.productID),
       voteSum: fb.db.collection('VoteSum').doc(this.productID),
-      replies: fb.db.collection('Replies').orderBy('date', 'asc'),
       sellers: fb.db
         .collection('Sellers')
         .where('productID', '==', this.productID),
@@ -700,64 +703,87 @@ export default {
       let ranks = {}
       totalRank = cloneDeep(this.votes)
       ranks = this.votes
-      fb.db.collection('Votes').add({
-        productID: this.productID,
-        voter: this.user.uid,
-        votes: ranks,
-      })
-      if (this.voteSum) {
-        //eslint-disable-next-line no-unused-vars
-        for (const [i, rank] of totalRank.entries()) {
-          totalRank[i].value += this.voteSum.sum[i].value
-        }
-        await fb.db
-          .collection('VoteSum')
-          .doc(this.productID)
-          .set({
-            sum: totalRank,
-            votersCount: this.voteSum.votersCount + 1,
-          })
-      } else {
-        await fb.db.collection('VoteSum').doc(this.productID).set({
-          sum: totalRank,
-          votersCount: 1,
+      fb.db
+        .runTransaction((transaction) => {
+          return transaction
+            .get(fb.db.collection('VoteSum').doc(this.productID))
+            .then((voteSumQ) => {
+              let voteSum = voteSumQ.data()
+              if (voteSum) {
+                //eslint-disable-next-line no-unused-vars
+                for (const [i, rank] of totalRank.entries()) {
+                  totalRank[i].value += voteSum.sum[i].value
+                }
+                transaction.set(
+                  fb.db.collection('VoteSum').doc(this.productID),
+                  {
+                    sum: totalRank,
+                    votersCount: fb.fb.firestore.FieldValue.increment(1),
+                  },
+                )
+              } else {
+                transaction.set(
+                  fb.db.collection('VoteSum').doc(this.productID),
+                  {
+                    sum: totalRank,
+                    votersCount: 1,
+                  },
+                )
+              }
+            })
         })
-      }
-      fb.db.collection('Products').doc(this.productID).update({
-        lastScore: this.overall,
-      })
-      this.voteDialog = false
-      this.voteIsclicked = false
-      Swal.fire('Voted!', 'Voted successfully!!', 'success')
+        .then(() => {
+          fb.db
+            .collection('Votes')
+            .add({
+              productID: this.productID,
+              voter: this.user.uid,
+              votes: ranks,
+            })
+            .then(() => {
+              this.voteDialog = false
+              this.voteIsclicked = false
+              Swal.fire('Voted!', 'Voted successfully!!', 'success')
+            })
+        })
     },
     async voteClick() {
       if (this.user) {
         if (this.voted === false) {
           this.voteDialog = true
         } else {
-          if (this.voteSum.votersCount === 1) {
-            await fb.db.collection('VoteSum').doc(this.productID).delete()
-            await fb.db.collection('Votes').doc(this.votedQ[0].id).delete()
-            await fb.db.collection('Products').doc(this.productID).update({
-              lastScore: this.overall,
-            })
-          } else {
-            for (let i = 0; i < this.votedQ[0].votes.length; i++) {
-              let votedValue = this.votedQ[0].votes[i].value
-              this.voteSum.sum[i].value -= votedValue
-            }
-            await fb.db
-              .collection('VoteSum')
-              .doc(this.productID)
-              .set({
-                sum: this.voteSum.sum,
-                votersCount: this.voteSum.votersCount - 1,
+          fb.db.runTransaction((transaction) => {
+            return transaction
+              .get(fb.db.collection('VoteSum').doc(this.productID))
+              .then((voteSumQ) => {
+                let voteSum = voteSumQ.data()
+                if (voteSum.votersCount === 1) {
+                  transaction.delete(
+                    fb.db.collection('VoteSum').doc(this.productID),
+                  )
+                  transaction.delete(
+                    fb.db.collection('Votes').doc(this.votedQ[0].id),
+                  )
+                } else {
+                  for (let i = 0; i < this.votedQ[0].votes.length; i++) {
+                    let votedValue = this.votedQ[0].votes[i].value
+                    voteSum.sum[i].value -= votedValue
+                  }
+                  transaction.set(
+                    fb.db.collection('VoteSum').doc(this.productID),
+                    {
+                      sum: voteSum.sum,
+                      votersCount: fb.fb.firestore.FieldValue.increment(
+                        -Math.abs(1),
+                      ),
+                    },
+                  )
+                  transaction.delete(
+                    fb.db.collection('Votes').doc(this.votedQ[0].id),
+                  )
+                }
               })
-            await fb.db.collection('Votes').doc(this.votedQ[0].id).delete()
-            await fb.db.collection('Products').doc(this.productID).update({
-              lastScore: this.overall,
-            })
-          }
+          })
         }
       } else {
         this.$router.push('/signUp')

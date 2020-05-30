@@ -1,43 +1,50 @@
 <template>
   <v-container fluid style="width: 100%; height: 100%;" class="pa-0">
-    <v-hover v-slot:default="{ hover }">
-      <v-card
-        @click="$router.push('/product/' + product.id)"
-        v-if="product"
-        class="pa-3 d-flex flex-column overlay-wrapper"
-        height="100%"
-        width="100%"
-        :elevation="hover ? 12 : ''"
+    <v-card
+      @click="
+        () => {
+          $router.push('/product/' + product.id)
+          hover = false
+        }
+      "
+      v-if="product"
+      class="pa-3 d-flex flex-column overlay-wrapper"
+      height="100%"
+      width="100%"
+      @mouseover="cardHover = true"
+      @mouseleave="cardHover = false"
+      :elevation="cardHover ? 12 : ''"
+    >
+      <v-overlay
+        v-if="user && userInfo && userInfo.type === 'store' && page !== 'Admin'"
+        color=""
+        :value="true"
+        :absolute="true"
       >
-        <v-overlay
-          v-if="
-            user && userInfo && userInfo.type === 'store' && page !== 'Admin'
-          "
-          color=""
-          :value="true"
-          :absolute="true"
+        <div
+          style="width: 100%; min-height: 72.5px;"
+          class="d-flex index justify-space-between"
         >
-          <div
-            style="width: 100%; min-height: 72.5px;"
-            class="d-flex index justify-space-between"
+          <template v-if="page !== 'store'">
+            <v-btn v-if="seller" class="ml-2 mt-2" color="green" small fab>
+              <font-awesome-icon icon="check" size="lg" />
+            </v-btn>
+          </template>
+          <template
+            v-else-if="
+              (seller ? seller.hasDiscount : false) &&
+              !(seller ? seller.outOfStock : false)
+            "
           >
-            <template v-if="page !== 'store'">
-              <v-btn v-if="seller" class="ml-2 mt-2" color="green" small fab>
-                <font-awesome-icon icon="check" size="lg" />
-              </v-btn>
-            </template>
-            <template
-              v-else-if="
-                (seller ? seller.hasDiscount : false) &&
-                !(seller ? seller.outOfStock : false)
-              "
-            >
-              <v-img
-                style="z-index: -100;"
-                max-width="60px"
-                src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/sale-icon-01.svg?alt=media&token=d38bb097-40fb-4017-b2be-dbe405cb99b6"
-              />
-            </template>
+            <v-img
+              style="z-index: -100;"
+              max-width="60px"
+              src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/sale-icon-01.svg?alt=media&token=d38bb097-40fb-4017-b2be-dbe405cb99b6"
+            />
+          </template>
+          <template
+            v-if="storeUsername === userInfo.username || page === 'Ranks'"
+          >
             <v-tooltip bottom v-if="!seller">
               <template v-slot:activator="{ on }">
                 <v-btn
@@ -77,9 +84,61 @@
               </template>
               <span>Remove from {{ userInfo.name }} product list</span>
             </v-tooltip>
-          </div>
+          </template>
+        </div>
+        <div
+          v-if="page === 'store' && storeUsername === userInfo.username"
+          class="d-flex justify-space-between pl-2 pr-3 edit-product-wrapper"
+          style="width: 100%; margin-top: -15px;"
+        >
           <div
-            v-if="page === 'store'"
+            v-if="
+              seller &&
+              seller.hasDiscount &&
+              !seller.outOfStock &&
+              seller.price &&
+              seller.priceDis
+            "
+            class="red--text text-center d-flex align-center justify-center font-weight-bold"
+            style="
+              width: 50px;
+              height: 50px;
+              font-size: 20px;
+              margin-top: -15px;
+            "
+          >
+            {{ ((1 - seller.priceDis / seller.price) * 100).toFixed(0) }}%
+          </div>
+          <v-btn
+            class="ml-auto"
+            color="indigo"
+            icon
+            @click.stop="showEditProduct = !showEditProduct"
+          >
+            <v-avatar size="33" style="border: 1.5px solid #134563;">
+              <v-icon style="font-size: 24px; color: #134563;">edit</v-icon>
+            </v-avatar>
+          </v-btn>
+        </div>
+      </v-overlay>
+      <v-overlay
+        v-else-if="page === 'store'"
+        :value="true"
+        :absolute="true"
+        color=""
+      >
+        <template
+          v-if="
+            (seller ? seller.hasDiscount : false) &&
+            !(seller ? seller.outOfStock : false)
+          "
+        >
+          <v-img
+            style="z-index: -100;"
+            max-width="60px"
+            src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/sale-icon-01.svg?alt=media&token=d38bb097-40fb-4017-b2be-dbe405cb99b6"
+          />
+          <div
             class="d-flex justify-space-between pl-2 pr-3 edit-product-wrapper"
             style="width: 100%; margin-top: -15px;"
           >
@@ -99,223 +158,168 @@
                 margin-top: -15px;
               "
             >
-              {{ ((1 - seller.priceDis / seller.price) * 100).toFixed(0) }}%
+              {{
+                (
+                  (1 - parseInt(seller.priceDis) / parseInt(seller.price)) *
+                  100
+                ).toFixed(0)
+              }}%
             </div>
-            <v-btn
-              class="ml-auto"
-              color="indigo"
-              icon
-              @click.stop="showEditProduct = !showEditProduct"
-            >
-              <v-avatar size="33" style="border: 1.5px solid #134563;">
-                <v-icon style="font-size: 24px; color: #134563;">edit</v-icon>
-              </v-avatar>
-            </v-btn>
           </div>
-        </v-overlay>
-        <v-overlay
-          v-else-if="page === 'store'"
-          :value="true"
-          :absolute="true"
-          color=""
-        >
-          <template
-            v-if="
-              (seller ? seller.hasDiscount : false) &&
-              !(seller ? seller.outOfStock : false)
-            "
-          >
-            <v-img
-              style="z-index: -100;"
-              max-width="60px"
-              src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/sale-icon-01.svg?alt=media&token=d38bb097-40fb-4017-b2be-dbe405cb99b6"
-            />
-            <div
-              class="d-flex justify-space-between pl-2 pr-3 edit-product-wrapper"
-              style="width: 100%; margin-top: -15px;"
-            >
-              <div
-                v-if="
-                  seller &&
-                  seller.hasDiscount &&
-                  !seller.outOfStock &&
-                  seller.price &&
-                  seller.priceDis
-                "
-                class="red--text text-center d-flex align-center justify-center font-weight-bold"
-                style="
-                  width: 50px;
-                  height: 50px;
-                  font-size: 20px;
-                  margin-top: -15px;
-                "
-              >
-                {{
-                  (
-                    (1 - parseInt(seller.priceDis) / parseInt(seller.price)) *
-                    100
-                  ).toFixed(0)
-                }}%
-              </div>
-            </div>
-          </template>
-        </v-overlay>
-        <v-overlay
-          class="d-flex pa-0"
-          v-if="page === 'Admin'"
-          :absolute="true"
-          :value="hover"
-        >
-          <div
-            style="width: 100%; height: 100%;"
-            class="d-flex justify-center flex-column"
-          >
-            <v-btn
-              min-width="200"
-              max-height="200"
-              @click.stop="$emit('addImage', product)"
-              class="primary secondary--text"
-              >Add image</v-btn
-            >
-            <v-btn
-              min-width="200"
-              max-height="200"
-              @click.stop="$emit('editImages', product)"
-              class="primary secondary--text"
-              >Edit images</v-btn
-            >
-            <v-btn
-              min-width="200"
-              max-height="200"
-              @click.stop="$emit('updateProduct', product)"
-              class="primary secondary--text"
-              >Update product</v-btn
-            >
-            <v-btn
-              @click.stop="publish(product)"
-              :color="product.approved ? 'red' : 'blue'"
-              >{{ product.approved ? 'unpublish' : 'publish' }}</v-btn
-            >
-            <v-btn
-              min-width="200"
-              max-height="200"
-              @click.stop="$emit('deleteProduct', product)"
-              class="primary secondary--text"
-              >Delete product</v-btn
-            >
-            <v-checkbox
-              color="white"
-              background-color="primary"
-              class="white--text"
-              label="Select"
-              v-model="product.checked"
-            />
-          </div>
-        </v-overlay>
-        <v-img :src="product.productImages[0].image" height="250px" contain>
-          <div
-            v-if="product.type === 'E-Liquid'"
-            style="
-              margin-top: 80px;
-              background-color: rgba(255, 255, 255, 0.56);
-            "
-            class="d-inline-flex flex-column justify-start ml-n3 pa-1"
-          >
-            <ul>
-              <li
-                class="font-weight-black"
-                style="font-size: 16px; font-style: italic;"
-              >
-                {{ product.specs.find((v) => v.name === 'DL/MTL').value }}
-              </li>
-              <li
-                class="font-weight-black"
-                style="font-size: 16px; font-style: italic;"
-              >
-                {{
-                  product.specs
-                    .find((v) => v.name === 'E-Liquid type')
-                    .value.toUpperCase()
-                }}
-              </li>
-              <div style="width: 100%; height: 2px;" class="black mb-2" />
-              <li
-                class="font-weight-black"
-                style="font-size: 12px; font-style: italic;"
-                v-for="(flavor, i) in product.specs.find(
-                  (v) => v.name === 'Flavors',
-                ).value"
-                :key="i"
-              >
-                {{ flavor.toUpperCase() }}
-              </li>
-            </ul>
-          </div>
-        </v-img>
-        <v-row>
-          <v-col class="pa-0">
-            <v-card-title>
-              <div class="pre" style="font-size: 15px; line-height: 20px;">
-                {{ product.titleBuilder(false) }}
-              </div>
-            </v-card-title>
-            <v-card-subtitle>{{ product.getCompany }}</v-card-subtitle>
-          </v-col>
-          <v-col v-if="score" cols="3" class="pl-0">
-            <div class="-width d-flex align-end justify-end">
-              <div
-                class="primary d-flex justify-center align-center flex-column avgScore"
-                style="width: 70px; height: 70px;"
-              >
-                <div
-                  class="white--text font-weight-bold text-center"
-                  style="font-size: 28px;"
-                >
-                  {{ product.getLastScore }}
-                </div>
-                <div
-                  class="text-center white--text"
-                  style="letter-spacing: 2px; font-size: 14px;"
-                >
-                  Score
-                </div>
-              </div>
-            </div>
-          </v-col>
-        </v-row>
+        </template>
+      </v-overlay>
+      <v-overlay
+        class="d-flex pa-0"
+        v-if="page === 'Admin'"
+        :absolute="true"
+        :value="hover"
+      >
         <div
-          v-if="page === 'store'"
-          style="width: 100%; flex: 1;"
-          class="d-flex flex-row justify-space-between mt-n4"
+          style="width: 100%; height: 100%;"
+          class="d-flex justify-center flex-column"
         >
-          <div class="align-self-end red--text text--darken-1 font-weight-bold">
-            <div v-if="seller.outOfStock">
-              Out of stock
+          <v-btn
+            min-width="200"
+            max-height="200"
+            @click.stop="$emit('addImage', product)"
+            class="primary secondary--text"
+            >Add image</v-btn
+          >
+          <v-btn
+            min-width="200"
+            max-height="200"
+            @click.stop="$emit('editImages', product)"
+            class="primary secondary--text"
+            >Edit images</v-btn
+          >
+          <v-btn
+            min-width="200"
+            max-height="200"
+            @click.stop="$emit('updateProduct', product)"
+            class="primary secondary--text"
+            >Update product</v-btn
+          >
+          <v-btn
+            @click.stop="publish(product)"
+            :color="product.approved ? 'red' : 'blue'"
+            >{{ product.approved ? 'unpublish' : 'publish' }}</v-btn
+          >
+          <v-btn
+            min-width="200"
+            max-height="200"
+            @click.stop="$emit('deleteProduct', product)"
+            class="primary secondary--text"
+            >Delete product</v-btn
+          >
+          <v-checkbox
+            color="white"
+            background-color="primary"
+            class="white--text"
+            label="Select"
+            v-model="product.checked"
+          />
+        </div>
+      </v-overlay>
+      <v-img :src="product.productImages[0].image" height="250px" contain>
+        <div
+          v-if="product.type === 'E-Liquid'"
+          style="margin-top: 80px; background-color: rgba(255, 255, 255, 0.56);"
+          class="d-inline-flex flex-column justify-start ml-n3 pa-1"
+        >
+          <ul>
+            <li
+              class="font-weight-black"
+              style="font-size: 16px; font-style: italic;"
+            >
+              {{ product.specs.find((v) => v.name === 'DL/MTL').value }}
+            </li>
+            <li
+              class="font-weight-black"
+              style="font-size: 16px; font-style: italic;"
+            >
+              {{
+                product.specs
+                  .find((v) => v.name === 'E-Liquid type')
+                  .value.toUpperCase()
+              }}
+            </li>
+            <div style="width: 100%; height: 2px;" class="black mb-2" />
+            <li
+              class="font-weight-black"
+              style="font-size: 12px; font-style: italic;"
+              v-for="(flavor, i) in product.specs.find(
+                (v) => v.name === 'Flavors',
+              ).value"
+              :key="i"
+            >
+              {{ flavor.toUpperCase() }}
+            </li>
+          </ul>
+        </div>
+      </v-img>
+      <v-row>
+        <v-col class="pa-0">
+          <v-card-title>
+            <div class="pre" style="font-size: 15px; line-height: 20px;">
+              {{ product.titleBuilder(false) }}
+            </div>
+          </v-card-title>
+          <v-card-subtitle>{{ product.getCompany }}</v-card-subtitle>
+        </v-col>
+        <v-col v-if="score" cols="3" class="pl-0">
+          <div class="-width d-flex align-end justify-end">
+            <div
+              class="primary d-flex justify-center align-center flex-column avgScore"
+              style="width: 70px; height: 70px;"
+            >
+              <div
+                class="white--text font-weight-bold text-center"
+                style="font-size: 28px;"
+              >
+                {{ product.getLastScore }}
+              </div>
+              <div
+                class="text-center white--text"
+                style="letter-spacing: 2px; font-size: 14px;"
+              >
+                Score
+              </div>
             </div>
           </div>
-          <div
-            v-if="!seller.outOfStock"
-            class="d-flex flex-column text-right justify-end"
-          >
-            <div
-              v-if="seller.hasDiscount && seller.price"
-              style="text-decoration: line-through; font-size: 15px;"
-              class="grey--text text--darken-1 text-right"
-            >
-              {{ seller.price }} {{ storeCurrency }}
-            </div>
-            <div
-              v-if="seller.price"
-              class="font-weight-bold"
-              style="font-size: 20px;"
-            >
-              {{ seller.hasDiscount ? seller.priceDis : seller.price }}
-              {{ storeCurrency }}
-            </div>
+        </v-col>
+      </v-row>
+      <div
+        v-if="page === 'store'"
+        style="width: 100%; flex: 1;"
+        class="d-flex flex-row justify-space-between mt-n4"
+      >
+        <div class="align-self-end red--text text--darken-1 font-weight-bold">
+          <div v-if="seller.outOfStock">
+            Out of stock
           </div>
         </div>
-      </v-card>
-    </v-hover>
+        <div
+          v-if="!seller.outOfStock"
+          class="d-flex flex-column text-right justify-end"
+        >
+          <div
+            v-if="seller.hasDiscount && seller.price"
+            style="text-decoration: line-through; font-size: 15px;"
+            class="grey--text text--darken-1 text-right"
+          >
+            {{ seller.price }} {{ storeCurrency }}
+          </div>
+          <div
+            v-if="seller.price"
+            class="font-weight-bold"
+            style="font-size: 20px;"
+          >
+            {{ seller.hasDiscount ? seller.priceDis : seller.price }}
+            {{ storeCurrency }}
+          </div>
+        </div>
+      </div>
+    </v-card>
     <v-dialog
       v-model="showEditProduct"
       :width="$vuetify.breakpoint.mdAndUp ? '25%' : '100%'"
@@ -386,7 +390,11 @@ export default {
         price: '',
         priceDis: '',
       },
+      cardHover: false,
     }
+  },
+  activated() {
+    this.cardHover = false
   },
   created() {
     if (this.seller) {
@@ -394,6 +402,7 @@ export default {
       this.price['hasDiscount'] = this.seller['hasDiscount']
       this.price['price'] = this.seller['price']
       this.price['priceDis'] = this.seller['priceDis']
+      this.cardHover = false
     }
   },
   computed: {

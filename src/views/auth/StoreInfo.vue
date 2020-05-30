@@ -374,25 +374,28 @@ export default {
           .doc(this.user.uid)
           .set({
             id: this.user.uid,
-            ...classToPlain(
-              new Store(
-                'store',
-                this.txtName,
-                this.about,
-                this.user.email,
-                this.selectedCountry,
-                this.selectedCurrency,
-                this.location.city,
-                this.selectedCode,
-                orderBy(this.branches, ['region'], ['asc']),
-                imageUrl,
-                [],
-                this.busType,
-                this.storeUsername,
-                this.webUrl,
-                this.facebookUrl,
-                this.facebookPageID,
+            ...Object.assign(
+              classToPlain(
+                new Store(
+                  'store',
+                  this.txtName,
+                  this.about,
+                  this.user.email,
+                  this.selectedCountry,
+                  this.selectedCurrency,
+                  this.location.city,
+                  this.selectedCode,
+                  orderBy(this.branches, ['region'], ['asc']),
+                  imageUrl,
+                  [],
+                  this.busType,
+                  this.storeUsername,
+                  this.webUrl,
+                  this.facebookUrl,
+                  this.facebookPageID,
+                ),
               ),
+              { revSum: 0, revCount: 0 },
             ),
           })
         await Swal.fire('Signed Up !', `Welcome ${this.txtName}`, 'success')

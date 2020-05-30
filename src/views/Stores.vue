@@ -121,7 +121,7 @@ export default {
       searchIndex: null,
     }
   },
-  created() {
+  activated() {
     this.$store.commit('activePage', 'Stores')
   },
   firestore() {
