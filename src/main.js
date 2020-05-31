@@ -26,10 +26,14 @@ Vue.component('vue-headful', vueHeadful)
 Vue.use(require('vue-script2'))
 
 let app
+let unsubscribe
 fb.auth.onAuthStateChanged((user) => {
+  if (unsubscribe) {
+    unsubscribe()
+  }
   store.commit('user', user)
   if (user) {
-    fb.db.collection('Users').doc(user.uid).onSnapshot((doc) => {
+    unsubscribe = fb.db.collection('Users').doc(user.uid).onSnapshot((doc) => {
       store.commit('userInfo', doc.data())
     })
   } else {

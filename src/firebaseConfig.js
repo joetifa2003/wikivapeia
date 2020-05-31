@@ -1,7 +1,7 @@
 import * as firebase from 'firebase/app'
 
 import 'firebase/storage'
-import 'firebase/firestore/memory'
+import 'firebase/firestore'
 import 'firebase/auth'
 
 // firebase init goes here

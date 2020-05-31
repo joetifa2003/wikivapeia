@@ -11,15 +11,15 @@
         <v-card>
           <vue-headful :title="`${store.name}`" :image="getFBBanner" />
           <v-carousel
-            v-if="$vuetify.breakpoint.mdAndUp"
             :cycle="store.slideshow"
             hide-delimiters
             interval="3000"
-            height="420px"
+            height="auto"
             show-arrows-on-hover
             style="max-height: 420px;"
           >
             <v-overlay
+              @click.native="editBanners = true"
               v-if="user && user.uid === store.id"
               z-index="1"
               absolute
@@ -41,7 +41,7 @@
               v-if="!store.banners || store.banners.length === 0"
             >
               <v-img
-                height="420px"
+                :height="bannerSize"
                 width="100%"
                 src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
               />
@@ -50,103 +50,7 @@
               v-for="banner in store.banners.map((v) => v.image)"
               :key="banner"
             >
-              <v-img height="420px" width="100%" :src="banner" />
-            </v-carousel-item>
-          </v-carousel>
-          <v-carousel
-            v-else-if="$vuetify.breakpoint.sm"
-            :cycle="store.slideshow"
-            hide-delimiters
-            interval="3000"
-            height="auto"
-            show-arrows-on-hover
-            style="max-height: 360px;"
-          >
-            <v-overlay
-              v-if="user && user.uid === store.id"
-              z-index="1"
-              absolute
-              color=""
-            >
-              <div
-                style="width: 100%; height: 100%;"
-                class="d-flex justify-end"
-              >
-                <v-btn
-                  color="red darken-4 ma-2"
-                  small
-                  @click="editBanners = true"
-                  ><v-icon class="mr-1">settings</v-icon>Settings</v-btn
-                >
-              </div>
-            </v-overlay>
-            <v-carousel-item v-if="store.banners.length === 0">
-              <v-img
-                height="300px"
-                width="100%"
-                aspect-ratio="16/9"
-                src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
-              />
-            </v-carousel-item>
-            <v-carousel-item
-              v-for="banner in store.banners.map((v) => v.image)"
-              :key="banner"
-            >
-              <v-img
-                height="300px"
-                width="100%"
-                aspect-ratio="16/9"
-                :src="banner"
-              />
-            </v-carousel-item>
-          </v-carousel>
-          <v-carousel
-            v-else
-            :cycle="store.slideshow"
-            hide-delimiters
-            interval="3000"
-            height="auto"
-            show-arrows-on-hover
-            style="max-height: 360px;"
-          >
-            <v-overlay
-              v-if="user && user.uid === store.id"
-              z-index="1"
-              absolute
-              color=""
-            >
-              <div
-                style="width: 100%; height: 100%;"
-                class="d-flex justify-end"
-              >
-                <v-btn
-                  color="red darken-4 ma-2"
-                  small
-                  @click="editBanners = true"
-                  ><v-icon class="mr-1">settings</v-icon>Settings</v-btn
-                >
-              </div>
-            </v-overlay>
-            <v-carousel-item
-              v-if="!store.banners || store.banners.length === 0"
-            >
-              <v-img
-                height="144px"
-                width="100%"
-                aspect-ratio="16/9"
-                src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
-              />
-            </v-carousel-item>
-            <v-carousel-item
-              v-for="banner in store.banners.map((v) => v.image)"
-              :key="banner"
-            >
-              <v-img
-                height="144px"
-                width="100%"
-                aspect-ratio="16/9"
-                :src="banner"
-              />
+              <v-img :height="bannerSize" width="100%" :src="banner" />
             </v-carousel-item>
           </v-carousel>
           <v-row style="width: 100%; margin: 0;" class="px-4 grey darken-4">
@@ -385,16 +289,19 @@
               v-if="$vuetify.breakpoint.mdAndUp"
               style="position: fixed; bottom: 15px; left: 15px;"
             >
-              <v-btn @click="createStore" class="black white--text"
+              <v-btn
+                style="background-color: rgba(110, 0, 0, 1);"
+                @click="createStore"
+                class="white--text"
                 ><v-icon class="mr-2">storefront</v-icon>Create your store
                 now!</v-btn
               >
             </div>
             <div v-else class="mb-2 d-flex justify-center">
               <v-btn
+                style="width: 80%; background-color: rgba(110, 0, 0, 1);"
                 @click="createStore"
-                style="width: 80%;"
-                class="black white--text"
+                class="white--text"
                 ><v-icon class="mr-2">storefront</v-icon>Create your store
                 now!</v-btn
               >
@@ -592,6 +499,15 @@ export default {
   },
   computed: {
     ...mapState(['user', 'userInfo']),
+    bannerSize() {
+      if (this.$vuetify.breakpoint.mdAndUp) {
+        return '420px'
+      } else if (this.$vuetify.breakpoint.sm) {
+        return '300px'
+      } else {
+        return '144px'
+      }
+    },
     /** @returns {Store} */
     store() {
       if (this.storeQ) {
@@ -690,59 +606,31 @@ export default {
       if (!this.userReview) {
         this.reviewDialog = true
       } else {
-        fb.db.runTransaction((transaction) => {
-          return transaction
-            .get(
-              fb.db
-                .collection('Users')
-                .doc(this.store.id)
-                .collection('StoreReviews')
-                .doc(this.user.uid),
-            )
-            .then((userReview) => {
-              if (!userReview.exists) {
-                throw 'Document does not exist!'
-              }
-              transaction.update(fb.db.collection('Users').doc(this.store.id), {
-                revSum: fb.fb.firestore.FieldValue.increment(
-                  -Math.abs(userReview.data().review),
-                ),
-                revCount: fb.fb.firestore.FieldValue.increment(-Math.abs(1)),
-              })
-              transaction.delete(
-                fb.db
-                  .collection('Users')
-                  .doc(this.store.id)
-                  .collection('StoreReviews')
-                  .doc(this.user.uid),
-              )
-            })
+        fb.db.runTransaction(async (transaction) => {
+          let userReview = await transaction.get(
+            fb.db
+              .collection('Users')
+              .doc(this.store.id)
+              .collection('StoreReviews')
+              .doc(this.user.uid),
+          )
+          if (!userReview.exists) {
+            throw 'Document does not exist!'
+          }
+          transaction.update(fb.db.collection('Users').doc(this.store.id), {
+            revSum: fb.fb.firestore.FieldValue.increment(
+              -Math.abs(userReview.data().review),
+            ),
+            revCount: fb.fb.firestore.FieldValue.increment(-Math.abs(1)),
+          })
+          transaction.delete(
+            fb.db
+              .collection('Users')
+              .doc(this.store.id)
+              .collection('StoreReviews')
+              .doc(this.user.uid),
+          )
         })
-        // fb.db
-        //   .collection('Users')
-        //   .doc(this.store.id)
-        //   .collection('StoreReviews')
-        //   .doc(this.user.uid)
-        //   .get()
-        //   .then((userReview) => {
-        //     fb.db
-        //       .collection('Users')
-        //       .doc(this.store.id)
-        //       .update({
-        //         revSum: fb.fb.firestore.FieldValue.increment(
-        //           -Math.abs(userReview.data().review),
-        //         ),
-        //         revCount: fb.fb.firestore.FieldValue.increment(-Math.abs(1)),
-        //       })
-        //       .then(() => {
-        //         fb.db
-        //           .collection('Users')
-        //           .doc(this.store.id)
-        //           .collection('StoreReviews')
-        //           .doc(this.user.uid)
-        //           .delete()
-        //       })
-        //   })
       }
     },
     createStore() {

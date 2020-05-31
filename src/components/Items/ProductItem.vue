@@ -229,13 +229,13 @@
           <ul>
             <li
               class="font-weight-black"
-              style="font-size: 16px; font-style: italic;"
+              style="font-size: 14px; font-style: italic;"
             >
               {{ product.specs.find((v) => v.name === 'DL/MTL').value }}
             </li>
             <li
               class="font-weight-black"
-              style="font-size: 16px; font-style: italic;"
+              style="font-size: 14px; font-style: italic;"
             >
               {{
                 product.specs
@@ -245,7 +245,6 @@
             </li>
             <div style="width: 100%; height: 2px;" class="black mb-2" />
             <li
-              class="font-weight-black"
               style="font-size: 12px; font-style: italic;"
               v-for="(flavor, i) in product.specs.find(
                 (v) => v.name === 'Flavors',

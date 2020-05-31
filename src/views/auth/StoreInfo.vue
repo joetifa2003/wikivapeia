@@ -395,7 +395,7 @@ export default {
                   this.facebookPageID,
                 ),
               ),
-              { revSum: 0, revCount: 0 },
+              { revSum: 0, revCount: 0, slideshow: true },
             ),
           })
         await Swal.fire('Signed Up !', `Welcome ${this.txtName}`, 'success')

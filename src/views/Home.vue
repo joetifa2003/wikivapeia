@@ -1,5 +1,6 @@
 <template>
   <v-container fill-height fluid class="pa-0">
+    <vue-headful title="Wikivapeia - Vape market around the world" />
     <Landing
       title="Wikivapeia"
       subtitle="Occaecat deserunt sit occaecat et labore ipsum. Amet ut nisi

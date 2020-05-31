@@ -54,8 +54,6 @@
 
 <script>
 import Swal from 'sweetalert2'
-import SecureLS from 'secure-ls'
-var ls = new SecureLS({ encodingType: 'aes' })
 
 export default {
   name: 'Admin',
@@ -64,7 +62,6 @@ export default {
   },
   methods: {
     logout() {
-      ls.set('isA', false)
       this.$router.push('/admin/login')
       Swal.fire('Logged out!', 'Logged out as admin.', 'success')
     },

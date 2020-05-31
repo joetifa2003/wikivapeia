@@ -9,9 +9,7 @@
         <v-card v-if="product" width="100%" elevation="0">
           <Share :title="product.titleBuilder(true)" />
           <vue-headful
-            :title="`WIKIVAPEIA - ${product
-              .titleBuilder(true)
-              .toUpperCase()} RANKING`"
+            :title="`WIKIVAPEIA - ${product.titleBuilder(true).toUpperCase()}`"
             :image="
               product.facebookImages[0]
                 ? product.facebookImages[0].image
@@ -105,7 +103,7 @@
                       },
                     })
                   "
-                  class="grey darken-2 white--text mt-2"
+                  class="black darken-2 white--text mt-2"
                   rounded
                   small
                   ><v-icon class="mr-2">compare_arrows</v-icon> Compare
@@ -130,20 +128,19 @@
                     {{ avg.value.toFixed(1) }}
                   </div>
                 </div>
-                <div class="d-flex justify-space-between">
+                <div class="mt-2">Share your experience now!</div>
+                <div class="d-flex flex-column">
                   <div class="d-flex flex-column">
                     <v-btn
                       v-if="voted !== null"
                       @click.stop="voteClick"
-                      :class="[
-                        'white--text',
-                        voted ? 'grey darken-2' : 'black',
-                      ]"
+                      style="background-color: rgb(110, 0, 0);"
+                      :class="['white--text']"
                       >{{ voted ? 'Unvote' : 'Vote' }}</v-btn
                     >
                   </div>
                   <div
-                    class="font-weight-medium black--text align-self-end"
+                    class="font-weight-medium black--text align-self-end mt-2"
                     style="font-size: 14px;"
                   >
                     <v-icon color="black" class="mr-2">person</v-icon>
@@ -192,57 +189,6 @@
                 </div>
               </v-col>
             </v-row>
-            <div
-              style="height: 48px;"
-              class="grey lighten-4 d-flex align-center"
-            >
-              <social-sharing
-                class="my-4"
-                :url="'wikivapeia.com' + $route.path"
-                hashtags="WIKIVAPEIA"
-                network-tag="span"
-                inline-template
-              >
-                <div class="d-flex justify-space-around" style="width: 150px;">
-                  <network network="facebook">
-                    <font-awesome-icon
-                      class="indigo--text darken-4"
-                      :icon="['fab', 'facebook-square']"
-                      size="2x"
-                    />
-                  </network>
-                  <network network="twitter">
-                    <font-awesome-icon
-                      class="blue--text darken-2"
-                      :icon="['fab', 'twitter-square']"
-                      size="2x"
-                    />
-                  </network>
-                  <network network="whatsapp">
-                    <font-awesome-icon
-                      class="green--text darken-3"
-                      :icon="['fab', 'whatsapp-square']"
-                      size="2x"
-                    />
-                  </network>
-                  <network network="telegram">
-                    <font-awesome-icon
-                      class="blue--text darken-3"
-                      :icon="['fab', 'telegram']"
-                      size="2x"
-                    />
-                  </network>
-
-                  <network network="instagram">
-                    <font-awesome-icon
-                      class="blue--text darken-3"
-                      :icon="['fab', 'telegram']"
-                      size="2x"
-                    />
-                  </network>
-                </div>
-              </social-sharing>
-            </div>
             <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
               >Where to buy ?</v-subheader
             >
@@ -436,11 +382,8 @@
             <v-col cols="12">
               <v-btn
                 @click.stop="vote"
-                style="width: 100%;"
-                :class="[
-                  'red darken-4 white--text',
-                  voteIsclicked ? 'v-btn--disabled' : '',
-                ]"
+                style="width: 100%; background-color: rgb(110, 0, 0);"
+                :class="['white--text', voteIsclicked ? 'v-btn--disabled' : '']"
                 >Vote</v-btn
               >
             </v-col>
@@ -562,10 +505,7 @@ export default {
     if (this.user) {
       this.$bind(
         'votedQ',
-        fb.db
-          .collection('Votes')
-          .where('productID', '==', this.productID)
-          .where('voter', '==', this.user.uid),
+        fb.db.collection('Votes').where('voter', '==', this.user.uid),
       )
     } else {
       this.voted = false
@@ -610,7 +550,7 @@ export default {
         ) {
           return cloneDeep(this.ranks.atomizersDL)
         } else {
-          return cloneDeep(this.ranks.atomizersDL)
+          return cloneDeep(this.ranks.atomizersMTL)
         }
       } else if (this.product.type === 'Pod system') {
         return cloneDeep(this.ranks.pods)
@@ -699,52 +639,46 @@ export default {
     },
     async vote() {
       this.voteIsclicked = true
-      let totalRank = []
-      let ranks = {}
-      totalRank = cloneDeep(this.votes)
-      ranks = this.votes
       fb.db
-        .runTransaction((transaction) => {
-          return transaction
-            .get(fb.db.collection('VoteSum').doc(this.productID))
-            .then((voteSumQ) => {
-              let voteSum = voteSumQ.data()
-              if (voteSum) {
-                //eslint-disable-next-line no-unused-vars
-                for (const [i, rank] of totalRank.entries()) {
-                  totalRank[i].value += voteSum.sum[i].value
-                }
-                transaction.set(
-                  fb.db.collection('VoteSum').doc(this.productID),
-                  {
-                    sum: totalRank,
-                    votersCount: fb.fb.firestore.FieldValue.increment(1),
-                  },
-                )
-              } else {
-                transaction.set(
-                  fb.db.collection('VoteSum').doc(this.productID),
-                  {
-                    sum: totalRank,
-                    votersCount: 1,
-                  },
-                )
-              }
+        .runTransaction(async (transaction) => {
+          let voteSumQ = await transaction.get(
+            fb.db.collection('VoteSum').doc(this.productID),
+          )
+          let votes = cloneDeep(this.votes)
+          let overall = 0
+          transaction.set(fb.db.collection('Votes').doc(), {
+            productID: this.productID,
+            voter: this.user.uid,
+            votes: this.votes,
+          })
+          let voteSum = voteSumQ.data()
+          if (voteSum) {
+            for (let i = 0; i < votes.length; i++) {
+              votes[i].value += voteSum.sum[i].value
+              overall +=
+                votes[i].value / ((voteSum.votersCount + 1) * votes.length)
+            }
+            transaction.set(fb.db.collection('VoteSum').doc(this.productID), {
+              sum: votes,
+              votersCount: voteSum.votersCount + 1,
             })
+          } else {
+            for (let i = 0; i < votes.length; i++) {
+              overall += votes[i].value / votes.length
+            }
+            transaction.set(fb.db.collection('VoteSum').doc(this.productID), {
+              sum: votes,
+              votersCount: 1,
+            })
+          }
+          transaction.update(fb.db.collection('Products').doc(this.productID), {
+            lastScore: overall,
+          })
         })
         .then(() => {
-          fb.db
-            .collection('Votes')
-            .add({
-              productID: this.productID,
-              voter: this.user.uid,
-              votes: ranks,
-            })
-            .then(() => {
-              this.voteDialog = false
-              this.voteIsclicked = false
-              Swal.fire('Voted!', 'Voted successfully!!', 'success')
-            })
+          this.voteDialog = false
+          this.voteIsclicked = false
+          Swal.fire('Voted!', 'Voted successfully!!', 'success')
         })
     },
     async voteClick() {
@@ -752,37 +686,42 @@ export default {
         if (this.voted === false) {
           this.voteDialog = true
         } else {
-          fb.db.runTransaction((transaction) => {
-            return transaction
-              .get(fb.db.collection('VoteSum').doc(this.productID))
-              .then((voteSumQ) => {
-                let voteSum = voteSumQ.data()
-                if (voteSum.votersCount === 1) {
-                  transaction.delete(
-                    fb.db.collection('VoteSum').doc(this.productID),
-                  )
-                  transaction.delete(
-                    fb.db.collection('Votes').doc(this.votedQ[0].id),
-                  )
-                } else {
-                  for (let i = 0; i < this.votedQ[0].votes.length; i++) {
-                    let votedValue = this.votedQ[0].votes[i].value
-                    voteSum.sum[i].value -= votedValue
-                  }
-                  transaction.set(
-                    fb.db.collection('VoteSum').doc(this.productID),
-                    {
-                      sum: voteSum.sum,
-                      votersCount: fb.fb.firestore.FieldValue.increment(
-                        -Math.abs(1),
-                      ),
-                    },
-                  )
-                  transaction.delete(
-                    fb.db.collection('Votes').doc(this.votedQ[0].id),
-                  )
-                }
+          fb.db.runTransaction(async (transaction) => {
+            let voteSumQ = await transaction.get(
+              fb.db.collection('VoteSum').doc(this.productID),
+            )
+            let votes = cloneDeep(this.votes)
+            let overall = 0
+            let voteSum = voteSumQ.data()
+            transaction.delete(fb.db.collection('Votes').doc(this.votedQ[0].id))
+            if (voteSum.votersCount === 1) {
+              transaction.delete(
+                fb.db.collection('VoteSum').doc(this.productID),
+              )
+              transaction.update(
+                fb.db.collection('Products').doc(this.productID),
+                {
+                  lastScore: 0,
+                },
+              )
+            } else {
+              for (let i = 0; i < votes.length; i++) {
+                voteSum.sum[i].value -= votes[i].value
+                overall +=
+                  voteSum.sum[i].value /
+                  ((voteSum.votersCount - 1) * voteSum.sum.length)
+              }
+              transaction.set(fb.db.collection('VoteSum').doc(this.productID), {
+                sum: voteSum.sum,
+                votersCount: voteSum.votersCount - 1,
               })
+              transaction.update(
+                fb.db.collection('Products').doc(this.productID),
+                {
+                  lastScore: overall,
+                },
+              )
+            }
           })
         }
       } else {

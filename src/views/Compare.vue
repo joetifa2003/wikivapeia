@@ -1,11 +1,22 @@
 <template>
   <v-container fluid fill-height class="grey lighten-3 pt-8">
     <vue-headful
-      v-if="Object.values(items)[0].selected"
-      :title="`WIKIVAPEIA - ${Object.values(items)
-        .map((v) => (v.selected ? v.selected.model : ''))
-        .join(' VS ')}`"
-      image=""
+      v-if="Object.values(items).filter((v) => v.selected).length >= 1"
+      :title="`WIKIVAPEIA - ${compTitle} ${
+        Object.values(items).filter((v) => v.selected).length === 1
+          ? 'Specs'
+          : 'Comparison'
+      }`"
+      :image="productImageShare"
+    />
+    <vue-headful
+      v-else
+      :title="`WIKIVAPEIA - Products comparision`"
+      :image="productImageShare"
+    />
+    <Share
+      v-if="Object.values(this.items).filter((v) => v.selected).length > 1"
+      :title="compTitle"
     />
     <v-row justify="center">
       <v-col cols="12" md="6" class="white px-5">
@@ -170,6 +181,9 @@ const fb = require('../firebaseConfig')
 
 export default {
   name: 'Compare',
+  components: {
+    Share: () => import('../components/Share'),
+  },
   data() {
     return {
       selectedProduct: 'Atomizer',
@@ -195,6 +209,45 @@ export default {
         },
       },
     }
+  },
+  computed: {
+    compTitle() {
+      if (Object.values(this.items).filter((v) => v.selected).length > 0) {
+        return Object.values(this.items)
+          .filter((v) => v.selected)
+          .map((v) => (v.selected ? v.selected.model : ''))
+          .join(', ')
+      } else if (
+        Object.values(this.items).filter((v) => v.selected).length === 1
+      ) {
+        return this.items.product1.selected.model
+      } else {
+        return 'Products comparision'
+      }
+    },
+    productImageShare() {
+      if (this.items.product0.selected) {
+        let fb = this.items.product0.selected.images.find(
+          (v) => v.type === 'facebook',
+        )
+        if (fb) return fb.image
+        return this.items.product0.selected.images[0].image
+      } else if (this.items.product1.selected) {
+        let fb = this.items.product1.selected.images.find(
+          (v) => v.type === 'facebook',
+        )
+        if (fb) return fb.image
+        return this.items.product1.selected.images[0].image
+      } else if (this.items.product2.selected) {
+        let fb = this.items.product2.selected.images.find(
+          (v) => v.type === 'facebook',
+        )
+        if (fb) return fb.image
+        return this.items.product2.selected.images[0].image
+      } else {
+        return ''
+      }
+    },
   },
   activated() {
     this.$store.commit('activePage', 'Compare')

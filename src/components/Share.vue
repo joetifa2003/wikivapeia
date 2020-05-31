@@ -33,6 +33,7 @@
       fab
       icon
       dark
+      small
     >
       <img width="40" height="40" src="~@/assets/social/facebook.svg" />
     </v-btn>

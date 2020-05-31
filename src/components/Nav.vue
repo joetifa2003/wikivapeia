@@ -218,6 +218,8 @@
       dark
       v-model="sideBar"
       disable-resize-watcher
+      width="200"
+      style="background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);"
     >
       <v-list dense nav>
         <v-list-item v-if="user">

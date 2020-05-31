@@ -177,11 +177,12 @@ router.beforeEach((to, from, next) => {
       next()
     }
   } else if (to.path === '/createStoreAccount') {
-    if (store.state.user && store.state.userInfo.type === 'personal') {
-      next()
-    } else {
-      next(from.path)
-    }
+    // if (store.state.user && store.state.userInfo.type === 'personal') {
+    //   next()
+    // } else {
+    //   next(from.path)
+    // }
+    next()
   } else {
     next()
   }

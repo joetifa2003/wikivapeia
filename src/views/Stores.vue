@@ -1,8 +1,9 @@
 <template>
   <v-container fill-height fluid class="pa-0">
+    <vue-headful title="Wikivapeia - Vape stores" />
     <PageHeader
       title="Stores"
-      subtitle="Ranking for mods and automizers, From people for people"
+      subtitle="Wikivapeia vape stores"
       height="70vh"
     />
     <v-container fluid>
