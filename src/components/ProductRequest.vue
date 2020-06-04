@@ -153,14 +153,16 @@
 import { sortBy } from 'lodash'
 import { v1 as uuid } from 'uuid'
 import imageCompression from 'browser-image-compression'
-import { quillEditor } from 'vue-quill-editor'
 const fb = require('../firebaseConfig')
 
 export default {
   name: 'ProductRequest',
   components: {
     Progress: () => import('../components/Progress'),
-    quillEditor,
+    quillEditor: async () => {
+      let editor = await import('vue-quill-editor')
+      return editor.quillEditor
+    },
   },
   data() {
     return {

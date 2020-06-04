@@ -5,88 +5,6 @@
         <h2 class="text-center justify-center mb-4">
           Complete store information
         </h2>
-        <template v-if="$route.path !== '/createStoreAccount'">
-          <v-row v-if="user && user.providerId !== 'facebook.com'">
-            <v-col>
-              <v-text-field
-                :rules="[
-                  (v) => !!v || 'Frist name is required',
-                  (v) =>
-                    v.length >= 3 || 'Name cannot be lese than 3 characters',
-                ]"
-                v-model="txtFname"
-                outlined
-                label="First name"
-                type="text"
-                dense
-              />
-            </v-col>
-            <v-col>
-              <v-text-field
-                :rules="[
-                  (v) => !!v || 'Last name is required',
-                  (v) =>
-                    v.length >= 3 || 'Name cannot be lese than 3 characters',
-                ]"
-                v-model="txtLname"
-                outlined
-                label="Last name"
-                type="text"
-                dense
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-combobox
-                v-model="gender"
-                :rules="[(v) => !!v || 'Gender is requierd']"
-                label="Gender"
-                :items="['Male', 'Female']"
-                dense
-                outlined
-              />
-            </v-col>
-            <v-col>
-              <v-dialog
-                ref="dialog"
-                v-model="modal"
-                :return-value.sync="picker"
-                persistent
-                width="290px"
-              >
-                <template v-slot:activator="{ on }">
-                  <v-text-field
-                    v-model="picker"
-                    label="Birthdate"
-                    prepend-inner-icon="event"
-                    readonly
-                    v-on="on"
-                    outlined
-                    dense
-                    append-icon=""
-                  ></v-text-field>
-                </template>
-                <v-date-picker v-model="picker" scrollable>
-                  <v-spacer></v-spacer>
-                  <v-btn text color="primary" @click="modal = false"
-                    >Cancel</v-btn
-                  >
-                  <v-btn text color="primary" @click="$refs.dialog.save(picker)"
-                    >OK</v-btn
-                  >
-                </v-date-picker>
-              </v-dialog>
-            </v-col>
-          </v-row>
-          <v-text-field
-            class="mb-5"
-            label="Phone number (optional)"
-            v-model.number="number"
-            dense
-            outlined
-          ></v-text-field>
-        </template>
         <div class="d-flex justify-center mb-6">
           <v-btn
             @click="$refs.imageInput.click()"
@@ -392,9 +310,6 @@ export default {
   components: {},
   data() {
     return {
-      txtFname: '',
-      txtLname: '',
-      number: '',
       picker: '',
       branches: [
         {
@@ -422,7 +337,6 @@ export default {
       webUrl: '',
       about: '',
       selectedCurrency: '',
-      modal: false,
     }
   },
   async created() {
@@ -455,65 +369,35 @@ export default {
           .child(filename)
           .put(this.imgFile)
         let imageUrl = await snapshot.ref.getDownloadURL()
-        if (this.$route.path === '/createStoreAccount') {
-          fb.db
-            .collection('Users')
-            .doc(this.user.uid)
-            .update({
-              type: 'store',
-              storeName: this.txtName,
-              currency: this.selectedCurrency,
-              about: this.about,
-              countryCode: this.selectedCode,
-              branches: orderBy(this.branches, ['region'], ['asc']),
-              img: imageUrl,
-              banners: [],
-              username: this.storeUsername,
-              webUrl: this.webUrl,
-              facebookUrl: this.facebookUrl,
-              facebookPageID: this.facebookPageID,
-              revSum: 0,
-              lastScore: 0,
-              revCount: 0,
-              slideshow: true,
-            })
-        } else {
-          fb.db
-            .collection('Users')
-            .doc(this.user.uid)
-            .set({
-              id: this.user.uid,
-              ...Object.assign(
-                classToPlain(
-                  new Store(
-                    'store',
-                    this.user.providerId === 'facebook.com'
-                      ? this.user.displayName
-                      : `${this.txtFname} ${this.txtLname}`,
-                    `${this.selectedCode}${this.number}`,
-                    this.gender,
-                    this.picker,
-                    this.txtName,
-                    this.about,
-                    this.user.email,
-                    this.selectedCountry,
-                    this.selectedCurrency,
-                    this.location.city,
-                    this.selectedCode,
-                    orderBy(this.branches, ['region'], ['asc']),
-                    imageUrl,
-                    [],
-                    this.busType,
-                    this.storeUsername,
-                    this.webUrl,
-                    this.facebookUrl,
-                    this.facebookPageID,
-                  ),
+        await fb.db
+          .collection('Users')
+          .doc(this.user.uid)
+          .update({
+            id: this.user.uid,
+            ...Object.assign(
+              classToPlain(
+                new Store(
+                  'store',
+                  this.txtName,
+                  this.about,
+                  this.user.email,
+                  this.selectedCountry,
+                  this.selectedCurrency,
+                  this.location.city,
+                  this.selectedCode,
+                  orderBy(this.branches, ['region'], ['asc']),
+                  imageUrl,
+                  [],
+                  this.busType,
+                  this.storeUsername,
+                  this.webUrl,
+                  this.facebookUrl,
+                  this.facebookPageID,
                 ),
-                { revSum: 0, lastScore: 0, revCount: 0, slideshow: true },
               ),
-            })
-        }
+              { revSum: 0, lastScore: 0, revCount: 0, slideshow: true },
+            ),
+          })
         await Swal.fire('Signed Up !', `Welcome ${this.txtName}`, 'success')
         if (this.user.providerId != 'facebook.com') {
           if (this.$route.path === '/createStoreAccount') {

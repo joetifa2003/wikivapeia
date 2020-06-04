@@ -34,7 +34,11 @@ fb.auth.onAuthStateChanged((user) => {
   store.commit('user', user)
   if (user) {
     unsubscribe = fb.db.collection('Users').doc(user.uid).onSnapshot((doc) => {
-      store.commit('userInfo', doc.data())
+      if (doc.data()) {
+        store.commit('userInfo', doc.data())
+      } else {
+        store.commit('userInfo', 'Not found')
+      }
     })
   } else {
     store.commit('userInfo', null)

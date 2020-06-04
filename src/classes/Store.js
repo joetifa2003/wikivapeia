@@ -1,9 +1,13 @@
-import User from './User'
+import Personal from './Personal'
 
-export default class Store extends User {
+export default class Store extends Personal {
   constructor(
     type,
     name,
+    number,
+    gender,
+    birthday,
+    storeName,
     about,
     email,
     country,
@@ -19,7 +23,8 @@ export default class Store extends User {
     facebookUrl,
     facebookPageID,
   ) {
-    super(type, name, email, country, region)
+    super(type, name, email, country, region, number, gender, birthday)
+    this.storeName = storeName
     this.currency = currency
     this.about = about
     this.countryCode = countryCode

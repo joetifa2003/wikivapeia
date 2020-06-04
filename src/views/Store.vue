@@ -5,11 +5,11 @@
     fill-height
     class="align-start pa-2 justify-center pt-10 full grey lighten-3"
   >
-    <Share :title="store.name" />
+    <Share :title="store.storeName" />
     <v-row justify="center" v-if="store">
       <v-col cols="12" md="7" lg="7">
         <v-card>
-          <vue-headful :title="`${store.name}`" :image="getFBBanner" />
+          <vue-headful :title="`${store.storeName}`" :image="getFBBanner" />
           <v-carousel
             :cycle="store.slideshow"
             hide-delimiters
@@ -66,14 +66,14 @@
                 <div class="d-flex flex-column">
                   <div>
                     <h2 class="white--text" v-if="$vuetify.breakpoint.mdAndUp">
-                      {{ store.name }}
+                      {{ store.storeName }}
                     </h2>
-                    <h3 class="white--text" v-else>{{ store.name }}</h3>
+                    <h3 class="white--text" v-else>{{ store.storeName }}</h3>
                     <v-rating
                       class="mb-2 mt-n2"
                       color="amber lighten-1"
                       background-color="grey"
-                      :value="store.revSum / store.revCount"
+                      :value="store.lastScore"
                       dense
                       size="18"
                       readonly
@@ -126,7 +126,7 @@
                       <v-icon size="30" class="d-inline mr-3 black--text"
                         >contact_phone</v-icon
                       >
-                      Contact with {{ store.name }}
+                      Contact with {{ store.storeName }}
                     </div></v-expansion-panel-header
                   >
                   <v-expansion-panel-content class="px-0">
@@ -152,7 +152,7 @@
                             />
                           </v-btn>
                         </template>
-                        <span>Goto {{ store.name }} facebook page</span>
+                        <span>Goto {{ store.storeName }} facebook page</span>
                       </v-tooltip>
                       <v-tooltip top>
                         <template v-slot:activator="{ on }">
@@ -167,10 +167,10 @@
                             </v-btn>
                           </v-btn>
                         </template>
-                        <span>Chat with {{ store.name }}</span>
+                        <span>Chat with {{ store.storeName }}</span>
                       </v-tooltip>
                       <v-subheader class="font-weight-bold"
-                        >About {{ store.name }}</v-subheader
+                        >About {{ store.storeName }}</v-subheader
                       >
                       <v-list-item class="mb-3 black--text">
                         <div class="text-justify">
@@ -238,7 +238,7 @@
                   outlined
                   clearable
                   :loading="searchLoading"
-                  :label="`Search in ${store.name}`"
+                  :label="`Search in ${store.storeName}`"
                   v-model="txtSearch"
                   dense
                 />
@@ -312,7 +312,7 @@
               cols="12"
               sm="6"
               lg="4"
-              v-for="product in products"
+              v-for="product in productsValues"
               :key="product.id"
             >
               <ProductItem
@@ -328,7 +328,7 @@
           <v-row class="mt-4" justify="center">
             <v-btn
               @click="loadMoreProducts"
-              v-if="products.length !== 0 && lastSeller"
+              v-if="productsValues.length !== 0 && lastSeller"
               class="black white--text"
               >Load more products</v-btn
             >
@@ -412,7 +412,7 @@
           class="text-center font-weight-bold mb-12"
           style="font-size: 15px;"
         >
-          Please rate {{ store.name }}
+          Please rate {{ store.storeName }}
         </div>
         <div class="d-flex flex-column">
           <div class="d-flex justify-center">
@@ -462,7 +462,7 @@ export default {
       filterProduct: 'All products',
       filterLoading: false,
       storeQ: null,
-      products: [],
+      products: {},
       sellersQ: {},
       editBanners: false,
       progressDialog: false,
@@ -491,7 +491,7 @@ export default {
         let doc = query.docs[i]
         this.$set(this.sellersQ, doc.id, doc.data())
       }
-      this.updateProducts()
+      this.updateProducts(query.docs)
       this.searchLoading = false
       this.filterLoading = false
       this.sortProductByLoading = false
@@ -499,6 +499,9 @@ export default {
   },
   computed: {
     ...mapState(['user', 'userInfo']),
+    productsValues() {
+      return this.getObjectValues(this.products)
+    },
     bannerSize() {
       if (this.$vuetify.breakpoint.mdAndUp) {
         return '420px'
@@ -523,7 +526,9 @@ export default {
       }
     },
     sellers() {
-      return new Map(Object.values(this.sellersQ).map((v) => [v.productID, v]))
+      return new Map(
+        this.getObjectValues(this.sellersQ).map((v) => [v.productID, v]),
+      )
     },
     getFBBanner() {
       let fb = this.store.banners.find((v) => v.type === 'facebook')
@@ -571,30 +576,45 @@ export default {
     },
   },
   methods: {
+    getObjectValues(object) {
+      let temp = []
+      for (const argumentsKey in object) {
+        temp.push(object[argumentsKey])
+      }
+      return temp
+    },
     rate() {
-      let batch = fb.db.batch()
-      batch.set(
-        fb.db
-          .collection('Users')
-          .doc(this.store.id)
-          .collection('StoreReviews')
-          .doc(this.user.uid),
-        {
-          review: this.ratingValue,
-        },
-      )
-      batch.update(fb.db.collection('Users').doc(this.store.id), {
-        revSum: fb.fb.firestore.FieldValue.increment(this.ratingValue),
-        revCount: fb.fb.firestore.FieldValue.increment(1),
-      })
-      batch.commit().then(() => {
-        Swal.fire(
-          `Thank you`,
-          `Your review for ${this.store.name} done`,
-          'success',
-        )
-        this.reviewDialog = false
-      })
+      fb.db
+        .runTransaction(async (transaction) => {
+          let store = await transaction.get(
+            fb.db.collection('Users').doc(this.store.id),
+          )
+          transaction.update(fb.db.collection('Users').doc(this.store.id), {
+            revSum: fb.fb.firestore.FieldValue.increment(this.ratingValue),
+            revCount: fb.fb.firestore.FieldValue.increment(1),
+            lastScore:
+              (store.data().revSum + this.ratingValue) /
+              (store.data().revCount + 1),
+          })
+          transaction.set(
+            fb.db
+              .collection('Users')
+              .doc(this.store.id)
+              .collection('StoreReviews')
+              .doc(this.user.uid),
+            {
+              review: this.ratingValue,
+            },
+          )
+        })
+        .then(() => {
+          Swal.fire(
+            `Thank you`,
+            `Your review for ${this.store.storeName} done`,
+            'success',
+          )
+          this.reviewDialog = false
+        })
     },
     rateClick() {
       if (!this.user) {
@@ -614,14 +634,21 @@ export default {
               .collection('StoreReviews')
               .doc(this.user.uid),
           )
-          if (!userReview.exists) {
+          let store = await transaction.get(
+            fb.db.collection('Users').doc(this.store.id),
+          )
+          if (!userReview.exists || !store.exists) {
             throw 'Document does not exist!'
           }
+          let score =
+            (store.data().revSum - userReview.data().review) /
+            (store.data().revCount - 1)
           transaction.update(fb.db.collection('Users').doc(this.store.id), {
             revSum: fb.fb.firestore.FieldValue.increment(
               -Math.abs(userReview.data().review),
             ),
             revCount: fb.fb.firestore.FieldValue.increment(-Math.abs(1)),
+            lastScore: isNaN(score) ? 0 : score,
           })
           transaction.delete(
             fb.db
@@ -641,18 +668,16 @@ export default {
         this.$router.push('/createStoreAccount')
       }
     },
-    async updateProducts() {
-      if (this.sellers.size !== 0) {
-        this.products = plainToClass(
-          Product,
-          await Helper.getDocumentsByID(
-            'Products',
-            Object.values(this.sellersQ).map((v) => v.productID),
-          ),
-        )
-      } else {
-        this.products = []
-      }
+    async updateProducts(docs) {
+      plainToClass(
+        Product,
+        await Helper.getDocumentsByID(
+          'Products',
+          docs.map((v) => v.data()).map((v) => v.productID),
+        ),
+      ).forEach((product) => {
+        this.$set(this.products, product.id, product)
+      })
     },
     loadMoreProducts() {
       this.searchQuery.startAfter(this.lastSeller).onSnapshot((query) => {
@@ -661,7 +686,7 @@ export default {
           let doc = query.docs[i]
           this.$set(this.sellersQ, doc.id, doc.data())
         }
-        this.updateProducts()
+        this.updateProducts(query.docs)
       })
     },
     openFacebookPage() {
@@ -763,7 +788,7 @@ export default {
           let doc = query.docs[i]
           this.$set(this.sellersQ, doc.id, doc.data())
         }
-        this.updateProducts()
+        this.updateProducts(query.docs)
         this.searchLoading = false
         this.filterLoading = false
         this.sortProductByLoading = false

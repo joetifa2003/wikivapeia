@@ -217,7 +217,7 @@
                       style="font-size: 16px;"
                     >
                       <h5 class="text-center linespaced">
-                        {{ store.name.toUpperCase() }}
+                        {{ store.storeName.toUpperCase() }}
                       </h5>
                     </v-card-title>
                   </v-card>
@@ -245,7 +245,7 @@
                       style="font-size: 16px;"
                     >
                       <h5 class="text-center linespaced">
-                        {{ store.name.toUpperCase() }}
+                        {{ store.storeName.toUpperCase() }}
                       </h5>
                     </v-card-title>
                   </v-card>

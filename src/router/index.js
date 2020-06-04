@@ -168,6 +168,11 @@ function checkAdmin(next) {
 router.beforeEach((to, from, next) => {
   const requireAdmin = to.matched.some((x) => x.meta.requireAdmin)
 
+  if (store.state.user && store.state.userInfo === 'Not found') {
+    store.state.user.delete()
+    next()
+  }
+
   if (requireAdmin) {
     checkAdmin(next)
   } else if (to.path === '/login' || to.path === '/signUp') {

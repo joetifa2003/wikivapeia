@@ -99,7 +99,11 @@ export default {
       this.newUser = result.additionalUserInfo.isNewUser
 
       if (this.newUser) {
-        await Swal.fire("You don't have an account", '', 'error')
+        await Swal.fire(
+          "You don't have an account, please sign up",
+          '',
+          'error',
+        )
         result.user.delete()
       } else {
         await Swal.fire('Logged in !', '', 'success')

@@ -13,7 +13,7 @@
         <v-col class="pa-0">
           <v-card-title>
             <div class="pre" style="font-size: 18px;">
-              {{ store.name }}
+              {{ store.storeName }}
             </div>
           </v-card-title>
           <v-card-subtitle
