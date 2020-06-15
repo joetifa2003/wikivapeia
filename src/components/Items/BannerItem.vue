@@ -17,7 +17,7 @@
           style="margin-bottom: 15px; font-size: 18px;"
           min-width="250px"
           @click.stop="$router.push(image.route)"
-          class="grey darken-4 white--text font-weight-bold"
+          class="red darken-4 white--text font-weight-bold"
           >{{ image.caption }}</v-btn
         >
       </div>
@@ -40,7 +40,7 @@
           style="margin-bottom: 15px; font-size: 18px;"
           min-width="250px"
           @click.stop="$router.push(image.route)"
-          class="grey darken-4 white--text font-weight-bold"
+          class="red darken-4 white--text font-weight-bold"
           >{{ image.caption }}</v-btn
         >
       </div>

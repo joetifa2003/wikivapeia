@@ -63,7 +63,7 @@
                   />
                 </v-btn>
               </template>
-              <span>Add to {{ userInfo.name }} product list</span>
+              <span>Add to {{ userInfo.storeName }} product list</span>
             </v-tooltip>
             <v-tooltip bottom v-else>
               <template v-slot:activator="{ on }">
@@ -82,7 +82,7 @@
                     src="~@/assets/removefstore.svg"
                 /></v-btn>
               </template>
-              <span>Remove from {{ userInfo.name }} product list</span>
+              <span>Remove from {{ userInfo.storeName }} product list</span>
             </v-tooltip>
           </template>
         </div>
@@ -431,7 +431,9 @@ export default {
           .doc(`${this.userInfo.username}-${this.product.id}`)
           .set({
             productID: this.product.id,
-            storeID: this.userInfo.username,
+            storeID: this.user.uid,
+            storeUsername: this.userInfo.username,
+            model: this.product.model,
             modelSRC: this.product.modelSRC,
             type: this.product.type,
             subType: this.product.subType,
@@ -439,6 +441,8 @@ export default {
             priceDis: '',
             hasDiscount: false,
             outOfStock: false,
+            country: this.userInfo.country,
+            regions: this.userInfo.branches.map((v) => v.region),
             date: new Date(),
           })
       } else {

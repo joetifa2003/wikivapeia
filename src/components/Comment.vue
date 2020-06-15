@@ -104,7 +104,10 @@ export default {
         fb.db.collection('Comments').add({
           userID: this.user.uid,
           productID: this.productID,
-          name: this.userInfo.name,
+          name:
+            this.userInfo.type === 'store'
+              ? this.userInfo.storeName
+              : this.userInfo.name,
           value: this.txt,
           replies: [],
           date: new Date(),

@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid fill-height class="grey lighten-3 pt-8">
+  <v-container class="white mt-12">
     <vue-headful
       v-if="Object.values(items).filter((v) => v.selected).length >= 1"
       :title="`WIKIVAPEIA - ${compTitle} ${
@@ -17,155 +17,143 @@
     <Share
       v-if="Object.values(this.items).filter((v) => v.selected).length > 1"
       :title="compTitle"
+      :bottom="true"
     />
-    <v-row justify="center">
-      <v-col cols="12" md="6" class="white px-5">
-        <v-row>
-          <v-col cols="8" md="4">
-            <v-combobox
-              :items="['Mod', 'Atomizer', 'Pod system']"
-              :rules="[(v) => !!v || 'Product type is required']"
-              clearable
-              label="Select product type"
-              v-model="selectedProduct"
-              outlined
-              dense
-              auto-select-first
-            />
-          </v-col>
-        </v-row>
-        <v-row style="flex-wrap: nowrap !important; overflow: auto;">
-          <v-col
-            cols="8"
-            md="4"
-            v-for="(product, pi) in Object.values(items)"
-            :key="pi"
-            class="d-flex flex-column px-3"
-          >
-            <v-autocomplete
-              v-model="product.selected"
-              :loading="product.loading"
-              :items="product.values"
-              :search-input.sync="product.search"
-              hide-no-data
-              hide-details
-              :label="pi === 0 ? 'Search' : 'Compare with'"
-              style="max-height: 40px !important;"
-              append-icon=""
-              dense
-              prepend-inner-icon="search"
-              clearable
-              item-text="model"
-              item-value="model"
-              return-object
-              outlined
-              class="grey lighten-3"
+    <v-row>
+      <v-col cols="8" md="4">
+        <v-combobox
+          :items="['Mod', 'Atomizer', 'Pod system']"
+          :rules="[(v) => !!v || 'Product type is required']"
+          clearable
+          label="Select product type"
+          v-model="selectedProduct"
+          outlined
+          dense
+          auto-select-first
+        />
+      </v-col>
+    </v-row>
+    <v-row style="flex-wrap: nowrap !important; overflow: auto;">
+      <v-col
+        cols="8"
+        md="4"
+        v-for="(product, pi) in Object.values(items)"
+        :key="pi"
+        class="d-flex flex-column px-3"
+      >
+        <v-autocomplete
+          v-model="product.selected"
+          :loading="product.loading"
+          :items="product.values"
+          :search-input.sync="product.search"
+          hide-no-data
+          hide-details
+          :label="pi === 0 ? 'Search' : 'Compare with'"
+          style="max-height: 40px !important;"
+          append-icon=""
+          dense
+          prepend-inner-icon="search"
+          clearable
+          item-text="model"
+          item-value="model"
+          return-object
+          outlined
+          class="grey lighten-3"
+        >
+          <template v-slot:item="{ parent, item }">
+            <v-list-item-avatar tile size="80">
+              <v-img
+                :src="item.images.filter((v) => v.type === 'product')[0].image"
+              />
+            </v-list-item-avatar>
+            <v-list-item-content style="width: 100px;">
+              <v-list-item-title
+                style="font-size: 15px;"
+                v-html="parent.genFilteredText(item.titleBuilder(false))"
+              >
+              </v-list-item-title>
+              <v-list-item-subtitle
+                v-html="item.getCompany"
+              ></v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
+        </v-autocomplete>
+        <template v-if="product.selected">
+          <v-hover v-slot:default="{ hover }">
+            <v-card
+              class="mt-3 pa-4"
+              style="flex: 1;"
+              :elevation="hover ? 6 : ''"
             >
-              <template v-slot:item="{ parent, item }">
-                <v-list-item-avatar tile size="80">
-                  <v-img
-                    :src="
-                      item.images.filter((v) => v.type === 'product')[0].image
-                    "
-                  />
-                </v-list-item-avatar>
-                <v-list-item-content style="width: 100px;">
-                  <v-list-item-title
-                    style="font-size: 15px;"
-                    v-html="parent.genFilteredText(item.titleBuilder(false))"
-                  >
-                  </v-list-item-title>
-                  <v-list-item-subtitle
-                    v-html="item.getCompany"
-                  ></v-list-item-subtitle>
-                </v-list-item-content>
-              </template>
-            </v-autocomplete>
-            <template v-if="product.selected">
-              <v-hover v-slot:default="{ hover }">
+              <v-img
+                class="mt-2"
+                contain
+                height="250px"
+                :src="
+                  product.selected.images
+                    ? product.selected.images.find((v) => v.type === 'product')
+                        .image
+                    : ''
+                "
+              />
+              <v-card-title
+                class="pre d-flex justify-center text-center pt-0 align-start grey lighten-3 mb-3 font-weight-bold pt-4"
+                style="font-size: 15px; min-height: 100px; max-height: 100px;"
+                >{{
+                  product.selected
+                    .titleBuilder(false)
+                    .split(' ')
+                    .slice(0, 6)
+                    .join(' ')
+                }}</v-card-title
+              >
+              <v-btn
+                style="width: 100%;"
+                class="white--text black"
+                @click.stop="$router.push(`/product/${product.selected.id}`)"
+                >More details</v-btn
+              >
+              <div class="mt-4 mb-2 ml-2">Specs</div>
+              <div class="black" style="width: 100%; height: 2px;" />
+              <div
+                style="overflow-x: hidden;"
+                class="scrollbar d-flex flex-column"
+                id="style-8"
+              >
                 <v-card
-                  class="mt-3 pa-4"
-                  style="flex: 1;"
-                  :elevation="hover ? 6 : ''"
+                  v-for="(spec, i) in product.selected.specs"
+                  :key="i"
+                  class="pa-0 mt-3 mb-1"
                 >
-                  <v-img
-                    class="mt-2"
-                    contain
-                    height="250px"
-                    :src="
-                      product.selected.images
-                        ? product.selected.images.find(
-                            (v) => v.type === 'product',
-                          ).image
-                        : ''
-                    "
-                  />
-                  <v-card-title
-                    class="pre d-flex justify-center text-center pt-0 align-start grey lighten-3 mb-3 font-weight-bold pt-4"
-                    style="
-                      font-size: 15px;
-                      min-height: 100px;
-                      max-height: 100px;
-                    "
-                    >{{
-                      product.selected
-                        .titleBuilder(false)
-                        .split(' ')
-                        .slice(0, 6)
-                        .join(' ')
-                    }}</v-card-title
-                  >
-                  <v-btn
-                    style="width: 100%;"
-                    class="white--text black"
-                    @click.stop="
-                      $router.push(`/product/${product.selected.id}`)
-                    "
-                    >More details</v-btn
-                  >
-                  <div class="mt-4 mb-2 ml-2">Specs</div>
-                  <div class="black" style="width: 100%; height: 2px;" />
-                  <div
-                    style="overflow-x: hidden;"
-                    class="scrollbar d-flex flex-column"
-                    id="style-8"
-                  >
-                    <v-card
-                      v-for="(spec, i) in product.selected.specs"
-                      :key="i"
-                      class="pa-0 mt-3 mb-1"
-                    >
-                      <div class="d-flex align-center grey mb-1 pl-2">
-                        <div style="font-size: 12px;" class="white--text">
-                          {{ spec.name }}
-                        </div>
-                      </div>
-                      <div class="d-flex flex-row font-weight-medium pl-2">
-                        <div
-                          style="font-size: 14px;"
-                          v-if="typeof spec.value === 'string'"
-                        >
-                          {{ spec.value ? spec.value : 'N/A' }}
-                        </div>
-                        <div v-else style="font-size: 14px;">
-                          {{ spec.value.join(', ') + spec.unit }}
-                        </div>
-                        <div
-                          style="font-size: 14px;"
-                          v-if="typeof spec.value === 'string'"
-                          class="ml-0"
-                        >
-                          {{ spec.unit }}
-                        </div>
-                      </div>
-                      <v-divider />
-                    </v-card>
+                  <div class="d-flex align-center grey mb-1 pl-2">
+                    <div style="font-size: 12px;" class="white--text">
+                      {{ spec.name }}
+                    </div>
                   </div>
+                  <div class="d-flex flex-row font-weight-medium pl-2">
+                    <div
+                      style="font-size: 14px;"
+                      v-if="typeof spec.value === 'string'"
+                    >
+                      {{ spec.value ? spec.value : 'N/A' }}
+                    </div>
+                    <div v-else style="font-size: 14px;">
+                      {{ spec.value.join(', ') + spec.unit }}
+                    </div>
+                    <div
+                      style="font-size: 14px;"
+                      v-if="typeof spec.value === 'string'"
+                      class="ml-0"
+                    >
+                      {{ spec.unit }}
+                    </div>
+                  </div>
+                  <v-divider />
                 </v-card>
-              </v-hover>
-            </template>
-          </v-col>
-        </v-row>
+              </div>
+            </v-card>
+          </v-hover>
+        </template>
       </v-col>
     </v-row>
   </v-container>

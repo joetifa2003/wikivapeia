@@ -147,7 +147,11 @@
             v-on="on"
           >
             <v-icon class="mr-2">account_circle</v-icon>
-            {{ userInfo.name.split(' ')[0] }}
+            {{
+              userInfo.type === 'store'
+                ? userInfo.storeName.split(' ')[0]
+                : userInfo.name.split(' ')[0]
+            }}
           </v-btn>
           <v-btn v-else color="primary" v-on="on">
             <v-icon class="mr-2">account_circle</v-icon> {{ 'Guest' }}
@@ -328,6 +332,15 @@
             ><v-icon class="mr-2">person</v-icon>Login</v-btn
           >
         </v-list-item>
+        <v-list-item>
+          <v-btn
+            style="font-size: 12px;"
+            @click="logout"
+            text
+            class="white--text"
+            ><v-icon class="mr-2">power_settings_new</v-icon>Logout</v-btn
+          >
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
   </div>
@@ -445,6 +458,6 @@ export default {
   }
 }
 .v-navigation-drawer {
-  z-index: 7 !important;
+  z-index: 8 !important;
 }
 </style>

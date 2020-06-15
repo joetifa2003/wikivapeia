@@ -113,7 +113,10 @@ export default {
             replies: fb.fb.firestore.FieldValue.arrayUnion({
               userID: this.user.uid,
               commentID: this.comment.id,
-              name: this.userInfo.name,
+              name:
+                this.userInfo.type === 'store'
+                  ? this.userInfo.storeName
+                  : this.userInfo.name,
               value: this.txt,
               replyTo: this.commentUtil.replyTo,
               quote: this.commentUtil.quote,

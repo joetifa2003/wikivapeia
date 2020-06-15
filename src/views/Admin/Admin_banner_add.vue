@@ -61,7 +61,7 @@
                       style="width: 100%;"
                       clearable
                       label="Route"
-                      :items="['/ranks', '/product']"
+                      :items="['/ranks', '/product', '/signup', '/stores']"
                     />
                   </v-col>
                   <v-col>

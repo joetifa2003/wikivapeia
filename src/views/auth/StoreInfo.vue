@@ -128,7 +128,7 @@
         <v-combobox
           v-model="busType"
           outlined
-          :rules="[(v) => !!v || 'Business type is required']"
+          :rules="[(v) => v.length > 0 || 'Business type is required']"
           label="Business type: "
           :items="[
             'Wholeseler',
@@ -572,7 +572,7 @@ export default {
     },
     regions() {
       var regionsForCountry = this.allRegions.filter(
-        (v) => v.countryName === this.selectedCountry,
+        (v) => v.country === this.selectedCountry,
       )[0]
       if (regionsForCountry) {
         return regionsForCountry.regions.map((v) => v.name)

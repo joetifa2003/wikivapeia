@@ -1,358 +1,340 @@
 <template>
-  <v-container
-    fill-height
-    fluid
-    class="align-start pa-2 justify-center pt-10 full grey lighten-3"
-  >
-    <v-row class="justify-center" style="width: 100%;">
-      <v-col cols="12" md="8" lg="6">
-        <v-card v-if="product" width="100%" elevation="0">
-          <Share :title="product.titleBuilder(true)" />
-          <vue-headful
-            :title="`WIKIVAPEIA - ${product.titleBuilder(true).toUpperCase()}`"
-            :image="
-              product.facebookImages[0]
-                ? product.facebookImages[0].image
-                : product.productImages[0].image
-            "
-          />
-          <v-col>
-            <div class="d-flex flex-row pa-3">
-              <div class="flex-grow-1">
-                <h1
-                  class="font-weight-medium"
-                  :style="{
-                    fontSize: $vuetify.breakpoint.smAndDown ? '20px' : '25px',
-                  }"
-                >
-                  {{ product.titleBuilder(false) }}
-                </h1>
+  <v-container class="align-start pa-0 justify-center pt-10 k">
+    <v-card v-if="product" width="100%" elevation="0">
+      <Share :bottom="true" :title="product.titleBuilder(true)" />
+      <vue-headful
+        :title="`WIKIVAPEIA - ${product.titleBuilder(true).toUpperCase()}`"
+        :image="
+          product.facebookImages[0]
+            ? product.facebookImages[0].image
+            : product.productImages[0].image
+        "
+      />
+      <v-col>
+        <div class="d-flex flex-row pa-3">
+          <div class="flex-grow-1">
+            <h1
+              class="font-weight-medium"
+              :style="{
+                fontSize: $vuetify.breakpoint.smAndDown ? '20px' : '25px',
+              }"
+            >
+              {{ product.titleBuilder(false) }}
+            </h1>
+            <div
+              class="pa-0 font-weight-medium grey--text lighten-2"
+              style="font-size: 15px;"
+            >
+              {{ product.company.toUpperCase() }}
+            </div>
+          </div>
+          <div v-if="pType">
+            <div
+              class="d-flex justify-end align-end ml-1"
+              style="height: 100%;"
+            >
+              <div
+                style="height: 85px; width: 85px;"
+                class="black white--text avgScore"
+              >
                 <div
-                  class="pa-0 font-weight-medium grey--text lighten-2"
-                  style="font-size: 15px;"
+                  class="white--text font-weight-bold text-center"
+                  style="font-size: 35px;"
                 >
-                  {{ product.company.toUpperCase() }}
+                  {{ overall.toFixed(2) }}
                 </div>
-              </div>
-              <div v-if="pType">
-                <div
-                  class="d-flex justify-end align-end ml-1"
-                  style="height: 100%;"
-                >
-                  <div
-                    style="height: 85px; width: 85px;"
-                    class="black white--text avgScore"
-                  >
-                    <div
-                      class="white--text font-weight-bold text-center"
-                      style="font-size: 35px;"
-                    >
-                      {{ overall.toFixed(2) }}
-                    </div>
-                    <div class="text-center" style="letter-spacing: 2px;">
-                      Score
-                    </div>
-                  </div>
+                <div class="text-center" style="letter-spacing: 2px;">
+                  Score
                 </div>
               </div>
             </div>
-            <div style="width: 100%; height: 2px;" class="black" />
-            <div class="mt-2 d-flex justify-center grey lighten-4 py-2">
-              <v-chip
-                v-for="(feature, i) in product.features"
+          </div>
+        </div>
+        <div style="width: 100%; height: 2px;" class="black" />
+        <div class="mt-2 d-flex justify-center grey lighten-4 py-2">
+          <v-chip
+            v-for="(feature, i) in product.features"
+            :key="i"
+            class="mr-2 font-weight-bold"
+            >{{ feature }}</v-chip
+          >
+        </div>
+        <v-row justify="center">
+          <v-col
+            cols="12"
+            md="6"
+            class="d-flex flex-column align-start justify-center"
+          >
+            <v-carousel
+              interval="4000"
+              height="350px"
+              cycle
+              hide-delimiter-background
+              show-arrows-on-hover
+            >
+              <v-carousel-item
+                v-for="(image, i) in product.productImages"
                 :key="i"
-                class="mr-2 font-weight-bold"
-                >{{ feature }}</v-chip
               >
-            </div>
-            <v-row justify="center">
-              <v-col
-                cols="12"
-                md="6"
-                class="d-flex flex-column align-start justify-center"
-              >
-                <v-carousel
-                  interval="4000"
-                  height="350px"
-                  cycle
-                  hide-delimiter-background
-                  show-arrows-on-hover
-                >
-                  <v-carousel-item
-                    v-for="(image, i) in product.productImages"
-                    :key="i"
-                  >
-                    <v-img
-                      contain
-                      width="100%"
-                      height="100%"
-                      :src="image.image"
-                    />
-                  </v-carousel-item>
-                </v-carousel>
-                <v-btn
-                  v-if="
-                    ['Atomizer', 'Mod', 'Pod system'].includes(product.type)
-                  "
-                  @click="
-                    $router.push({
-                      path: '/compare',
-                      query: {
-                        type: product.type.replace(/\s/g, '+'),
-                        product0: productID,
-                      },
-                    })
-                  "
-                  class="black darken-2 white--text mt-2"
-                  rounded
-                  small
-                  ><v-icon class="mr-2">compare_arrows</v-icon> Compare
-                  with</v-btn
-                >
-              </v-col>
-              <v-col v-if="pType" cols="12" md="6" class="d-flex flex-column">
-                <div class="pa-2 mb-1" v-for="(avg, i) in avgVotes" :key="i">
-                  <div class="d-flex flex-row justify-center align-center">
-                    <div
-                      style="width: 300px;"
-                      class="font-weight-bold black--text"
-                    >
-                      {{ avg.name }}
-                    </div>
-                    <v-progress-linear
-                      background-color="grey lighten-2"
-                      class="mr-5"
-                      :value="avg.value * 10"
-                      height="15"
-                    />
-                    {{ avg.value.toFixed(1) }}
-                  </div>
+                <v-img contain width="100%" height="100%" :src="image.image" />
+              </v-carousel-item>
+            </v-carousel>
+            <v-btn
+              v-if="['Atomizer', 'Mod', 'Pod system'].includes(product.type)"
+              @click="
+                $router.push({
+                  path: '/compare',
+                  query: {
+                    type: product.type.replace(/\s/g, '+'),
+                    product0: productID,
+                  },
+                })
+              "
+              class="black darken-2 white--text mt-2"
+              rounded
+              small
+              ><v-icon class="mr-2">compare_arrows</v-icon> Compare with</v-btn
+            >
+          </v-col>
+          <v-col v-if="pType" cols="12" md="6" class="d-flex flex-column">
+            <div class="pa-2 mb-1" v-for="(avg, i) in avgVotes" :key="i">
+              <div class="d-flex flex-row justify-center align-center">
+                <div style="width: 300px;" class="font-weight-bold black--text">
+                  {{ avg.name }}
                 </div>
-                <div class="mt-2">Share your experience now!</div>
-                <div class="d-flex flex-column">
-                  <div class="d-flex flex-column">
-                    <v-btn
-                      v-if="voted !== null"
-                      @click.stop="voteClick"
-                      style="background-color: rgb(110, 0, 0);"
-                      :class="['white--text']"
-                      >{{ voted ? 'Unvote' : 'Vote' }}</v-btn
-                    >
-                  </div>
-                  <div
-                    class="font-weight-medium black--text align-self-end mt-2"
-                    style="font-size: 14px;"
-                  >
-                    <v-icon color="black" class="mr-2">person</v-icon>
-                    {{ voteSum ? voteSum.votersCount : 0 }} Voted
-                  </div>
-                </div>
-              </v-col>
-              <v-col v-else cols="12" md="12" class="d-flex flex-column">
-                <v-subheader
-                  class="font-weight-bold pa-0"
-                  style="font-size: 18px;"
-                  >Description</v-subheader
-                >
-                <div
-                  style="width: 100%; height: 2px;"
-                  class="grey lighten-1 mb-3"
+                <v-progress-linear
+                  background-color="grey lighten-2"
+                  class="mr-5"
+                  :value="avg.value * 10"
+                  height="15"
                 />
-                <div
-                  class="content ql-editor text-justify"
-                  style="padding: 0 !important;"
+                {{ avg.value.toFixed(1) }}
+              </div>
+            </div>
+            <div class="mt-2">Share your experience now!</div>
+            <div class="d-flex flex-column">
+              <div class="d-flex flex-column">
+                <v-btn
+                  v-if="voted !== null"
+                  @click.stop="voteClick"
+                  style="background-color: rgb(110, 0, 0);"
+                  :class="['white--text']"
+                  >{{ voted ? 'Unvote' : 'Vote' }}</v-btn
                 >
-                  <div v-if="descReadMore" v-html="product.desc"></div>
-                  <div
-                    v-else
-                    v-html="
-                      product.desc.split(' ').slice(0, 25).join(' ') + '....'
-                    "
-                  ></div>
-                  <div class="d-flex justify-end">
-                    <v-btn
-                      v-if="product.desc.split(' ').length > 25"
-                      text
-                      @click.stop="descReadMore = !descReadMore"
-                      class="blue--text"
-                    >
-                      {{ descReadMore ? 'Read less' : 'Read more' }}
-                      <v-icon>
-                        {{
-                          descReadMore
-                            ? 'keyboard_arrow_up'
-                            : 'keyboard_arrow_down'
-                        }}
-                      </v-icon>
-                    </v-btn>
-                  </div>
-                </div>
-              </v-col>
-            </v-row>
+              </div>
+              <div
+                class="font-weight-medium black--text align-self-end mt-2"
+                style="font-size: 14px;"
+              >
+                <v-icon color="black" class="mr-2">person</v-icon>
+                {{ voteSum ? voteSum.votersCount : 0 }} Voted
+              </div>
+            </div>
+          </v-col>
+          <v-col v-else cols="12" md="12" class="d-flex flex-column">
             <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
-              >Where to buy ?</v-subheader
+              >Description</v-subheader
             >
             <div
               style="width: 100%; height: 2px;"
-              class="grey lighten-1 mb-1"
+              class="grey lighten-1 mb-3"
             />
-            <div v-if="stores.length > 4">
-              <hooper :settings="hooperOptions" style="height: auto;">
-                <slide
-                  class="d-flex justify-center"
-                  v-for="(store, i) in stores"
-                  :key="i"
-                  index="1"
+            <div
+              class="content ql-editor text-justify"
+              style="padding: 0 !important;"
+            >
+              <div v-if="descReadMore" v-html="product.desc"></div>
+              <div
+                v-else
+                v-html="product.desc.split(' ').slice(0, 25).join(' ') + '....'"
+              ></div>
+              <div class="d-flex justify-end">
+                <v-btn
+                  v-if="product.desc.split(' ').length > 25"
+                  text
+                  @click.stop="descReadMore = !descReadMore"
+                  class="blue--text"
                 >
-                  <v-card
-                    @click="$router.push(`/store/${store.username}`)"
-                    elevation="8"
-                    max-width="150px"
-                    class="my-5 grey lighten-4"
-                    height="212px"
-                  >
-                    <v-img :src="store.img" width="150px" height="150px" />
-                    <v-card-title
-                      class="pre d-flex justify-center"
-                      style="font-size: 16px;"
-                    >
-                      <h5 class="text-center linespaced">
-                        {{ store.storeName.toUpperCase() }}
-                      </h5>
-                    </v-card-title>
-                  </v-card>
-                </slide>
-                <hooper-navigation slot="hooper-addons"></hooper-navigation>
-              </hooper>
+                  {{ descReadMore ? 'Read less' : 'Read more' }}
+                  <v-icon>
+                    {{
+                      descReadMore ? 'keyboard_arrow_up' : 'keyboard_arrow_down'
+                    }}
+                  </v-icon>
+                </v-btn>
+              </div>
             </div>
-            <div v-else class="d-flex flex-row">
-              <v-row>
-                <v-col
-                  class="d-flex justify-center"
-                  v-for="store in stores"
-                  :key="store.id"
-                >
-                  <v-card
-                    @click="$router.push(`/store/${store.username}`)"
-                    elevation="8"
-                    max-width="150px"
-                    class="my-5"
-                    height="212px"
-                  >
-                    <v-img :src="store.img" width="150px" height="150px" />
-                    <v-card-title
-                      class="pre d-flex justify-center"
-                      style="font-size: 16px;"
-                    >
-                      <h5 class="text-center linespaced">
-                        {{ store.storeName.toUpperCase() }}
-                      </h5>
-                    </v-card-title>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </div>
-            <v-row v-if="pType">
-              <v-col>
-                <v-subheader
-                  class="font-weight-bold pa-0"
-                  style="font-size: 18px;"
-                  >Specifications</v-subheader
-                >
-                <div
-                  style="width: 100%; height: 2px;"
-                  class="grey lighten-1 mb-3"
-                />
-                <div
-                  style="
-                    max-height: 400px;
-                    overflow-y: auto;
-                    overflow-x: hidden;
-                  "
-                  class="scrollbar"
-                  id="style-8"
-                >
-                  <v-col v-for="(spec, i) in specs" :key="i" class="pa-0">
-                    <v-row>
-                      <v-col>
-                        <div class="d-flex align-center">
-                          <v-icon class="mr-2">{{ spec.icon }}</v-icon>
-                          <div class="font-weight-bold primary--text">
-                            {{ spec.name }}
-                          </div>
-                        </div>
-                      </v-col>
-                      <v-col>
-                        <div class="d-flex flex-row">
-                          <div v-if="typeof spec.value === 'string'">
-                            {{ spec.value }}
-                          </div>
-                          <div v-else>
-                            <ul>
-                              <li v-for="(x, i) in spec.value" :key="i">
-                                {{ x + spec.unit }}
-                              </li>
-                            </ul>
-                          </div>
-                          <div
-                            v-if="typeof spec.value === 'string'"
-                            class="ml-0"
-                          >
-                            {{ spec.unit }}
-                          </div>
-                        </div>
-                      </v-col>
-                    </v-row>
-                    <v-divider />
-                  </v-col>
-                </div>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-subheader
-                  class="font-weight-bold pa-0"
-                  style="font-size: 18px;"
-                  >Description</v-subheader
-                >
-                <div
-                  style="width: 100%; height: 2px;"
-                  class="grey lighten-1 mb-3"
-                />
-                <div
-                  class="content ql-editor text-justify"
-                  style="padding: 0 !important;"
-                >
-                  <div v-if="descReadMore" v-html="product.desc"></div>
-                  <div
-                    v-else
-                    v-html="
-                      product.desc.split(' ').slice(0, 100).join(' ') + '....'
-                    "
-                  ></div>
-                  <div class="d-flex justify-end">
-                    <v-btn
-                      v-if="product.desc.split(' ').length > 100"
-                      text
-                      @click.stop="descReadMore = !descReadMore"
-                      class="blue--text"
-                    >
-                      {{ descReadMore ? 'Read less' : 'Read more' }}
-                      <v-icon>
-                        {{
-                          descReadMore
-                            ? 'keyboard_arrow_up'
-                            : 'keyboard_arrow_down'
-                        }}
-                      </v-icon>
-                    </v-btn>
-                  </div>
-                </div>
-              </v-col>
-            </v-row>
-            <CommentSection :productIDD="productID" />
           </v-col>
-        </v-card>
+        </v-row>
+        <div class="d-flex flex-column flex-sm-row align-start">
+          <v-subheader
+            class="font-weight-bold pa-0 mr-5"
+            style="font-size: 18px;"
+            >Where to buy ?</v-subheader
+          >
+          <div class="d-flex mb-2">
+            <v-combobox
+              :items="countries"
+              v-model="selectedCountry"
+              label="Country"
+              class="mr-5"
+              hide-details
+              outlined
+              dense
+            />
+            <v-combobox
+              :items="regions"
+              v-model="selectedRegion"
+              label="Region"
+              hide-details
+              outlined
+              dense
+            />
+          </div>
+        </div>
+        <div style="width: 100%; height: 2px;" class="grey lighten-1 mb-1" />
+        <div v-if="stores.length > 4">
+          <hooper :settings="hooperOptions" style="height: auto;">
+            <slide
+              class="d-flex justify-center"
+              v-for="(store, i) in stores"
+              :key="i"
+              index="1"
+            >
+              <v-card
+                @click="$router.push(`/store/${store.username}`)"
+                elevation="8"
+                max-width="150px"
+                class="my-5 grey lighten-4"
+                height="212px"
+              >
+                <v-img :src="store.img" width="150px" height="150px" />
+                <v-card-title
+                  class="pre d-flex justify-center"
+                  style="font-size: 16px;"
+                >
+                  <h5 class="text-center linespaced">
+                    {{ store.storeName.toUpperCase() }}
+                  </h5>
+                </v-card-title>
+              </v-card>
+            </slide>
+            <hooper-navigation slot="hooper-addons"></hooper-navigation>
+          </hooper>
+        </div>
+        <div v-else class="d-flex flex-row">
+          <v-row>
+            <v-col
+              class="d-flex justify-center"
+              v-for="store in stores"
+              :key="store.id"
+            >
+              <v-card
+                @click="$router.push(`/store/${store.username}`)"
+                elevation="8"
+                max-width="150px"
+                class="my-5"
+                height="212px"
+              >
+                <v-img :src="store.img" width="150px" height="150px" />
+                <v-card-title
+                  class="pre d-flex justify-center"
+                  style="font-size: 16px;"
+                >
+                  <h5 class="text-center linespaced">
+                    {{ store.storeName.toUpperCase() }}
+                  </h5>
+                </v-card-title>
+              </v-card>
+            </v-col>
+          </v-row>
+        </div>
+        <v-row v-if="pType">
+          <v-col>
+            <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
+              >Specifications</v-subheader
+            >
+            <div
+              style="width: 100%; height: 2px;"
+              class="grey lighten-1 mb-3"
+            />
+            <div
+              style="max-height: 400px; overflow-y: auto; overflow-x: hidden;"
+              class="scrollbar"
+              id="style-8"
+            >
+              <v-col v-for="(spec, i) in specs" :key="i" class="pa-0">
+                <v-row>
+                  <v-col>
+                    <div class="d-flex align-center">
+                      <v-icon class="mr-2">{{ spec.icon }}</v-icon>
+                      <div class="font-weight-bold primary--text">
+                        {{ spec.name }}
+                      </div>
+                    </div>
+                  </v-col>
+                  <v-col>
+                    <div class="d-flex flex-row">
+                      <div v-if="typeof spec.value === 'string'">
+                        {{ spec.value }}
+                      </div>
+                      <div v-else>
+                        <ul>
+                          <li v-for="(x, i) in spec.value" :key="i">
+                            {{ x + spec.unit }}
+                          </li>
+                        </ul>
+                      </div>
+                      <div v-if="typeof spec.value === 'string'" class="ml-0">
+                        {{ spec.unit }}
+                      </div>
+                    </div>
+                  </v-col>
+                </v-row>
+                <v-divider />
+              </v-col>
+            </div>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-subheader class="font-weight-bold pa-0" style="font-size: 18px;"
+              >Description</v-subheader
+            >
+            <div
+              style="width: 100%; height: 2px;"
+              class="grey lighten-1 mb-3"
+            />
+            <div
+              class="content ql-editor text-justify"
+              style="padding: 0 !important;"
+            >
+              <div v-if="descReadMore" v-html="product.desc"></div>
+              <div
+                v-else
+                v-html="
+                  product.desc.split(' ').slice(0, 100).join(' ') + '....'
+                "
+              ></div>
+              <div class="d-flex justify-end">
+                <v-btn
+                  v-if="product.desc.split(' ').length > 100"
+                  text
+                  @click.stop="descReadMore = !descReadMore"
+                  class="blue--text"
+                >
+                  {{ descReadMore ? 'Read less' : 'Read more' }}
+                  <v-icon>
+                    {{
+                      descReadMore ? 'keyboard_arrow_up' : 'keyboard_arrow_down'
+                    }}
+                  </v-icon>
+                </v-btn>
+              </div>
+            </div>
+          </v-col>
+        </v-row>
+        <CommentSection :productIDD="productID" />
       </v-col>
-    </v-row>
+    </v-card>
     <v-dialog
       v-if="product"
       v-model="voteDialog"
@@ -404,6 +386,7 @@ import Product from '../classes/Product'
 import Store from '../classes/Store'
 import { Slide, Hooper, Navigation as HooperNavigation } from 'hooper'
 import 'hooper/dist/hooper.css'
+import Helper from '../classes/Helper'
 
 const fb = require('../firebaseConfig')
 
@@ -496,12 +479,30 @@ export default {
       commentsVis: 5,
       storesQ: [],
       sellers: [],
+      allRegions: [],
+      selectedCountry: '',
+      selectedRegion: '',
     }
   },
   activated() {
     this.$store.commit('activePage', 'Ranks')
   },
-  created() {
+  async created() {
+    let regions = await fetch(`${process.env.BASE_URL}regions.json`)
+    this.allRegions = JSON.parse(await regions.text())
+    let country
+    let region
+    if (this.userInfo) {
+      country = this.userInfo.country
+      region = this.userInfo.region
+    } else {
+      let data = await fetch('https://freegeoip.app/json/')
+      let location = await data.json()
+      country = location.country_name
+      region = location.city
+    }
+    this.selectedCountry = country
+    this.selectedRegion = region
     if (this.user) {
       this.$bind(
         'votedQ',
@@ -513,6 +514,19 @@ export default {
   },
   computed: {
     ...mapState(['user', 'userInfo']),
+    countries() {
+      return this.allRegions.map((v) => v.country)
+    },
+    regions() {
+      let countryRegions = this.allRegions.find(
+        (v) => v.country === this.selectedCountry,
+      )
+      if (countryRegions) {
+        return countryRegions.regions.map((v) => v.name)
+      } else {
+        return []
+      }
+    },
     pType() {
       return ['Atomizer', 'Mod', 'Pod system', 'E-Liquid'].includes(
         this.product.type,
@@ -536,9 +550,7 @@ export default {
     },
     /** @returns {Store[]} */
     stores() {
-      return plainToClass(Store, this.storesQ).filter(
-        (v) => v.region === 'Cairo',
-      )
+      return plainToClass(Store, this.storesQ)
     },
     votes() {
       if (this.product.type === 'Mod') {
@@ -563,35 +575,43 @@ export default {
     return {
       productQ: fb.db.collection('Products').doc(this.productID),
       voteSum: fb.db.collection('VoteSum').doc(this.productID),
-      sellers: fb.db
-        .collection('Sellers')
-        .where('productID', '==', this.productID),
     }
   },
   watch: {
+    selectedCountry: {
+      handler() {
+        this.$bind(
+          'sellers',
+          fb.db
+            .collection('Sellers')
+            .where('productID', '==', this.productID)
+            .where('country', '==', this.selectedCountry),
+          { reset: true },
+        )
+      },
+    },
+    selectedRegion: {
+      handler() {
+        this.$bind(
+          'sellers',
+          fb.db
+            .collection('Sellers')
+            .where('productID', '==', this.productID)
+            .where('country', '==', this.selectedCountry)
+            .where('regions', 'array-contains', this.selectedRegion),
+          { reset: true },
+        )
+      },
+    },
     sellers: {
       async handler() {
         if (this.sellers.length !== 0) {
-          let country
-          if (this.userInfo) {
-            country = this.userInfo.country
-          } else {
-            let data = await fetch('https://freegeoip.app/json/')
-            let location = await data.json()
-            country = location.country_name
-          }
-          this.$bind(
-            'storesQ',
-            fb.db
-              .collection('Users')
-              .where(
-                'username',
-                'in',
-                this.sellers.map((v) => v.storeID),
-              )
-              .where('country', '==', country),
-            { reset: false },
+          this.storesQ = await Helper.getDocumentsByID(
+            'Users',
+            this.sellers.map((v) => v.storeID),
           )
+        } else {
+          this.storesQ = []
         }
       },
     },

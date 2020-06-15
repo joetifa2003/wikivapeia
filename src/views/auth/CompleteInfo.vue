@@ -250,7 +250,7 @@ export default {
     ...mapState(['user']),
     regions() {
       var regionsForCountry = this.allRegions.filter(
-        (v) => v.countryName === this.selectedCountry,
+        (v) => v.country === this.selectedCountry,
       )[0]
       if (regionsForCountry) {
         return regionsForCountry.regions.map((v) => v.name)

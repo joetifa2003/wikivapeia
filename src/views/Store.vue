@@ -1,342 +1,399 @@
 <template>
-  <v-container
-    v-if="store"
-    fluid
-    fill-height
-    class="align-start pa-2 justify-center pt-10 full grey lighten-3"
-  >
-    <Share :title="store.storeName" />
-    <v-row justify="center" v-if="store">
-      <v-col cols="12" md="7" lg="7">
-        <v-card>
-          <vue-headful :title="`${store.storeName}`" :image="getFBBanner" />
-          <v-carousel
-            :cycle="store.slideshow"
-            hide-delimiters
-            interval="3000"
-            height="auto"
-            show-arrows-on-hover
-            style="max-height: 420px;"
+  <v-container v-if="store" class="align-start justify-center pa-0 pt-11">
+    <v-card>
+      <div style="position: fixed; bottom: 90px; right: 15px; z-index: 6;">
+        <v-card shaped class="pa-3" v-if="messengerMessege">
+          <div class="d-flex flex-row justify-end"></div>
+          <div
+            style="margin-left: 55px; font-size: 12px;"
+            class="d-flex flex-row justify-space-around align-center grey--text lighten-3"
           >
-            <v-overlay
-              @click.native="editBanners = true"
-              v-if="user && user.uid === store.id"
-              z-index="1"
-              absolute
+            {{ store.storeName }}
+            <v-btn
+              @click="messengerMessege = false"
+              class="ml-2"
+              style="background: none !important;"
+              fab
+              x-small
               color=""
+              elevation="0"
             >
-              <div
-                style="width: 100%; height: 100%;"
-                class="d-flex justify-end"
-              >
-                <v-btn
-                  color="red darken-4 ma-2"
-                  small
-                  @click="editBanners = true"
-                  ><v-icon class="mr-1">settings</v-icon>Settings</v-btn
+              <v-icon>close</v-icon>
+            </v-btn>
+          </div>
+          <div class="d-flex flex-row align-center">
+            <v-avatar>
+              <v-img width="50" height="50" :src="store.img"></v-img>
+            </v-avatar>
+            <v-chip class="ml-2 py-7"
+              >Hi! we are here to answer <br />
+              any questions you may have.</v-chip
+            >
+          </div>
+        </v-card>
+        <v-btn
+          large
+          fab
+          fixed
+          bottom
+          right
+          style="background: rgb(0, 132, 255);"
+        >
+          <font-awesome-icon
+            @click="openMessenger"
+            class="white--text"
+            style="width: 40px; height: 40px;"
+            :icon="['fab', 'facebook-messenger']"
+          />
+        </v-btn>
+      </div>
+      <vue-headful :title="`${store.storeName}`" :image="getFBBanner" />
+      <v-carousel
+        :cycle="store.slideshow"
+        hide-delimiters
+        interval="3000"
+        height="auto"
+        show-arrows-on-hover
+        style="max-height: 420px;"
+      >
+        <v-overlay
+          @click.native="
+            () => {
+              if (!store.banners || store.banners.length === 0) {
+                editBanners = true
+              }
+            }
+          "
+          z-index="1"
+          absolute
+          color=""
+          v-if="user && user.uid === store.id"
+        >
+          <div
+            style="width: 100%; height: 100%;"
+            class="d-flex justify-end align-content-space-around"
+          >
+            <v-btn color="red darken-4 ma-2" small @click="editBanners = true"
+              ><v-icon class="mr-1">settings</v-icon>Settings</v-btn
+            >
+          </div>
+        </v-overlay>
+        <v-carousel-item v-if="!store.banners || store.banners.length === 0">
+          <v-img
+            :height="bannerSize"
+            width="100%"
+            src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
+          />
+        </v-carousel-item>
+        <v-carousel-item
+          v-for="banner in store.banners.map((v) => v.image)"
+          :key="banner"
+        >
+          <v-img :height="bannerSize" width="100%" :src="banner"> </v-img>
+        </v-carousel-item>
+      </v-carousel>
+      <div
+        style="width: 100%; min-height: 36px;"
+        class="grey darken-4 d-flex justify-md-end justify-center"
+      >
+        <v-btn
+          v-if="!user || userInfo.type === 'personal'"
+          style="font-size: 12px !important; background: none;"
+          @click="createStore"
+          class="amber--text lighten-1 blink"
+          ><v-icon class="mr-2">storefront</v-icon>Create your free store
+          now!</v-btn
+        >
+      </div>
+      <v-row style="width: 100%; margin: 0;" class="px-4 black">
+        <v-col cols="12" class="px-0">
+          <div class="d-flex flex-row align-center" style="width: 100%;">
+            <v-img
+              class="mr-4 rounded-img"
+              :max-width="$vuetify.breakpoint.mdAndUp ? '100px' : '80'"
+              :max-height="$vuetify.breakpoint.mdAndUp ? '100px' : '80'"
+              :width="$vuetify.breakpoint.mdAndUp ? '100px' : '80'"
+              :height="$vuetify.breakpoint.mdAndUp ? '100px' : '80'"
+              aspect-ratio="1"
+              :src="store.img"
+            />
+            <div class="d-flex flex-column">
+              <div>
+                <h2 class="white--text" v-if="$vuetify.breakpoint.mdAndUp">
+                  {{ store.storeName }}
+                </h2>
+                <h3 class="white--text" v-else>{{ store.storeName }}</h3>
+                <div class="white--text mb-2 ml-1" style="font-size: 14px;">
+                  {{ store.busType.join(', ') }}
+                </div>
+                <div
+                  class="d-flex flex-row align-center white--text"
+                  style="font-size: 12px;"
                 >
-              </div>
-            </v-overlay>
-            <v-carousel-item
-              v-if="!store.banners || store.banners.length === 0"
-            >
-              <v-img
-                :height="bannerSize"
-                width="100%"
-                src="https://firebasestorage.googleapis.com/v0/b/wikivapia.appspot.com/o/Users%2FbannerBG.svg?alt=media&token=2f493834-b17e-4ee0-a2fd-446367e2e5b3"
-              />
-            </v-carousel-item>
-            <v-carousel-item
-              v-for="banner in store.banners.map((v) => v.image)"
-              :key="banner"
-            >
-              <v-img :height="bannerSize" width="100%" :src="banner" />
-            </v-carousel-item>
-          </v-carousel>
-          <v-row style="width: 100%; margin: 0;" class="px-4 grey darken-4">
-            <v-col cols="12" md="7" class="px-0">
-              <div class="d-flex flex-row align-center">
-                <v-img
-                  class="mr-4 rounded-img"
-                  :max-width="$vuetify.breakpoint.mdAndUp ? '100px' : '70'"
-                  :max-height="$vuetify.breakpoint.mdAndUp ? '100px' : '70'"
-                  aspect-ratio="1"
-                  :src="store.img"
-                />
-                <div class="d-flex flex-column">
-                  <div>
-                    <h2 class="white--text" v-if="$vuetify.breakpoint.mdAndUp">
-                      {{ store.storeName }}
-                    </h2>
-                    <h3 class="white--text" v-else>{{ store.storeName }}</h3>
-                    <v-rating
-                      class="mb-2 mt-n2"
-                      color="amber lighten-1"
-                      background-color="grey"
-                      :value="store.lastScore"
-                      dense
-                      size="18"
-                      readonly
-                      half-increments
-                    />
-                  </div>
-                  <div style="height: 100%;" class="d-flex align-end mt-n1">
-                    <v-btn
-                      v-if="userInfo && userInfo.type !== 'store'"
-                      @click="rateClick"
-                      class="grey white--text"
-                      text
-                      x-small
-                      style="float: right !important;"
-                      >{{ userReview ? 'Remove rating' : 'Rate now' }}</v-btn
-                    >
-                    <v-btn
-                      v-else-if="
-                        !user || (userInfo && userInfo.type !== 'store')
-                      "
-                      @click="rateClick"
-                      class="grey white--text"
-                      text
-                      x-small
-                      style="float: right !important;"
-                      >{{ userReview ? 'Remove rating' : 'Rate now' }}</v-btn
-                    >
+                  <v-rating
+                    class="mb-2 mt-n2"
+                    color="amber lighten-1"
+                    background-color="grey"
+                    :value="store.lastScore"
+                    dense
+                    size="18"
+                    readonly
+                    half-increments
+                  />
+                  <div class="mt-n4 ml-2">
+                    ({{ store.lastScore.toFixed(2) }} / 5)
                   </div>
                 </div>
               </div>
-            </v-col>
-          </v-row>
-          <v-row class="px-6">
-            <v-col cols="12" class="pb-0">
-              <v-expansion-panels
-                style="border: 1px solid grey;"
-                class="elevation-0"
-              >
-                <v-expansion-panel
-                  class="lighten-3"
-                  style="box-shadow: none !important;"
+              <div style="height: 100%;" class="d-flex align-end mt-n1">
+                <v-btn
+                  v-if="userInfo && userInfo.type !== 'store'"
+                  @click="rateClick"
+                  class="grey white--text"
+                  text
+                  x-small
+                  style="float: right !important;"
+                  >{{ userReview ? 'Remove rating' : 'Rate now' }}</v-btn
                 >
-                  <v-expansion-panel-header
-                    class="py-0"
-                    style="height: 20px !important;"
+                <v-btn
+                  v-else-if="!user || (userInfo && userInfo.type !== 'store')"
+                  @click="rateClick"
+                  class="grey white--text"
+                  text
+                  x-small
+                  style="float: right !important;"
+                  >{{ userReview ? 'Remove rating' : 'Rate now' }}</v-btn
+                >
+              </div>
+            </div>
+            <div
+              class="d-flex flex-column justify-end align-end align-self-end"
+              style="flex: 1; height: 100%;"
+            >
+              <div class="d-flex flex-column align-start">
+                <Share dir="bottom" :title="store.storeName" :bottom="false" />
+                <div class="white--text" style="font-size: 12px;">
+                  Share store
+                </div>
+              </div>
+            </div>
+          </div>
+        </v-col>
+      </v-row>
+      <v-row class="px-6">
+        <v-col cols="12" class="pb-0">
+          <v-expansion-panels
+            style="border: 1px solid grey;"
+            class="elevation-0"
+          >
+            <v-expansion-panel
+              class="lighten-3"
+              style="box-shadow: none !important;"
+            >
+              <v-expansion-panel-header
+                class="py-0"
+                style="height: 20px !important;"
+              >
+                <div
+                  class="d-flex flex-row align-center font-weight-bold black--text"
+                >
+                  <v-icon size="30" class="d-inline mr-3 black--text"
+                    >contact_phone</v-icon
                   >
-                    <div
-                      class="d-flex flex-row align-center font-weight-bold black--text"
-                    >
-                      <v-icon size="30" class="d-inline mr-3 black--text"
-                        >contact_phone</v-icon
-                      >
-                      Contact with {{ store.storeName }}
-                    </div></v-expansion-panel-header
-                  >
-                  <v-expansion-panel-content class="px-0">
-                    <v-list>
-                      <v-tooltip top>
-                        <template v-slot:activator="{ on }">
-                          <v-btn v-on="on" icon large>
-                            <v-icon @click="openWebsite" class="black--text"
-                              >public</v-icon
-                            >
-                          </v-btn>
-                        </template>
-                        <span>Goto {{ store.webUrl }}</span>
-                      </v-tooltip>
-                      <v-tooltip top>
-                        <template v-slot:activator="{ on }">
-                          <v-btn v-on="on" icon large>
-                            <font-awesome-icon
-                              @click="openFacebookPage"
-                              style="width: 30px; height: 30px;"
-                              class="black--text"
-                              :icon="['fab', 'facebook-square']"
-                            />
-                          </v-btn>
-                        </template>
-                        <span>Goto {{ store.storeName }} facebook page</span>
-                      </v-tooltip>
-                      <v-tooltip top>
-                        <template v-slot:activator="{ on }">
-                          <v-btn icon large>
-                            <v-btn v-on="on" icon large class="">
-                              <font-awesome-icon
-                                @click="openMessenger"
-                                class="black--text"
-                                style="width: 30px; height: 30px;"
-                                :icon="['fab', 'facebook-messenger']"
-                              />
-                            </v-btn>
-                          </v-btn>
-                        </template>
-                        <span>Chat with {{ store.storeName }}</span>
-                      </v-tooltip>
-                      <v-subheader class="font-weight-bold"
-                        >About {{ store.storeName }}</v-subheader
-                      >
-                      <v-list-item class="mb-3 black--text">
-                        <div class="text-justify">
-                          {{ store.about }}
-                        </div>
-                      </v-list-item>
-                      <v-list-item
-                        ><div
-                          class="black"
-                          style="height: 1px; width: 100%;"
-                        ></div
-                      ></v-list-item>
-                      <v-list-item
-                        v-for="(branch, i) in store.branches"
-                        :key="i"
-                      >
-                        <v-card
-                          style="width: 100%;"
-                          class="pa-5 mb-3"
-                          elevation="5"
+                  Contact with {{ store.storeName }}
+                </div></v-expansion-panel-header
+              >
+              <v-expansion-panel-content class="px-0">
+                <v-list>
+                  <v-tooltip top>
+                    <template v-slot:activator="{ on }">
+                      <v-btn v-on="on" icon large>
+                        <v-icon @click="openWebsite" class="black--text"
+                          >public</v-icon
                         >
-                          <h3 class="mb-2">
-                            {{ branch.area }} - {{ branch.region }}
-                          </h3>
-                          <div style="width: 100%; height: 1px;" class="grey" />
-                          <v-subheader class="pa-0">Address</v-subheader>
-                          <div class="mt-n2">
-                            {{ branch.address }}
-                          </div>
-                          <v-subheader class="pa-0">Phone numbers</v-subheader>
-                          <div class="mt-n2">
-                            <div v-for="(number, i) in branch.numbers" :key="i">
-                              <div class="d-flex flex-row mb-2">
-                                <font-awesome-icon
-                                  v-if="number.isWhatsApp"
-                                  class="green--text darken-3 mr-2"
-                                  :icon="['fab', 'whatsapp-square']"
-                                  style="width: 20px; height: 20px;"
-                                />
-                                <v-icon v-else size="20px" class="mr-2"
-                                  >call</v-icon
-                                >
-                                <div>
-                                  {{
-                                    store.countryCode + parseInt(number.number)
-                                  }}
-                                </div>
-                              </div>
+                      </v-btn>
+                    </template>
+                    <span>Goto {{ store.webUrl }}</span>
+                  </v-tooltip>
+                  <v-tooltip top>
+                    <template v-slot:activator="{ on }">
+                      <v-btn v-on="on" icon large>
+                        <font-awesome-icon
+                          @click="openFacebookPage"
+                          style="width: 30px; height: 30px;"
+                          class="black--text"
+                          :icon="['fab', 'facebook-square']"
+                        />
+                      </v-btn>
+                    </template>
+                    <span>Goto {{ store.storeName }} facebook page</span>
+                  </v-tooltip>
+                  <v-tooltip top>
+                    <template v-slot:activator="{ on }">
+                      <v-btn icon large>
+                        <v-btn v-on="on" icon large class="">
+                          <font-awesome-icon
+                            @click="openMessenger"
+                            class="black--text"
+                            style="width: 30px; height: 30px;"
+                            :icon="['fab', 'facebook-messenger']"
+                          />
+                        </v-btn>
+                      </v-btn>
+                    </template>
+                    <span>Chat with {{ store.storeName }}</span>
+                  </v-tooltip>
+                  <v-subheader class="font-weight-bold"
+                    >About {{ store.storeName }}</v-subheader
+                  >
+                  <v-list-item class="mb-3 black--text">
+                    <div class="text-justify">
+                      {{ store.about }}
+                    </div>
+                  </v-list-item>
+                  <v-list-item
+                    ><div class="black" style="height: 1px; width: 100%;"></div
+                  ></v-list-item>
+                  <v-list-item v-for="(branch, i) in store.branches" :key="i">
+                    <v-card
+                      style="width: 100%;"
+                      class="pa-5 mb-3"
+                      elevation="5"
+                    >
+                      <h3 class="mb-2">
+                        {{ branch.area }} - {{ branch.region }}
+                      </h3>
+                      <div style="width: 100%; height: 1px;" class="grey" />
+                      <v-subheader class="pa-0">Address</v-subheader>
+                      <div class="mt-n2">
+                        {{ branch.address }}
+                      </div>
+                      <v-subheader class="pa-0">Phone numbers</v-subheader>
+                      <div class="mt-n2">
+                        <div v-for="(number, i) in branch.numbers" :key="i">
+                          <div class="d-flex flex-row mb-2">
+                            <font-awesome-icon
+                              v-if="number.isWhatsApp"
+                              class="green--text darken-3 mr-2"
+                              :icon="['fab', 'whatsapp-square']"
+                              style="width: 20px; height: 20px;"
+                            />
+                            <v-icon v-else size="20px" class="mr-2"
+                              >call</v-icon
+                            >
+                            <div>
+                              {{ store.countryCode + parseInt(number.number) }}
                             </div>
                           </div>
-                        </v-card>
-                      </v-list-item>
-                    </v-list>
-                  </v-expansion-panel-content>
-                </v-expansion-panel>
-              </v-expansion-panels>
-            </v-col>
-          </v-row>
-          <v-row class="px-6">
-            <v-col cols="12" md="4" class="pb-0">
-              <div style="height: 100%;" class="d-flex">
-                <v-text-field
-                  prepend-inner-icon="search"
-                  hide-details
-                  outlined
-                  clearable
-                  :loading="searchLoading"
-                  :label="`Search in ${store.storeName}`"
-                  v-model="txtSearch"
-                  dense
-                />
-              </div>
-            </v-col>
-            <v-col cols="12" md="4" class="pb-0">
-              <v-combobox
-                v-model="filterProduct"
-                dense
-                outlined
-                hide-details
-                :loading="filterLoading"
-                label="Product type"
-                :items="[
-                  'All products',
-                  'Mod',
-                  'Starter kit',
-                  'Atomizer',
-                  'Pod system',
-                  'E-Liquid',
-                  'Coils & Cartridges',
-                  'Batteries & Chargers',
-                  'Vape accessories',
-                ]"
-              />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-combobox
-                dense
-                outlined
-                hide-details
-                label="Sort by"
-                :loading="sortProductByLoading"
-                v-model="sortProductBy"
-                :items="[
-                  'None',
-                  'Model A-Z',
-                  'Model Z-A',
-                  'Price High-Low',
-                  'Price Low-High',
-                ]"
-              />
-            </v-col>
-          </v-row>
-          <div class="grey mb-4" style="width: 100%; height: 1px;"></div>
-          <template v-if="!user || userInfo.type === 'personal'">
-            <div
-              v-if="$vuetify.breakpoint.mdAndUp"
-              style="position: fixed; bottom: 15px; left: 15px;"
-            >
-              <v-btn
-                style="background-color: rgba(110, 0, 0, 1);"
-                @click="createStore"
-                class="white--text"
-                ><v-icon class="mr-2">storefront</v-icon>Create your store
-                now!</v-btn
-              >
-            </div>
-            <div v-else class="mb-2 d-flex justify-center">
-              <v-btn
-                style="width: 80%; background-color: rgba(110, 0, 0, 1);"
-                @click="createStore"
-                class="white--text"
-                ><v-icon class="mr-2">storefront</v-icon>Create your store
-                now!</v-btn
-              >
-            </div>
-          </template>
-          <v-row class="px-5">
-            <v-col
-              cols="12"
-              sm="6"
-              lg="4"
-              v-for="product in productsValues"
-              :key="product.id"
-            >
-              <ProductItem
-                :product="product"
-                :storeUsername="store.username"
-                :storeCurrency="store.currency"
-                page="store"
-                :score="false"
-                :seller="sellers.get(product.id)"
-              />
-            </v-col>
-          </v-row>
-          <v-row class="mt-4" justify="center">
-            <v-btn
-              @click="loadMoreProducts"
-              v-if="productsValues.length !== 0 && lastSeller"
-              class="black white--text"
-              >Load more products</v-btn
-            >
-          </v-row>
-          <CommentSection :productIDD="store.id" />
-        </v-card>
-      </v-col>
-    </v-row>
+                        </div>
+                      </div>
+                    </v-card>
+                  </v-list-item>
+                </v-list>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-col>
+      </v-row>
+      <v-row class="px-6">
+        <v-col cols="12" md="4" class="pb-0">
+          <div style="height: 100%;" class="d-flex">
+            <v-text-field
+              prepend-inner-icon="search"
+              hide-details
+              outlined
+              clearable
+              :loading="searchLoading"
+              :label="`Search in ${store.storeName}`"
+              v-model="txtSearch"
+              dense
+            />
+          </div>
+        </v-col>
+        <v-col cols="12" md="4" class="pb-0">
+          <v-combobox
+            v-model="filterProduct"
+            dense
+            outlined
+            hide-details
+            :loading="filterLoading"
+            label="Product type"
+            :items="[
+              'All products',
+              'Mod',
+              'Starter kit',
+              'Atomizer',
+              'Pod system',
+              'E-Liquid',
+              'Coils & Cartridges',
+              'Batteries & Chargers',
+              'Vape accessories',
+            ]"
+          />
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-combobox
+            dense
+            outlined
+            hide-details
+            label="Sort by"
+            :loading="sortProductByLoading"
+            v-model="sortProductBy"
+            :items="[
+              'None',
+              'Model A-Z',
+              'Model Z-A',
+              'Price High-Low',
+              'Price Low-High',
+            ]"
+          />
+        </v-col>
+      </v-row>
+      <div class="grey mb-4" style="width: 100%; height: 1px;"></div>
+      <template v-if="productsValues.length !== 0">
+        <v-row class="px-5">
+          <v-col
+            cols="12"
+            sm="6"
+            lg="4"
+            v-for="product in productsValues"
+            :key="product.id"
+          >
+            <ProductItem
+              :product="product"
+              :storeUsername="store.username"
+              :storeCurrency="store.currency"
+              page="store"
+              :score="false"
+              :seller="sellers.get(product.id)"
+            />
+          </v-col>
+        </v-row>
+        <v-row class="mt-4" justify="center">
+          <v-btn
+            @click="loadMoreProducts"
+            v-if="productsValues.length !== 0 && lastSeller"
+            class="black white--text"
+            >Load more products</v-btn
+          >
+        </v-row>
+      </template>
+      <template v-else-if="user && user.uid === store.id">
+        <div class="text-center">
+          <h1 class="black--text mb-2" style="font-size: 25px;">
+            Congratulations {{ store.name.split(' ')[0] }},<br
+              v-if="$vuetify.breakpoint.smAndDown"
+            />
+            Welcome to your store.
+          </h1>
+          <h2 class="mb-2">Add your products now!</h2>
+          <v-btn @click="$router.push('/ranks')" class="black white--text"
+            ><div class="blink">Add products</div></v-btn
+          >
+        </div>
+      </template>
+      <CommentSection :productIDD="store.id" />
+    </v-card>
     <v-dialog
       :width="$vuetify.breakpoint.mdAndUp ? '20%' : '100%'"
       v-model="editBanners"
@@ -474,6 +531,7 @@ export default {
       ratingValue: 1,
       reviewDialog: false,
       userReview: null,
+      messengerMessege: true,
     }
   },
   firestore() {
@@ -487,11 +545,15 @@ export default {
   created() {
     this.searchQuery.onSnapshot((query) => {
       this.lastSeller = query.docs[query.docs.length - 1]
-      for (let i = 0; i < query.docs.length; i++) {
-        let doc = query.docs[i]
-        this.$set(this.sellersQ, doc.id, doc.data())
+      for (let i = 0; i < query.docChanges().length; i++) {
+        let change = query.docChanges()[i]
+        if (change.type === 'removed') {
+          this.$delete(this.sellersQ, change.doc.id)
+        } else {
+          this.$set(this.sellersQ, change.doc.id, change.doc.data())
+        }
       }
-      this.updateProducts(query.docs)
+      this.updateProducts(query.docChanges())
       this.searchLoading = false
       this.filterLoading = false
       this.sortProductByLoading = false
@@ -508,7 +570,7 @@ export default {
       } else if (this.$vuetify.breakpoint.sm) {
         return '300px'
       } else {
-        return '144px'
+        return '300px'
       }
     },
     /** @returns {Store} */
@@ -541,7 +603,7 @@ export default {
     searchQuery() {
       let query = fb.db
         .collection('Sellers')
-        .where('storeID', '==', this.username)
+        .where('storeUsername', '==', this.username)
         .limit(9)
       if (this.txtSearch) {
         query = query.where(
@@ -668,25 +730,37 @@ export default {
         this.$router.push('/createStoreAccount')
       }
     },
-    async updateProducts(docs) {
+    async updateProducts(changes) {
       plainToClass(
         Product,
         await Helper.getDocumentsByID(
           'Products',
-          docs.map((v) => v.data()).map((v) => v.productID),
+          changes
+            .filter((v) => v.type !== 'removed')
+            .map((v) => v.doc.data())
+            .map((v) => v.productID),
         ),
       ).forEach((product) => {
         this.$set(this.products, product.id, product)
       })
+      changes
+        .filter((v) => v.type === 'removed')
+        .forEach((change) => {
+          this.$delete(this.products, change.doc.data().productID)
+        })
     },
     loadMoreProducts() {
       this.searchQuery.startAfter(this.lastSeller).onSnapshot((query) => {
         this.lastSeller = query.docs[query.docs.length - 1]
-        for (let i = 0; i < query.docs.length; i++) {
-          let doc = query.docs[i]
-          this.$set(this.sellersQ, doc.id, doc.data())
+        for (let i = 0; i < query.docChanges().length; i++) {
+          let change = query.docChanges()[i]
+          if (change.type === 'removed') {
+            this.$delete(this.sellersQ, change.doc.id)
+          } else {
+            this.$set(this.sellersQ, change.doc.id, change.doc.data())
+          }
         }
-        this.updateProducts(query.docs)
+        this.updateProducts(query.docChanges())
       })
     },
     openFacebookPage() {
@@ -784,11 +858,16 @@ export default {
       this.searchQuery.get().then((query) => {
         this.lastSeller = query.docs[query.docs.length - 1]
         this.sellersQ = {}
-        for (let i = 0; i < query.docs.length; i++) {
-          let doc = query.docs[i]
-          this.$set(this.sellersQ, doc.id, doc.data())
+        this.products = {}
+        for (let i = 0; i < query.docChanges().length; i++) {
+          let change = query.docChanges()[i]
+          if (change.type === 'removed') {
+            this.$delete(this.sellersQ, change.doc.id)
+          } else {
+            this.$set(this.sellersQ, change.doc.id, change.doc.data())
+          }
         }
-        this.updateProducts(query.docs)
+        this.updateProducts(query.docChanges())
         this.searchLoading = false
         this.filterLoading = false
         this.sortProductByLoading = false

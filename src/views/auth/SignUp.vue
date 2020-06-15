@@ -4,24 +4,97 @@
       <v-row style="width: 100%;" justify="center" align="center">
         <v-col cols="12" md="6">
           <v-stepper v-model="e1">
-            <v-stepper-header>
+            <v-stepper-header style="flex-wrap: nowrap !important;">
               <v-stepper-step :complete="e1 > 1" step="1"
+                >Choose account type</v-stepper-step
+              >
+              <v-divider></v-divider>
+              <v-stepper-step :complete="e1 > 2" step="2"
                 >Sign up</v-stepper-step
               >
-
               <v-divider></v-divider>
-
-              <v-stepper-step :complete="e1 > 2" step="2"
+              <v-stepper-step :complete="e1 > 3" step="3"
                 >Complete info</v-stepper-step
               >
-
-              <v-divider></v-divider>
-
-              <v-stepper-step step="3">Vertify email</v-stepper-step>
+              <v-divider />
+              <v-stepper-step step="4">Vertify email</v-stepper-step>
             </v-stepper-header>
-
             <v-stepper-items>
               <v-stepper-content step="1">
+                <v-card>
+                  <v-list class="text-center">
+                    <v-list-item
+                      @click="
+                        () => {
+                          e1 = 2
+                          accountType = 0
+                        }
+                      "
+                    >
+                      <v-list-item-content>
+                        <v-card class="pa-3">
+                          <div class="d-flex flex-column align-center">
+                            <img
+                              height="200px"
+                              width="200px"
+                              src="~@/assets/accountTypes/icon_person.svg"
+                            />
+                            <div
+                              style="font-size: 25px;"
+                              class="font-weight-bold"
+                            >
+                              Personal
+                            </div>
+                          </div>
+                        </v-card>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <div class="mt-1 font-weight-bold">
+                      OR
+                    </div>
+                    <v-list-item
+                      @click="
+                        () => {
+                          e1 = 2
+                          accountType = 1
+                        }
+                      "
+                    >
+                      <v-list-item-content>
+                        <v-card class="pa-3">
+                          <div class="d-flex flex-column align-center">
+                            <img
+                              height="200px"
+                              width="200px"
+                              src="~@/assets/accountTypes/icon_store.svg"
+                            />
+                            <div
+                              style="font-size: 25px;"
+                              class="font-weight-bold"
+                            >
+                              Create a vape store
+                            </div>
+                            <div class="text-justify mt-5">
+                              <span class="font-weight-bold"
+                                >Start your business now!</span
+                              >
+                              <br />
+                              Create a free online vape store within a large
+                              community of vapors around the world on Wikivapeia
+                              and save your time, effort and money. You will
+                              have many features like Adding products, prices,
+                              and get feedback from users And they can visit
+                              your website, facebook page, or contact with you
+                              through facebook messenger
+                            </div>
+                          </div>
+                        </v-card>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-stepper-content>
+              <v-stepper-content step="2">
                 <v-card elevation="20" width="100%">
                   <v-col>
                     <div class="d-flex justify-center align-center">
@@ -39,47 +112,6 @@
                       Sign up for full features
                     </div>
                     <v-form v-model="validSignUp">
-                      <div class="d-flex">
-                        <div class="d-inline">Account type:</div>
-                        <v-radio-group
-                          v-model="accountType"
-                          row
-                          class="ma-0 ml-3"
-                        >
-                          <v-radio :disabled="personalDis" label="Personal" />
-                          <div class="d-flex align-center">
-                            <v-radio class="ma-0" label="Business" />
-                            <v-tooltip
-                              content-class="text-justify"
-                              fixed
-                              right
-                              max-width="200"
-                            >
-                              <template v-slot:activator="{ on }">
-                                <v-btn
-                                  class="ml-3"
-                                  width="20px"
-                                  height="20px"
-                                  icon
-                                  v-on="on"
-                                >
-                                  <font-awesome-icon
-                                    icon="info-circle"
-                                    style="height: 20px; width: 20px;"
-                                    class="mr-3"
-                                  />
-                                </v-btn>
-                              </template>
-                              <span
-                                >Business account gives you additional features.
-                                Your company is listed on the product page under
-                                "Where to buy" list. And you can create your own
-                                virtual store through wikivapeia.com</span
-                              >
-                            </v-tooltip>
-                          </div>
-                        </v-radio-group>
-                      </div>
                       <v-text-field
                         :rules="[
                           (v) => !!v || 'Email is required',
@@ -123,8 +155,8 @@
                 </v-card>
               </v-stepper-content>
 
-              <v-stepper-content step="2" class="pa-0">
-                <div v-if="e1 === 2">
+              <v-stepper-content step="3" class="pa-0">
+                <div v-if="e1 === 3">
                   <CompleteInfo
                     @vertify="vertifyEmail"
                     v-if="accountType === 0"
@@ -133,8 +165,8 @@
                 </div>
               </v-stepper-content>
 
-              <v-stepper-content step="3">
-                <v-card v-if="e1 === 3" width="100%" height="100%">
+              <v-stepper-content step="4">
+                <v-card v-if="e1 === 4" width="100%" height="100%">
                   <div class="d-flex justify-center align-center">
                     <div style="width: 80px; height: 80px;">
                       <v-img
@@ -201,7 +233,7 @@ export default {
   methods: {
     vertifyEmail(email) {
       this.email = email
-      this.e1 = 3
+      this.e1 = 4
     },
     later() {
       this.l_show = false
@@ -214,7 +246,7 @@ export default {
             this.txtEmail,
             this.txtPassword,
           )
-          this.e1 = 2
+          this.e1 = 3
         } catch (error) {
           if (error.code === 'auth/email-already-in-use') {
             await Swal.fire('Email already signed up', error.message, 'warning')
@@ -233,7 +265,7 @@ export default {
         this.newUser = result.additionalUserInfo.isNewUser
 
         if (this.newUser) {
-          this.e1 = 2
+          this.e1 = 3
         } else {
           await Swal.fire('Logged in !', '', 'success')
           this.$router.push('/')

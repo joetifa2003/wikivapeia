@@ -101,7 +101,7 @@
           v-show="commentsUtil[comment.id].showReplyBox"
           :comment="comment"
           :commentUtil="commentsUtil[comment.id]"
-          @clear="clearUtils"
+          @clear="clearUtils(comment)"
         />
       </div>
       <v-divider />

@@ -6,96 +6,90 @@
       subtitle="Ranking for mods and automizers, From people for people"
       height="70vh"
     />
-    <v-container fluid>
-      <div class="page d-flex align-start justify-center">
-        <v-row justify="center" style="width: 100%;">
-          <v-col cols="12" lg="7">
-            <v-text-field
-              prepend-inner-icon="search"
-              hide-details
-              outlined
-              clearable
-              :loading="searchLoading"
-              label="Search"
-              v-model="txtSearch"
-              dense
-            />
-            <v-row>
-              <v-col>
-                <v-combobox
-                  v-model="filterProduct"
-                  dense
-                  outlined
-                  hide-details
-                  :loading="filterLoading"
-                  label="Product type"
-                  clearable
-                  :items="[
-                    'All products',
-                    'Mod',
-                    'Starter kit',
-                    'Atomizer',
-                    'Pod system',
-                    'E-Liquid',
-                    'Coils & Cartridges',
-                    'Batteries & Chargers',
-                    'Vape accessories',
-                  ]"
-                />
-              </v-col>
-              <v-col>
-                <v-combobox
-                  v-model="subFilterProduct"
-                  dense
-                  outlined
-                  hide-details
-                  :loading="subFilterLoading"
-                  label="Product subtype"
-                  clearable
-                  :disabled="
-                    !(
-                      typeSubTypes[filterProduct] &&
-                      typeSubTypes[filterProduct].length > 0
-                    )
-                  "
-                  :items="typeSubTypes[filterProduct]"
-                />
-              </v-col>
-            </v-row>
-            <v-combobox
-              dense
-              outlined
-              hide-details
-              label="Sort by"
-              clearable
-              :loading="sortProductByLoading"
-              v-model="sortProductBy"
-              :items="['None', 'Brand', 'Model A-Z', 'Model Z-A', 'Score']"
-            />
-            <ProductRequest class="mt-2" />
-            <v-row>
-              <v-col
-                cols="12"
-                sm="4"
-                v-for="product in productList"
-                :key="product.id"
-              >
-                <ProductItem
-                  :product="product"
-                  page="Ranks"
-                  :seller="sellers.get(product.id)"
-                  :score="
-                    ['Mod', 'Atomizer', 'Pod system', 'E-Liquid'].includes(
-                      product.type,
-                    )
-                  "
-                />
-              </v-col>
-              <infinite-loading @infinite="infiniteHandler"></infinite-loading>
-            </v-row>
-          </v-col>
-        </v-row>
-      </div>
+    <v-container class="white">
+      <v-text-field
+        prepend-inner-icon="search"
+        hide-details
+        outlined
+        clearable
+        :loading="searchLoading"
+        label="Search"
+        v-model="txtSearch"
+        dense
+      />
+      <v-row>
+        <v-col>
+          <v-combobox
+            v-model="filterProduct"
+            dense
+            outlined
+            hide-details
+            :loading="filterLoading"
+            label="Product type"
+            clearable
+            :items="[
+              'All products',
+              'Mod',
+              'Starter kit',
+              'Atomizer',
+              'Pod system',
+              'E-Liquid',
+              'Coils & Cartridges',
+              'Batteries & Chargers',
+              'Vape accessories',
+            ]"
+          />
+        </v-col>
+        <v-col>
+          <v-combobox
+            v-model="subFilterProduct"
+            dense
+            outlined
+            hide-details
+            :loading="subFilterLoading"
+            label="Product subtype"
+            clearable
+            :disabled="
+              !(
+                typeSubTypes[filterProduct] &&
+                typeSubTypes[filterProduct].length > 0
+              )
+            "
+            :items="typeSubTypes[filterProduct]"
+          />
+        </v-col>
+      </v-row>
+      <v-combobox
+        dense
+        outlined
+        hide-details
+        label="Sort by"
+        clearable
+        :loading="sortProductByLoading"
+        v-model="sortProductBy"
+        :items="['None', 'Brand', 'Model A-Z', 'Model Z-A', 'Score']"
+      />
+      <ProductRequest class="mt-2" />
+      <v-row>
+        <v-col
+          cols="12"
+          sm="4"
+          v-for="product in productList"
+          :key="product.id"
+        >
+          <ProductItem
+            :product="product"
+            page="Ranks"
+            :seller="sellers.get(product.id)"
+            :score="
+              ['Mod', 'Atomizer', 'Pod system', 'E-Liquid'].includes(
+                product.type,
+              )
+            "
+          />
+        </v-col>
+        <infinite-loading @infinite="infiniteHandler"></infinite-loading>
+      </v-row>
     </v-container>
   </v-container>
 </template>
@@ -217,9 +211,7 @@ export default {
         if (userInfo) {
           this.$bind(
             'sellersQ',
-            fb.db
-              .collection('Sellers')
-              .where('storeID', '==', this.userInfo.username),
+            fb.db.collection('Sellers').where('storeID', '==', this.user.uid),
           )
         }
       },

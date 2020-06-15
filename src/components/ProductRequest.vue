@@ -143,7 +143,7 @@
         @click.stop="productReuestDialog = true"
         class="red darken-4 white--text"
         style="width: 100%;"
-        >Add new product</v-btn
+        ><div class="blink">Add new product</div></v-btn
       >
     </div>
   </v-container>
