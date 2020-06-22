@@ -476,6 +476,9 @@ export default {
               lastScore: 0,
               revCount: 0,
               slideshow: true,
+              regions: orderBy(this.branches, ['region'], ['asc']).map(
+                (v) => v.region,
+              ),
             })
         } else {
           fb.db
@@ -510,7 +513,16 @@ export default {
                     this.facebookPageID,
                   ),
                 ),
-                { revSum: 0, lastScore: 0, revCount: 0, slideshow: true },
+                {
+                  revSum: 0,
+                  lastScore: 0,
+                  revCount: 0,
+                  slideshow: true,
+                  regions: orderBy(this.branches, ['region'], ['asc']).map(
+                    (v) => v.region,
+                  ),
+                  nameSRC: this.txtName.toLowerCase(),
+                },
               ),
             })
         }

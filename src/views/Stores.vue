@@ -1,235 +1,201 @@
 <template>
   <v-container fill-height fluid class="pa-0">
-    <vue-headful title="Wikivapeia - Vape stores" />
+    <vue-headful title="Wikivapeia - All products" />
     <PageHeader
       title="Stores"
-      subtitle="Wikivapeia vape stores"
+      subtitle="Ranking for mods and automizers, From people for people"
       height="70vh"
     />
-    <v-container fluid>
-      <div class="page d-flex align-start justify-center">
-        <v-row justify="center" style="width: 100%;">
-          <v-col cols="12" lg="8">
-            <v-row>
-              <v-col>
-                <v-text-field
-                  label="Search"
-                  filled
-                  v-model="txtSearch"
-                  single-line
-                  @input="search"
-                ></v-text-field>
-                <v-subheader>Product</v-subheader>
-                <v-divider />
-                <v-btn-toggle class="mt-5" v-model="filterProduct">
-                  <v-btn>Atomizer</v-btn>
-                  <v-btn>Mod</v-btn>
-                </v-btn-toggle>
-                <v-subheader class="mt-5">Sort by</v-subheader>
-                <v-divider />
-                <v-btn-toggle class="mt-5" v-model="sortBy">
-                  <v-btn>Score</v-btn>
-                  <v-btn>Model</v-btn>
-                  <v-btn>Company</v-btn>
-                </v-btn-toggle>
-                <v-subheader class="mt-5">Sorting direction</v-subheader>
-                <v-divider />
-                <v-btn-toggle class="mt-5" v-model="direction">
-                  <v-btn>
-                    <v-icon>arrow_downward</v-icon>
-                  </v-btn>
-                  <v-btn>
-                    <v-icon>arrow_upward</v-icon>
-                  </v-btn>
-                </v-btn-toggle>
-                <v-combobox
-                  class="mt-5"
-                  v-model.number="perPage"
-                  label="Product per page"
-                  :items="[10, 20, 50, 100]"
-                />
-                <ProductRequest />
-              </v-col>
-              <v-col cols="12" md="8" class="pt-0">
-                <v-row>
-                  <v-col
-                    cols="12"
-                    sm="6"
-                    v-for="store in visiblePages"
-                    :key="store.id"
-                  >
-                    <StoreItem :store="store" />
-                  </v-col>
-                </v-row>
-              </v-col>
-            </v-row>
-            <v-pagination
-              v-model="page"
-              total-visible="10"
-              :length="totalPages"
-            ></v-pagination>
-          </v-col>
-        </v-row>
-      </div>
+    <v-container class="white">
+      <v-row>
+        <v-col>
+          <v-combobox
+            :items="countries"
+            :loading="countryLoading"
+            v-model="selectedCountry"
+            label="Country"
+            hide-details
+            outlined
+            dense
+          />
+        </v-col>
+        <v-col>
+          <v-combobox
+            :items="regions"
+            :loading="regionLoading"
+            v-model="selectedRegion"
+            label="Region"
+            hide-details
+            outlined
+            dense
+          />
+        </v-col>
+      </v-row>
+      <v-text-field
+        prepend-inner-icon="search"
+        hide-details
+        outlined
+        clearable
+        :loading="searchLoading"
+        label="Search"
+        v-model="txtSearch"
+        dense
+      />
+      <v-row>
+        <v-col cols="12" sm="3" v-for="store in storesList" :key="store.id">
+          <StoreItem :store="store" />
+        </v-col>
+        <infinite-loading @infinite="infiniteHandler"></infinite-loading>
+      </v-row>
     </v-container>
   </v-container>
 </template>
 
 <script>
-import { sortBy } from 'lodash'
-const fb = require('../firebaseConfig')
-import Fuse from 'fuse.js'
 import { plainToClass } from 'class-transformer'
-import Store from '../classes/Product'
+import Store from '../classes/Store'
+import { debounce } from 'lodash'
+const fb = require('../firebaseConfig')
 
 export default {
   name: 'Stores',
   components: {
     PageHeader: () => import('../components/PageHeader.vue'),
     StoreItem: () => import('../components/Items/StoreItem'),
-    ProductRequest: () => import('../components/ProductRequest'),
+  },
+  watch: {
+    txtSearch: {
+      handler() {
+        this.searchLoading = true
+        this.updateStoreItems()
+      },
+    },
+    selectedCountry: {
+      handler() {
+        this.countryLoading = true
+        this.updateStoreItems()
+      },
+    },
+    selectedRegion: {
+      handler() {
+        this.regionLoading = true
+        this.updateStoreItems()
+      },
+    },
+  },
+  async created() {
+    let regions = await fetch(`${process.env.BASE_URL}regions.json`)
+    this.allRegions = JSON.parse(await regions.text())
+    let country
+    let region
+    if (this.userInfo) {
+      country = this.userInfo.country
+      region = this.userInfo.region
+    } else {
+      let data = await fetch('https://freegeoip.app/json/')
+      let location = await data.json()
+      country = location.country_name
+      region = location.city
+    }
+    this.selectedCountry = country
+    this.selectedRegion = region
+    this.searchQuery.get().then((query) => {
+      this.lastStore = query.docs[query.docs.length - 1]
+      for (let i = 0; i < query.docs.length; i++) {
+        let doc = query.docs[i]
+        this.$set(this.storesListQ, doc.id, { id: doc.id, ...doc.data() })
+      }
+      this.updateStores()
+    })
   },
   data() {
     return {
-      storesQ: [],
-      /**
-       * @type {Store[]}
-       */
-      stores: [],
-      /**       * @type {string}
-       */
+      storesListQ: {},
+      storesList: [],
+      lastStore: {},
       txtSearch: '',
-      /**
-       * @type {number}
-       */
-      sortBy: undefined,
-      /**
-       * @type {number}
-       */
-      direction: undefined,
-      /**
-       * @type {number}
-       */
-      filterProduct: undefined,
-      /**
-       * @type {number}
-       */
-      page: 1,
-      /**
-       * @type {number}
-       */
-      perPage: 10,
-      searchIndex: null,
+      allRegions: [],
+      selectedCountry: '',
+      selectedRegion: '',
+      searchLoading: false,
+      countryLoading: false,
+      regionLoading: false,
     }
   },
   activated() {
     this.$store.commit('activePage', 'Stores')
   },
-  firestore() {
-    return {
-      storesQ: fb.db.collection('Users').where('type', '==', 'store'),
-    }
-  },
-  watch: {
-    storesQ: {
-      immediate: true,
-      handler() {
-        this.stores = plainToClass(Store, this.storesQWithID)
-        this.buildIndex(this.stores)
-        this.search()
-      },
-    },
-    sortBy: {
-      handler(sortBy) {
-        this.searchSort(sortBy)
-      },
-    },
-    direction: {
-      handler() {
-        this.searchSort(this.sortBy)
-      },
-    },
-    filterProduct: {
-      handler(filterProduct) {
-        this.searchFilter(filterProduct)
-        this.searchSort(this.sortBy)
-      },
-    },
-  },
   methods: {
-    search() {
-      this.stores = this.searchedList
-      this.searchFilter(this.filterProduct)
-      this.searchSort(this.sortBy)
-    },
-    async searchSort(sortByy) {
-      switch (sortByy) {
-        case 0:
-          this.stores =
-            this.direction === 0
-              ? sortBy(this.stores, 'lastScore').reverse()
-              : sortBy(this.stores, 'lastScore')
-          break
-        case 1:
-          this.stores =
-            this.direction === 0
-              ? sortBy(this.stores, 'model').reverse()
-              : sortBy(this.stores, 'model')
-          break
-        case 2:
-          this.stores =
-            this.direction === 0
-              ? sortBy(this.stores, 'company').reverse()
-              : sortBy(this.stores, 'company')
-          break
-        case undefined:
-          break
-      }
-    },
-    searchFilter(filterProduct) {
-      switch (filterProduct) {
-        case 0:
-          this.stores = this.searchedList.filter((v) => v.type === 'Atomizer')
-          break
-        case 1:
-          this.stores = this.searchedList.filter((v) => v.type === 'Mod')
-          break
-        case undefined:
-          this.stores = this.searchedList
-      }
-    },
-    buildIndex(docs) {
-      this.searchIndex = new Fuse(docs, {
-        caseSensitive: false,
-        includeScore: true,
-        keys: ['name'],
-        shouldSort: false,
-        threshold: 0.3,
+    updateStoreItems: debounce(function () {
+      this.searchQuery.get().then((query) => {
+        this.lastProduct = query.docs[query.docs.length - 1]
+        this.storesListQ = {}
+        for (let i = 0; i < query.docs.length; i++) {
+          let doc = query.docs[i]
+          this.$set(this.storesListQ, doc.id, { id: doc.id, ...doc.data() })
+        }
+        this.updateStores()
+        this.searchLoading = false
+        this.regionLoading = false
+        this.countryLoading = false
       })
+    }, 500),
+    updateStores() {
+      this.storesList = plainToClass(Store, Object.values(this.storesListQ))
+    },
+    infiniteHandler($state) {
+      if (this.lastProduct) {
+        this.searchQuery
+          .startAfter(this.lastStore)
+          .get()
+          .then((query) => {
+            this.lastProduct = query.docs[query.docs.length - 1]
+            for (let i = 0; i < query.docs.length; i++) {
+              let doc = query.docs[i]
+              this.$set(this.storesListQ, doc.id, {
+                id: doc.id,
+                ...doc.data(),
+              })
+            }
+            this.updateProducts()
+            $state.loaded()
+          })
+      } else {
+        $state.complete()
+      }
     },
   },
   computed: {
-    visiblePages() {
-      return this.stores.slice(
-        (this.page - 1) * this.perPage,
-        this.page * this.perPage,
+    countries() {
+      return this.allRegions.map((v) => v.country)
+    },
+    regions() {
+      let countryRegions = this.allRegions.find(
+        (v) => v.country === this.selectedCountry,
       )
-    },
-    totalPages() {
-      return Math.ceil(this.stores.length / this.perPage)
-    },
-    searchedList() {
-      if (this.txtSearch === '') {
-        return plainToClass(Store, this.storesQWithID)
+      if (countryRegions) {
+        return countryRegions.regions.map((v) => v.name)
       } else {
-        return this.searchIndex.search(this.txtSearch).map((v) => v.item)
+        return []
       }
     },
-    storesQWithID() {
-      return this.storesQ.map((v) => ({
-        ...v,
-        id: v.id,
-      }))
+    searchQuery() {
+      let query = fb.db
+        .collection('Users')
+        .where('type', '==', 'store')
+        .limit(12)
+      if (this.txtSearch) {
+        query = query
+          .where('nameSRC', '>=', this.txtSearch.toLowerCase())
+          .where('nameSRC', '<=', this.txtSearch.toLowerCase() + '\uf8ff')
+      }
+      if (this.selectedCountry) {
+        query = query.where('country', '==', this.selectedCountry)
+      }
+      if (this.selectedRegion) {
+        query = query.where('regions', 'array-contains', this.selectedRegion)
+      }
+      return query
     },
   },
 }

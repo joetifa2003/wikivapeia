@@ -104,6 +104,15 @@
           ><v-icon class="mr-2">storefront</v-icon>Create your free store
           now!</v-btn
         >
+        <v-btn
+          v-else-if="user && user.uid === store.id"
+          style="font-size: 12px !important; background: none;"
+          @click="$router.push('/ranks')"
+          class="amber--text lighten-1"
+          ><div class="blink">
+            <v-icon class="mr-2">add</v-icon>Add products
+          </div></v-btn
+        >
       </div>
       <v-row style="width: 100%; margin: 0;" class="px-4 black">
         <v-col cols="12" class="px-0">
@@ -350,7 +359,7 @@
         </v-col>
       </v-row>
       <div class="grey mb-4" style="width: 100%; height: 1px;"></div>
-      <template v-if="productsValues.length !== 0">
+      <template v-if="productsValues && productsValues.length !== 0">
         <v-row class="px-5">
           <v-col
             cols="12"
@@ -378,7 +387,15 @@
           >
         </v-row>
       </template>
-      <template v-else-if="user && user.uid === store.id">
+      <template
+        v-if="
+          user &&
+          user.uid === store.id &&
+          productArrived === true &&
+          productsValues === null &&
+          Object.values(sellersQ).length === 0
+        "
+      >
         <div class="text-center">
           <h1 class="black--text mb-2" style="font-size: 25px;">
             Congratulations {{ store.name.split(' ')[0] }},<br
@@ -532,6 +549,7 @@ export default {
       reviewDialog: false,
       userReview: null,
       messengerMessege: true,
+      productArrived: false,
     }
   },
   firestore() {
@@ -553,6 +571,7 @@ export default {
           this.$set(this.sellersQ, change.doc.id, change.doc.data())
         }
       }
+      this.productArrived = true
       this.updateProducts(query.docChanges())
       this.searchLoading = false
       this.filterLoading = false
@@ -562,7 +581,11 @@ export default {
   computed: {
     ...mapState(['user', 'userInfo']),
     productsValues() {
-      return this.getObjectValues(this.products)
+      if (this.getObjectValues(this.products).length > 0) {
+        return this.getObjectValues(this.products)
+      } else {
+        return null
+      }
     },
     bannerSize() {
       if (this.$vuetify.breakpoint.mdAndUp) {
