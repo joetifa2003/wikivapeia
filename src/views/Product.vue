@@ -1,6 +1,6 @@
 <template>
   <v-container class="align-start pa-0 justify-center pt-10 k">
-    <v-card v-if="product" width="100%" elevation="0">
+    <v-card v-if="product && voted !== null" width="100%" elevation="0">
       <Share :bottom="true" :title="product.titleBuilder(true)" />
       <vue-headful
         :title="`WIKIVAPEIA - ${product.titleBuilder(true).toUpperCase()}`"
@@ -488,6 +488,14 @@ export default {
     this.$store.commit('activePage', 'Ranks')
   },
   async created() {
+    if (this.user) {
+      this.$bind(
+        'votedQ',
+        fb.db.collection('Votes').where('voter', '==', this.user.uid),
+      )
+    } else {
+      this.voted = false
+    }
     let regions = await fetch(`${process.env.BASE_URL}regions.json`)
     this.allRegions = JSON.parse(await regions.text())
     let country
@@ -503,14 +511,6 @@ export default {
     }
     this.selectedCountry = country
     this.selectedRegion = region
-    if (this.user) {
-      this.$bind(
-        'votedQ',
-        fb.db.collection('Votes').where('voter', '==', this.user.uid),
-      )
-    } else {
-      this.voted = false
-    }
   },
   computed: {
     ...mapState(['user', 'userInfo']),

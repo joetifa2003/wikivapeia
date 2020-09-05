@@ -50,7 +50,6 @@ module.exports = {
         logo: './src/assets/WikivapeiaLogoBlack.svg',
         outputPath: '/img/icons',
       }),
-      // new CompressionPlugin(),
     ],
   },
 }
